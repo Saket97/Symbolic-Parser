@@ -1,0 +1,27 @@
+I individually tested both the synth.py and django implementation, they were working properly
+
+
+I have linked both the codes but somethings ar still to be done:
+	
+	in views.py check line 4,5 .. we need to import both of them in the same way as I have used the name of functions and global variables..comment out the lines 39,40,66,67 and uncomment 43-63(these lines link both the codes)
+
+	in input_specs.py check line 1 ..After this just uncomment line 22 and comment line 23,21
+
+	 django is implemented in python3 but there should be very little problem as I found on internet .. check it once.. 
+
+	Now the code should work fine..
+
+
+Summary of the changes done in their code:
+	
+	synth.py:
+		used main function and a variable 'correct'
+		added lines 21,22,23 
+	
+	input_specs.py:
+		added two functions(last two)
+		declared accept(reject)_strings globally
+
+	added a new file test.py
+
+At present both the codes are working(in input_specs.py x5 should be 'S' for grammar to be correct)
