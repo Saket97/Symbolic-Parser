@@ -7,6 +7,7 @@ from .models import Game
 from .forms import GameForm
 import copy
 
+
 def fill_response(request):
 	form = GameForm(request.POST or None)
 	x,y,z = 2,3,4
@@ -62,11 +63,11 @@ def fill_response(request):
 		# original_grammar = copy.deepcopy(tmp)
 		# return HttpResponse(<b>'wrong Responses %s %s %s'%(error[0],error[1],error[2])</b>)
 		
-	
+	b = [1,2,3]
 	accept_strings = ['a b c']
 	reject_strings = ['a c']
 	context = {
-	'form':form,'original_grammar':original_grammar,'Response1':x,'Response2':y,'Respons3':z,'size_rules':2, 'check':check, 'accept_strings':accept_strings, 'reject_strings':reject_strings}
+	'b':b,'form':form,'original_grammar':original_grammar,'Response1':x,'Response2':y,'Respons3':z,'size_rules':2, 'check':check, 'accept_strings':accept_strings, 'reject_strings':reject_strings}
 	return render(request,'game_form.html',context)
 
 def get_original_grammar():

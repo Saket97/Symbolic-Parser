@@ -1,0 +1,15 @@
+p{
+	color: black;
+}
+body{
+	background-color: orange
+}
+header{
+	text-align: center;
+	text-shadow: transparent;
+	font-size: 30;
+	font-synthesis: unset;
+}
+.my_custom_class{
+	width:30px;
+}

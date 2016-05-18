@@ -1,9 +1,16 @@
-<!-- DOCTYPE html -->
+<! DOCTYPE html >
 <html>
 <head>
-<title>quiz</title></head>
-<body>
+<title>quiz</title>
+{% load static  %}
+<script type="text/javascript" src="{% static 'js/base.js' %}">
+	var n;
+</script>
+<link rel='stylesheet' href='{% static 'css/base.css' %}' />
+</head>
+<body onload="name(n)">
 
+<header>Welcome!</header>
 
 {% for string in original_grammar %}
 	{% for ch in string %}
@@ -16,6 +23,25 @@
 	</br>
 {% endfor %} 
 
+<script type="text/javascript">
+// var original_grammar = {{original_grammar|safe}}
+// var k = 0
+// for(var i =0; i<original_grammar.length;++i)
+// {
+// 	for(var j = 0; j < original_grammar[0].length; ++j)
+// 	{
+// 		if(j == 0)
+// 		{
+// 			document.write(original_grammar[i][j] + " -> ")
+
+// 		}
+// 		else
+// 		{
+
+// 		}
+// 	}
+// }
+</script>
 
 <form method="POST">{% csrf_token %}
 {{form.as_p}}
@@ -28,5 +54,29 @@ reject_strngs={{reject_strings}}
 
 <p> Please fill the answers in textbox provided. First row seniority then column seniority is considered to assign Response1, Response2, so on..</p> 
 
+
+
+<form>
+	<input type="submit" onclick="foo()" value="say hello"></input>
+</form>
+
+<script type="text/javascript">
+	var b = {{ original_grammar|safe}}
+	var c = {{ b|safe }}
+	document.write("length of c is ",c.length)
+	document.write("length of b is ",b.length)
+	document.write("length of b[0] is ",b[0].length)
+	var i,j;
+	// for(i=0;i<3;++i)
+	// 	document.write(" ",c[i])
+	// document.write(b.length())
+	// for(i=0;i<b.length();++i)
+	// {
+	// 	for(j=0;j<b[i].length();++j)
+	// 	document.write(" ",b[i][j]);
+
+	// 	document.write("<br>")
+	// }
+</script>
 </body>
 </html>
