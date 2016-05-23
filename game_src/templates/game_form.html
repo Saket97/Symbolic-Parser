@@ -1,15 +1,6 @@
-<! DOCTYPE html >
-<html>
-<head>
-<title>quiz</title>
-{% load static  %}
-<script type="text/javascript" src="{% static 'js/base.js' %}">
-	var n;
-</script>
-<link rel='stylesheet' href='{% static 'css/base.css' %}' />
-</head>
-<body onload="name(n)">
-
+{% extends "base.html" %}
+{% block content %}
+{% load render_table from django_tables2 %}
 <header>Welcome!</header>
 
 {% for string in original_grammar %}
@@ -24,22 +15,23 @@
 {% endfor %} 
 
 <script type="text/javascript">
-// var original_grammar = {{original_grammar|safe}}
-// var k = 0
-// for(var i =0; i<original_grammar.length;++i)
-// {
-// 	for(var j = 0; j < original_grammar[0].length; ++j)
-// 	{
-// 		if(j == 0)
-// 		{
-// 			document.write(original_grammar[i][j] + " -> ")
+var original_grammar = {{original_grammar|safe}}
+var k = 0
 
-// 		}
-// 		else
-// 		{
+//for(var i =0; i<original_grammar.length;++i)
+//{
+	// for(var j = 0; j < original_grammar[0].length; ++j)
+	// {
+	// 	if(j == 0)
+	// 	{
+	// 		document.write(original_grammar[i][j] + " -> ")
 
-// 		}
-// 	}
+	// 	}
+	// 	else
+	// 	{
+
+	// 	}
+	// }
 // }
 </script>
 
@@ -52,7 +44,7 @@
 accept_strings={{accept_strings}}</br>
 reject_strngs={{reject_strings}}
 
-<p> Please fill the answers in textbox provided. First row seniority then column seniority is considered to assign Response1, Response2, so on..</p> 
+<p id="p1"> Please fill the answers in textbox provided. First row seniority then column seniority is considered to assign Response1, Response2, so on..</p> 
 
 
 
@@ -78,5 +70,5 @@ reject_strngs={{reject_strings}}
 	// 	document.write("<br>")
 	// }
 </script>
-</body>
-</html>
+{% render_table Game %}{% load render_table from django_tables2 %}
+{% endblock content %}

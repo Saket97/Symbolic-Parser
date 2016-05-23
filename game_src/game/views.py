@@ -9,36 +9,38 @@ import copy
 
 
 def fill_response(request):
-	form = GameForm(request.POST or None)
+	
 	x,y,z = 2,3,4
 	x_done, y_done, z_done = False, False, False
 	
 
 	check=['blank']
-	if form.is_valid():
-		instance = 	form.save(commit = False)
-		instance.save()
+	if request.method == 'POST':
+		form = GameForm(request.POST or None)
+		if form.is_valid():
+			instance = 	form.save(commit = False)
+			instance.save()
 		#changing blank in original_grammar with filled responses
-		global original_grammar
-		tmp = copy.deepcopy(original_grammar)
-		for i in range(len(original_grammar)):
-			for j in range(len(original_grammar[i])):
-				if original_grammar[i][j] == 'blank':
-					if not x_done:
-						original_grammar[i][j] = form.cleaned_data['Response1']
-						x_done = True
-					else:
-						if not y_done:
-							original_grammar[i][j] = form.cleaned_data['Response2']
-							y_done = True
+			global original_grammar
+			tmp = copy.deepcopy(original_grammar)
+			for i in range(len(original_grammar)):
+				for j in range(len(original_grammar[i])):
+					if original_grammar[i][j] == 'blank':
+						if not x_done:
+							original_grammar[i][j] = form.cleaned_data['Response1']
+							x_done = True
 						else:
-							original_grammar[i][j] = form.cleaned_data['Response3']
-							z_done = True
+							if not y_done:
+								original_grammar[i][j] = form.cleaned_data['Response2']
+								y_done = True
+							else:
+								original_grammar[i][j] = form.cleaned_data['Response3']
+								z_done = True
 
-				else:
-					pass
-		original_grammar = copy.deepcopy(tmp)
-		return HttpResponseRedirect('/game')
+					else:
+						pass
+			original_grammar = copy.deepcopy(tmp)
+			return HttpResponseRedirect('/game')
 
 
 		# solver=main() #returns SP
@@ -62,12 +64,14 @@ def fill_response(request):
 		# 		error.append('')
 		# original_grammar = copy.deepcopy(tmp)
 		# return HttpResponse(<b>'wrong Responses %s %s %s'%(error[0],error[1],error[2])</b>)
+	else:
+		form = GameForm()
 		
 	b = [1,2,3]
 	accept_strings = ['a b c']
 	reject_strings = ['a c']
 	context = {
-	'b':b,'form':form,'original_grammar':original_grammar,'Response1':x,'Response2':y,'Respons3':z,'size_rules':2, 'check':check, 'accept_strings':accept_strings, 'reject_strings':reject_strings}
+	'Game':Game.objects.all(),'b':b,'form':form,'original_grammar':original_grammar,'Response1':x,'Response2':y,'Respons3':z,'size_rules':2, 'check':check, 'accept_strings':accept_strings, 'reject_strings':reject_strings}
 	return render(request,'game_form.html',context)
 
 def get_original_grammar():

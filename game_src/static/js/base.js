@@ -2,12 +2,16 @@
 	{
 		alert("hello world");
 	}
-	function name(n)
+	var n;
+	function name()
 	{
-		var n = prompt("Enter your name:");
+		 n = prompt("Enter your name:");
 		alert("Hello " + n);
-	
+
 	}
+	$(document).ready(function(){
+			$("#p1").text("Welcome")
+		})
 	function response(k)
 	{
 		switch(k)
