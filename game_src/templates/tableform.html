@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<table>
+<tr>
+<th>NonTerm</th>
+{% for t in tokens %}
+	<th>{{t}}</th>
+{% endfor %}
+<form method="POST">{% csrf_token %}
+	{% for field in tform %}
+	
+		{% if forloop.counter0|divisibleby:length %}
+			</tr><tr>
+		{% endif %}
+	
+		<td>{{ field }} </td>
+
+	{% endfor %}
+
+	</tr>
+</form>
+</table>
+{% endblock content %}

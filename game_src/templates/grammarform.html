@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+{% load modulo %}
+<form method="POST">{% csrf_token %}
+{% for fields in gform %}
+	{% if forloop.counter0|divisibleby:total_line %}
+		</br>{{ fields }} ->
+	{% else %}
+		{{ fields }} 
+	{% endif %}
+{% endfor %}
+</form>
+{% endblock content %}

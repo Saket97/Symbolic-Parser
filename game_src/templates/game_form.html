@@ -1,39 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
-{% load render_table from django_tables2 %}
 <header>Welcome!</header>
 
-{% for string in original_grammar %}
-	{% for ch in string %}
-		{% if forloop.counter0 == 0 %}
-			{{ch}} -> 
-		{% else %}
-			{{ch}}
-		{% endif %}
-	{% endfor %}
-	</br>
-{% endfor %} 
-
-<script type="text/javascript">
-var original_grammar = {{original_grammar|safe}}
-var k = 0
-
-//for(var i =0; i<original_grammar.length;++i)
-//{
-	// for(var j = 0; j < original_grammar[0].length; ++j)
-	// {
-	// 	if(j == 0)
-	// 	{
-	// 		document.write(original_grammar[i][j] + " -> ")
-
-	// 	}
-	// 	else
-	// 	{
-
-	// 	}
-	// }
-// }
-</script>
+{% include "grammarform.html" %}
 
 <form method="POST">{% csrf_token %}
 {{form.as_p}}
@@ -42,33 +11,10 @@ var k = 0
 
 </br>
 accept_strings={{accept_strings}}</br>
-reject_strngs={{reject_strings}}
+reject_strings={{reject_strings}}
 
 <p id="p1"> Please fill the answers in textbox provided. First row seniority then column seniority is considered to assign Response1, Response2, so on..</p> 
 
+<!-- var b = {{ original_grammar|safe}}  find length through original_grammar.length()-->
 
-
-<form>
-	<input type="submit" onclick="foo()" value="say hello"></input>
-</form>
-
-<script type="text/javascript">
-	var b = {{ original_grammar|safe}}
-	var c = {{ b|safe }}
-	document.write("length of c is ",c.length)
-	document.write("length of b is ",b.length)
-	document.write("length of b[0] is ",b[0].length)
-	var i,j;
-	// for(i=0;i<3;++i)
-	// 	document.write(" ",c[i])
-	// document.write(b.length())
-	// for(i=0;i<b.length();++i)
-	// {
-	// 	for(j=0;j<b[i].length();++j)
-	// 	document.write(" ",b[i][j]);
-
-	// 	document.write("<br>")
-	// }
-</script>
-{% render_table Game %}{% load render_table from django_tables2 %}
 {% endblock content %}
