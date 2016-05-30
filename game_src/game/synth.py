@@ -4,23 +4,22 @@ from init import *
 from helpers import *
 from solver import *
 from test import *
-
+from views import *
 
 import calendar
 import time
 import datetime
 
 #SP instance
-def main():
+def main(ogrammar,table_parse):
 	sp_time = calendar.timegm(time.gmtime())
 	print "Initializing SP..."
 	SP = {}
 	initialize_solver(SP)
-	SP['constraints'].set(unsat_core=True)
 
 	num = nums()
-	original_grammar = find_original_grammar()
-	repair(SP, original_grammar, num['num_rules'], num['size_rules'])
+	original_grammar = ogrammar
+	repair(SP, original_grammar, num['num_rules'], num['size_rules'],table_parse)
 
 	print "SP initialized in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
 
@@ -61,6 +60,7 @@ def main():
 			SP['unsat'] = tmp
 			print 'unsat_core',tmp
 			print "No such grammar possible under present constraints"
+			return [tmp,False]
 			break
 
 		SP["model"] = SP["constraints"].model()
@@ -81,6 +81,7 @@ def main():
 			
 			else:
 				print("Grammar found!")
+				global correct
 				correct = True
 		else:
 			check_result = unsat # negative examples are trivially satisfied
@@ -95,8 +96,7 @@ def main():
 	print config
 	print accept_list
 	print reject_list
-	return SP
+	return [None,True]
 
-
-main()
+# main()
 correct = False	

@@ -44,22 +44,27 @@ def define_grammar():
 			iterate_order.append('X%d'%(i*size_rules+j))
 			tmp = {'X%d'%(i*size_rules + j):[i,j-1]}
 			fields.update(tmp)
-	attrs = dict((f,forms.CharField(widget = forms.TextInput(attrs={'class':'my_custom_class','max_length':3,'value':original_grammar[fields[f][0]][fields[f][1]]}))) for f in iterate_order)
+	attrs = dict((f,forms.CharField(widget = forms.TextInput(attrs={'class':'my_custom_class','max_length':3}))) for f in iterate_order)
 	attrs['__module__'] = GrammarForm.__module__
 	attrs['Meta'] = type('Meta', (), dict(attrs={"class":"Grammar_form"}))
-	ogrammar = type('Grammar',(GrammarForm,),attrs)
+	ogrammar = type('Grammar',(GrammarForm,forms.Form),attrs)
 	return ogrammar
 
 def define_table_form():
 	parse_table = [OrderedDict([('non_term','S'),('(',1),(')',2),('$',2)])]
 	attrs = OrderedDict()
+	
 	for i in range(len(parse_table)):
+		attrs.update({'%d%s'%(i,'non_term'):forms.CharField(widget=forms.TextInput(attrs={'class':'my_custom_class','max_length':3}))})
+
 		for k,t in parse_table[i].items():
-			attrs.update({'%d%s'%(i,k):forms.CharField(widget=forms.TextInput(attrs={'class':'my_custom_class','max_length':3}))})
+			if k == 'non_term':
+				continue;
+			attrs.update({'%d%s'%(i,k):forms.IntegerField(widget=forms.NumberInput(attrs={'class':'my_custom_class','max_length':3}))})
 
 	attrs['__module__'] = TableForm.__module__
 	attrs['Meta'] = type('Meta',(),{})
-	return type('Table',(TableForm,),attrs)
+	return type('Table',(TableForm,forms.Form),attrs)
 
 class GrammarForm(forms.Form):
 	# original_grammar = get_original_grammar()

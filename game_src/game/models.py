@@ -8,3 +8,6 @@ class Game(models.Model):
 
 	def __str__(self):
 		return 'Player'
+
+	def __unicode__(self):
+		return 'Player'

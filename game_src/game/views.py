@@ -1,25 +1,37 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render,get_object_or_404,redirect
 from django.contrib import messages
-import django_tables2 as tables
+
 from django import forms
 # from ...input_specs import * 
 # from ...synth import * 
 from .models import Game
 from .forms import GameForm,GrammarForm,TableForm,grammar,table
-from .tables import Parse_Table
+from synth import *
 from itertools import *
 from collections import *
 import copy
 import pdb
-#from test import printsaket
+
+accept_strings = ['a b c']
+reject_strings = ['a c']
 def get_original_grammar():
 	original_grammar = [['S', '(', 'S',')','S'], ['S', 'eps', 'eps','eps','eps']]
-	return original_grammar
+	return ogrammar
 
 def get_parse_table():
 	parse_table = {'non_terms':'S','(':{'S':1},')':{'S':2},'$':{'S':2}}
-	return parse_table
+	return table_parse
+
+def fill_grammar_form(original_grammar):
+	grammarData = {}
+	n_rules = len(original_grammar)
+	size_rules = len(original_grammar[0])
+	for i in range(n_rules):
+		for j in range(size_rules+1):
+			grammarData['X%d'%(i*(size_rules+1)+1+j)] = original_grammar[i][j]
+	return grammarData	
+
 
 # def define_table(columns):
 # 	attrs = dict((c,tables.Column()) for c in columns)
@@ -88,23 +100,24 @@ def fill_response(request):
 		form = GameForm()
 		gform = grammar()
 	b = [1,2,3]
-	accept_strings = ['a b c']
-	reject_strings = ['a c']
 	
 	context = {
-	'Game':Game.objects.all(),'b':b,'form':form,'gform':gform,'original_grammar':original_grammar,'Response1':x,'Response2':y,'Respons3':z,'total_line':5,'n_rules':2,'size_rules':4, 'check':check, 'accept_strings':accept_strings, 'reject_strings':reject_strings}
+	'Game':Game.objects.all(),'b':b,'form':form,'gform':gform,'original_grammar':original_grammar,'Response1':x,'Response2':y,'Respons3':z,'total_line':5, 'accept_strings':accept_strings, 'reject_strings':reject_strings}
 	#pdb.set_trace()
 	return render(request,'game_form.html',context)
 
 
 def ParseTable(request):
+
 	original_grammar = [['S', '(', 'S',')','S'], ['S', 'eps', 'eps','eps','eps']]
-
 	parse_table = [OrderedDict([('non_term','S'),('(',1),(')',2),('$',2)])]
+	ptable_entries = ['non_term','(',')','$']
 
-	n_rules = len(parse_table)
-	size_rules = len(parse_table[0])
+	n_rules = len(original_grammar)
+	size_rules = len(original_grammar[0])-1
 	
+	n_table = len(parse_table)
+	n_elements = len(parse_table[0])
 	############## used for table headers ################## 
 	tokens = []
 	for i in range(len(parse_table)):
@@ -117,6 +130,7 @@ def ParseTable(request):
 	takingParseTableAsInput = False
 	################ binding initial data to parse table on the basis of takingPaseTableAsInput ###############
 	###Fields are named as row_number starting from 0 and corresponding table header which are terms+'non_term'
+	
 	if not takingParseTableAsInput:
 		parseTableData = {}
 		for i in range(len(parse_table)):
@@ -125,15 +139,57 @@ def ParseTable(request):
 
 	###########################################################################################################
 	
+	############## binding data to grammar form ########################
+	if takingParseTableAsInput:
+		grammarData = fill_grammar_form(original_grammar)
+	
+	######################################################################
+	total_line = len(original_grammar[0])
+
 	if request.method == 'POST':
 		gform = grammar(request.POST or None)
 		tform = table(request.POST or None)
+		if  tform.is_valid() and gform.is_valid():
+			ogrammar = []
+			table_parse = []
+			for r in range(n_rules):
+				tmp = []
+				var = 'X%d'%(r*total_line+1)
+				tmp.append(gform.cleaned_data[var])
+				for i in range(1,size_rules+1):
+					var = 'X%d'%(r*total_line+1+i)
+					tmp.append(gform.cleaned_data[var])
+				ogrammar.append(tmp)
+
+			for i in range(n_table):
+				tmp = OrderedDict()
+				for k in ptable_entries:
+					var = '%d%s'%(i,k)
+					tmp[k] = tform.cleaned_data[var]
+				table_parse.append(tmp)
+			answer = main(ogrammar,table_parse)
+			if answer[1]:
+				return render(request,"correct.html",{})
+			else:
+				print answer[0]
+				return render(request,"incorrect.html",{})
+
+		else:
+			return render(request,"notvalid.html",{})
 	else:
-		gform = grammar()
-		tform = table(parseTableData)
-	total_line = len(original_grammar[0])
+		if takingParseTableAsInput:
+			gform = grammar(grammarData)
+			tform = table()
+			
+		else:
+			gform = grammar()
+			tform = table(parseTableData)
 	
-	context = {'tokens':tokens,'length':len(parse_table[0]),'tform':tform,'gform':gform,'total_line':total_line,'n_rules':n_rules,'size_rules':size_rules,'parse_table':parse_table}
+	
+	context = {'tokens':tokens,'length':len(parse_table[0]),'tform':tform,'gform':gform,'total_line':total_line,'accept_strings':accept_strings,'reject_strings':reject_strings,'parse_table':parse_table}
 	# pdb.set_trace()
 	return render(request,"parse.html",context)
 
+
+ogrammar = []
+table_parse = []

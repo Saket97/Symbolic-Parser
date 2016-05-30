@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
-
+<form method="POST">{% csrf_token %}
 {% include "grammarform.html" %}
 
 {% include "tableform.html" %}
 
+<input type="submit" value="Submit"/>
+	
+</form>
 {% endblock content %}

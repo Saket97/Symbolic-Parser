@@ -1,7 +1,7 @@
-{% extends "base.html" %}
-{% block content %}
-{% load modulo %}
-<form method="POST">{% csrf_token %}
+
+Accept Strings = {{ accept_strings }}</br>
+Reject Strings = {{ reject_strings }}
+
 {% for fields in gform %}
 	{% if forloop.counter0|divisibleby:total_line %}
 		</br>{{ fields }} ->
@@ -9,5 +9,3 @@
 		{{ fields }} 
 	{% endif %}
 {% endfor %}
-</form>
-{% endblock content %}

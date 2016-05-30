@@ -41,15 +41,25 @@ def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules
 				print('x%d %s %d'%((r*(size_rules+1)+j+1),view_assign[original_grammar[r][j]], i))
 				i += 1
 
+def add_parse_table_constraints(solver,parse_table,view_assign):
+	s = solver["constraints"]
+	vars = solver['vars']
+	functions = solver['functions']
+	
+	for i in range(len(parse_table)):
+		non_terminal = parse_table[i]['non_term']
+		for k,t in parse_table[i].items():
+			if k == 'non_term':
+				continue
+			if t:	
+				s.assert_and_track(functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[k]]) == vars['rule%d'%(t)],'%s %s parse table error'%(non_terminal,k))
+			else:
+				s.assert_and_track(functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[k]]) == 0,'%s %s parse table error'%(non_terminal,k))
 
 
 def repair(solver, original_grammar, num_rules, size_rules):
 	view_assign = {}
-	# if check_term_lhs(original_grammar):
 	non_tokens = discover(original_grammar)
-	# else:
-	# 	print 'No grammar possible'
-	# 	exit(1)
 	i = 1
 	for ch in non_tokens:
 		view_assign[ch] = 'N%d'%(i)
@@ -59,7 +69,10 @@ def repair(solver, original_grammar, num_rules, size_rules):
 	for ch in tokens:
 		view_assign[ch] = 't%d'%(i)
 		i += 1
-
+	parse_table = get_parse_table()
+	view_assign['dol'] = 'dol'
+	view_assign['$'] = 'dol'
 	print('view_assign-',view_assign)
-	add_constraints(solver,view_assign,original_grammar,num_rules, size_rules)
+	# add_constraints(solver,view_assign,original_grammar,num_rules, size_rules)
+	add_parse_table_constraints(solver,parse_table,view_assign)
 

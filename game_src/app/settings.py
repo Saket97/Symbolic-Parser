@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'game',
-    'django_tables2',
+    
 ]
 
 MIDDLEWARE_CLASSES = [

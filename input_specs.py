@@ -1,4 +1,5 @@
 # from 'game_src/game/views' import * 
+from collections import *
 def specs():
 
 	#Space separated (tokenized) strings
@@ -21,6 +22,11 @@ def find_original_grammar():
 	original_grammar = [['S', '(', 'S', ')', ')'], ['S', 'eps', 'eps', 'eps', 'eps']]
 	# return get_original_grammar()
 	return original_grammar
+
+def get_parse_table():
+	parse_table = [OrderedDict([('non_term','S'),('(',1),(')',2),('$',2)])]
+	return parse_table
+
 def nums():
 	num_vars = {'num_rules':2, 'size_rules':4}
 	return num_vars
