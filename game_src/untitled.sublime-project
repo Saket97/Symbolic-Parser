@@ -3,6 +3,9 @@
 	[
 		{
 			"path": "."
+		},
+		{
+			"path": "/home/saket/Desktop/project/static_cdn"
 		}
 	]
 }

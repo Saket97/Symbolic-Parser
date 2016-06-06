@@ -4,6 +4,98 @@
 		"selected_items":
 		[
 			[
+				"mat",
+				"mat_sum"
+			],
+			[
+				"dim",
+				"dimValue"
+			],
+			[
+				"cal",
+				"cal_test_kernel"
+			],
+			[
+				"test",
+				"testData"
+			],
+			[
+				"tes",
+				"testData"
+			],
+			[
+				"n_",
+				"n_test"
+			],
+			[
+				"vector",
+				"vectorTrain"
+			],
+			[
+				"train",
+				"train_features"
+			],
+			[
+				"X",
+				"X"
+			],
+			[
+				"vectr",
+				"vectorTrain"
+			],
+			[
+				"trai",
+				"train_feature"
+			],
+			[
+				"po",
+				"point"
+			],
+			[
+				"vect",
+				"vectorTest"
+			],
+			[
+				"point",
+				"point_index"
+			],
+			[
+				"te",
+				"testData"
+			],
+			[
+				"dimension",
+				"dimension"
+			],
+			[
+				"cut",
+				"cutPoint"
+			],
+			[
+				"a_",
+				"a_shape"
+			],
+			[
+				"Question",
+				"QuestionModelAdmin"
+			],
+			[
+				"T",
+				"TextField"
+			],
+			[
+				"json",
+				"jsondec"
+			],
+			[
+				"Res",
+				"Response3"
+			],
+			[
+				"Re",
+				"Response2"
+			],
+			[
 				"ma",
 				"make_subset"
 			],
@@ -15,6 +107,33 @@
 	},
 	"buffers":
 	[
+		{
+			"file": "/home/saket/Desktop/t.tex",
+			"settings":
+			{
+				"buffer_size": 343,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/saket/Downloads/grammars-infer-grammar-8676bc96c578-old/Game2/grammar_in/ParseTableIn.py",
+			"settings":
+			{
+				"buffer_size": 5743,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "#include <iostream>\n#include <algorithm>\nusing namespace std;\n\nint main()\n{\n	int n,k;\n	cin >> n >> k;\n	int arr[n];\n	for (int i = 0; i < n; ++i)\n	{\n			cin >> arr[i];\n	}\n	sort(arr, arr+n);\n	int prev = 0, count = 0, tmp;\n	for (int i = 0; i < n; ++i)\n	{\n		tmp = lower_bound(arr+prev, arr+n, arr[i]+k) - arr;\n		if (tmp >= n)\n		{\n			cout << count << endl;\n			return 0;\n		}\n		if (arr[tmp] == arr[i] + k)\n		{\n			++count;\n			prev = tmp;\n\n		}\n	}\n}\n",
+			"file": "/home/saket/Desktop/spojpermut.cpp",
+			"file_size": 723,
+			"file_write_time": 131096066931309325,
+			"settings":
+			{
+				"buffer_size": 438,
+				"line_ending": "Unix"
+			}
+		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -55,12 +174,18 @@
 	},
 	"expanded_folders":
 	[
-		"/home/saket/game_src",
-		"/home/saket/game_src/app",
-		"/home/saket/game_src/game"
 	],
 	"file_history":
 	[
+		"/home/saket/Desktop/project/game_src/templates/parse.html",
+		"/home/saket/Desktop/project/game_src/game/admin.py",
+		"/home/saket/Desktop/project/game_src/game/models.py",
+		"/home/saket/Desktop/test.py",
+		"/home/saket/Desktop/project/game_src/game/views.py",
+		"/home/saket/Desktop/untitled.sty",
+		"/home/saket/Report/feature.py",
+		"/home/saket/Report/predict.py",
+		"/home/saket/Report/Mondrian.py",
 		"/home/saket/game_src/app/urls.py",
 		"/home/saket/game_src/game/views.py",
 		"/home/saket/game_src/game/admin.py",
@@ -107,8 +232,93 @@
 	"groups":
 	[
 		{
+			"selected": 1,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "/home/saket/Desktop/t.tex",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 343,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								262,
+								262
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/LaTeX/LaTeX.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/home/saket/Downloads/grammars-infer-grammar-8676bc96c578-old/Game2/grammar_in/ParseTableIn.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5743,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/home/saket/Desktop/spojpermut.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 438,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								438,
+								438
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 108.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				}
 			]
 		}
 	],
@@ -143,6 +353,10 @@
 		]
 	},
 	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 289.0
+	},
 	"output.find_results":
 	{
 		"height": 0.0

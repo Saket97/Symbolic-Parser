@@ -1,7 +1,8 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render,get_object_or_404,redirect
 from django.contrib import messages
-
+# from django.core import serializers
+import json
 from django import forms
 # from ...input_specs import * 
 # from ...synth import * 
@@ -110,6 +111,9 @@ def fill_response(request):
 def ParseTable(request):
 
 	original_grammar = [['S', '(', 'S',')','S'], ['S', 'eps', 'eps','eps','eps']]
+	# data = serializers.serialize("xml",original_grammar)
+	# gameinstance = Game()
+	# gameinstance.Response4 = json.dumps(original_grammar)
 	parse_table = [OrderedDict([('non_term','S'),('(',1),(')',2),('$',2)])]
 	ptable_entries = ['non_term','(',')','$']
 
@@ -150,6 +154,15 @@ def ParseTable(request):
 		gform = grammar(request.POST or None)
 		tform = table(request.POST or None)
 		if  tform.is_valid() and gform.is_valid():
+			################SAVING IN DATABASE ###############
+
+			forminstance = Game(Response4 = json.dumps(original_grammar),Response1=gform.cleaned_data['X1'], Response2=gform.cleaned_data['X2'], Response3=gform.cleaned_data['X3'])
+			forminstance.save()
+			jsondec = json.decoder.JSONDecoder()
+			q = jsondec.decode(Game.objects.get(id=33).Response4)
+			print "saket"
+			print "q",q
+			##################################################
 			ogrammar = []
 			table_parse = []
 			for r in range(n_rules):
