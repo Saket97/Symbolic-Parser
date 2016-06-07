@@ -1,6 +1,7 @@
 from input_specs import *
 from init import *
 from views import *
+from z3 import *
 def discover(original_grammar):
 	non_tokens = []
 	for string in original_grammar:
@@ -60,10 +61,42 @@ def add_parse_table_constraints(solver,parse_table,view_assign):
 			else:
 				s.assert_and_track(functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[k]]) == 0,'%s %s parse table error'%(non_terminal,k))
 
+def add_first_set_constraints(solver, first_set, follow_set, view_assign):
+	s = solver["constraints"]
+	vars = solver["vars"]
+	functions = solver["functions"]
+	print "first set:",first_set
+	print "follow set:",follow_set
 
-def repair(solver, original_grammar, num_rules, size_rules,table_parse):
+	for i in range(len(first_set)):
+		non_terminal = str(first_set[i]['non_term'])
+		for k,t in first_set[i].items():
+			if k == 'non_term':
+				continue;
+			if t != 0:
+				s.assert_and_track(functions["first"](vars[view_assign[non_terminal]], vars[view_assign[k]]), 'first set %s %s'%(non_terminal,k))
+			else:
+				s.assert_and_track(Not(functions["first"](vars[view_assign[non_terminal]], vars[view_assign[k]])), 'first set %s %s'%(non_terminal,k))
+
+	for i in range(len(follow_set)):
+		non_terminal = str(follow_set[i]['non_term'])
+		for k,t in follow_set[i].items():
+			if k == 'non_term':
+				continue;
+			if t != 0:
+				s.assert_and_track(functions["follow"](vars[view_assign[non_terminal]], vars[view_assign[k]]), 'follow set %s %s'%(non_terminal, k))
+			else:
+				s.assert_and_track(Not(functions["follow"](vars[view_assign[non_terminal]], vars[view_assign[k]])), 'follow set %s %s'%(non_terminal, str(k)))
+
+
+
+
+def repair(solver, original_grammar, num_rules, size_rules, parsetablegrammar, firstgrammar, parsatablefirst,table_parse=None, first_set = None, follow_set=None):
+	
 	view_assign = {}
-	non_tokens = discover(original_grammar)
+	non_tokens = None
+	if parsetablegrammar or firstgrammar:
+		non_tokens = discover(original_grammar)
 	i = 1
 	for ch in non_tokens:
 		view_assign[ch] = 'N%d'%(i)
@@ -73,14 +106,17 @@ def repair(solver, original_grammar, num_rules, size_rules,table_parse):
 	for ch in tokens:
 		view_assign[ch] = 't%d'%(i)
 		i += 1
-	# parse_table = get_parse_table()
-	parse_table = table_parse
-	print "Parse table ",parse_table
-	print "Parse table ",table_parse
 	view_assign['dol'] = 'dol'
 	view_assign['$'] = 'dol'
-	print('view_assign-',view_assign)
-	print original_grammar
-	add_constraints(solver,view_assign,original_grammar,num_rules, size_rules)
-	add_parse_table_constraints(solver,parse_table,view_assign)
+	view_assign['eps'] = 'eps'
+	if parsetablegrammar:
+		parse_table = table_parse
+		print('view_assign-',view_assign)
+		print original_grammar
+		add_constraints(solver,view_assign,original_grammar,num_rules, size_rules)
+		add_parse_table_constraints(solver,parse_table,view_assign)
+	if firstgrammar:
+		add_constraints(solver,view_assign,original_grammar,num_rules, size_rules)
+		add_first_set_constraints(solver, first_set, follow_set, view_assign)
+
 

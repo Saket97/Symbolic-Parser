@@ -7,7 +7,7 @@ from django import forms
 # from ...input_specs import * 
 # from ...synth import * 
 from .models import Game
-from .forms import GameForm,GrammarForm,TableForm,grammar,table
+from .forms import GameForm,GrammarForm,TableForm,grammar,table,first,follow
 from synth import *
 from itertools import *
 from collections import *
@@ -29,8 +29,8 @@ def fill_grammar_form(original_grammar):
 	n_rules = len(original_grammar)
 	size_rules = len(original_grammar[0])
 	for i in range(n_rules):
-		for j in range(size_rules+1):
-			grammarData['X%d'%(i*(size_rules+1)+1+j)] = original_grammar[i][j]
+		for j in range(size_rules):
+			grammarData['X%d'%(i*(size_rules)+1+j)] = original_grammar[i][j]
 	return grammarData	
 
 
@@ -122,12 +122,19 @@ def ParseTable(request):
 	
 	n_table = len(parse_table)
 	n_elements = len(parse_table[0])
+
 	############## used for table headers ################## 
 	tokens = []
-	for i in range(len(parse_table)):
-		for k,t in parse_table[i].items():
-			if k == 'non_term':
-				continue;
+	# for i in range(len(parse_table)):
+	# 	for k,t in parse_table[i].items():
+	# 		if k == 'non_term':
+	# 			continue;
+	# 		tokens.append(k)
+
+	for k,t in parse_table[0].items():
+		if k == 'non_term':
+			continue;
+		else:
 			tokens.append(k)
 	########################################################
 	
@@ -156,7 +163,7 @@ def ParseTable(request):
 		if  tform.is_valid() and gform.is_valid():
 			################SAVING IN DATABASE ###############
 
-			forminstance = Game(Response4 = json.dumps(original_grammar),Response1=gform.cleaned_data['X1'], Response2=gform.cleaned_data['X2'], Response3=gform.cleaned_data['X3'])
+			forminstance = Game(Response1=gform.cleaned_data['X1'], Response2=gform.cleaned_data['X2'], Response3=gform.cleaned_data['X3'])
 			forminstance.save()
 			jsondec = json.decoder.JSONDecoder()
 			q = jsondec.decode(Game.objects.get(id=33).Response4)
@@ -180,7 +187,7 @@ def ParseTable(request):
 					var = '%d%s'%(i,k)
 					tmp[k] = tform.cleaned_data[var]
 				table_parse.append(tmp)
-			answer = main(ogrammar,table_parse)
+			answer = main(ogrammar,table_parse,parsetablegrammar = True)
 			if answer[1]:
 				return render(request,"correct.html",{})
 			else:
@@ -203,6 +210,108 @@ def ParseTable(request):
 	# pdb.set_trace()
 	return render(request,"parse.html",context)
 
+def FirstFollow(request):
+	original_grammar = [['S', '(', 'S',')','S'], ['S', 'eps', 'eps','eps','eps']]
+	first_set = [OrderedDict([('non_term','S'),('(',1), (')',0), ('eps',1)])]
+	follow_set = [OrderedDict([('non_term','S'), ('(',0), (')',1), ('$',1)])]
+
+	first_set_data = {}
+	follow_set_data = {}
+
+	takingfirstasinput = False
+
+	first_tokens = []
+	########## first set table header #################################
+	for k,t in first_set[0].items():
+		if k == 'non_term':
+			continue
+		first_tokens.append(k)
+	###################################################################
+
+	########## follow set table header ################################
+	follow_tokens = []
+	for k,t in follow_set[0].items():
+		if k=='non_term':
+			continue
+		follow_tokens.append(k)
+	###################################################################
+	########## binding data to first/follow set form ###################
+
+	for i in range(len(first_set)):
+		for k,t in first_set[i].items():
+			var = '%d%sfirst'%(i,k)
+			first_set_data[var] = t
+	
+	for i in range(len(follow_set)):
+		for k,t in follow_set[i].items():
+			var = '%d%sfollow'%(i,k)
+			follow_set_data[var] = t
+
+	####################################################################	
+
+	########binding data to grammar form ###############################
+	grammarData = {}
+	grammarData = fill_grammar_form(original_grammar)
+	####################################################################
+
+	total_line = len(original_grammar[0])
+
+	if request.method == 'POST':
+		gform = grammar(request.POST or None)
+		firstform = first(request.POST or None)
+		followform = follow(request.POST or None)
+		# pdb.set_trace()
+		if gform.is_valid() and firstform.is_valid() and followform.is_valid() :
+			ogrammar = []
+			set_first = []
+			set_follow = []
+			n_rules = len(original_grammar)
+			size_rules = len(original_grammar[0])-1
+			
+			##### recording grammar input ##########
+			for i in range(n_rules):
+				tmp = []
+				for j in range(size_rules+1):
+					tmp.append(gform.cleaned_data['X%d'%(i*total_line+j+1)])
+				ogrammar.append(tmp)
+			#########################################
+
+			##### recording first set input #############
+			for i in range(len(first_set)):
+				tmp = OrderedDict()
+				for k,t in first_set[i].items():
+					tmp[k] = firstform.cleaned_data['%d%sfirst'%(i,k)]
+				set_first.append(tmp)
+			print "first set in views: ",set_first
+			print "first set form S(:",firstform.cleaned_data['0(first']
+			#########################################
+
+			##### recording follow set input #########
+			for i in range(len(follow_set)):
+				tmp = OrderedDict()
+				for k,t in follow_set[i].items():
+					tmp[k] = followform.cleaned_data['%d%sfollow'%(i,k)]
+				set_follow.append(tmp)
+
+			##########################################
+
+			answer = main(ogrammar,first_set=set_first,follow_set=set_follow,firstgrammar=True)
+			if answer[1]:
+				return render(request,"correct.html",{})
+			else:
+				print answer[0]
+				return render(request,"incorrect.html",{})
+
+		else:
+			return render(request,"notvalid.html",{})
+	else:
+		gform = grammar(grammarData)
+		firstform = first(first_set_data)
+		followform = follow(follow_set_data)
+		# pdb.set_trace()
+
+	context = {'gform':gform, 'total_line':total_line, 'firstform':firstform,'followform':followform, 'length':len(first_set[0]), 'first_tokens':first_tokens, 'follow_tokens':follow_tokens}
+	return render(request, "firstfollow.html", context)
 
 ogrammar = []
 table_parse = []

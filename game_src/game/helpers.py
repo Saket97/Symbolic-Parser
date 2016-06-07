@@ -112,6 +112,8 @@ def print_grammar(solver):
 					print "eps\t",
 			print ""
 
+	print "S ) first: ",m.evaluate(m_funs["first"](m_vars['N1'], m_vars['t2']))
+
 def assert_grammar_soft(S_target,S_source,req=False):
 
 	s = S_target["constraints"]

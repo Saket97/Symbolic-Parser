@@ -11,7 +11,7 @@ import time
 import datetime
 
 #SP instance
-def main(ogrammar,table_parse):
+def main(ogrammar,table_parse=None, first_set=None, follow_set=None, parsetablegrammar=False,firstgrammar=False, parsetablefirst=False):
 	sp_time = calendar.timegm(time.gmtime())
 	print "Initializing SP..."
 	SP = {}
@@ -19,7 +19,7 @@ def main(ogrammar,table_parse):
 
 	num = nums()
 	original_grammar = ogrammar
-	repair(SP, original_grammar, num['num_rules'], num['size_rules'],table_parse)
+	repair(SP, original_grammar, num['num_rules'], num['size_rules'], parsetablegrammar, firstgrammar, parsetablefirst, table_parse=table_parse, first_set=first_set, follow_set=follow_set)
 
 	print "SP initialized in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
 

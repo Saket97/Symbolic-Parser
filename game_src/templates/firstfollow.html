@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="POST">{% csrf_token %}
+{% include "grammarform.html" %}
+<p></p>
+{% include "first.html" %}
+<p></p>
+{% include "follow.html" %}
+
+<input type="submit" value="Submit"/>
+	
+</form>
+{% endblock content %}

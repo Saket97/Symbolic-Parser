@@ -1,13 +1,12 @@
-
 <table>
-<caption>PARSE TABLE</caption>
+<caption>FIRST SET TABLE</caption>
 <tr>
 <th>NonTerm</th>
-{% for t in tokens %}
+{% for t in first_tokens %}
 	<th>{{t}}</th>
 {% endfor %}
 
-	{% for field in tform %}
+	{% for field in firstform %}
 	
 		{% if forloop.counter0|divisibleby:length %}
 			</tr><tr>

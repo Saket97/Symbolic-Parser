@@ -66,6 +66,41 @@ def define_table_form():
 	attrs['Meta'] = type('Meta',(),{})
 	return type('Table',(TableForm,forms.Form),attrs)
 
+def define_first_form():
+	# parse_table = [OrderedDict([('non_term','S'),('(',1),(')',2),('$',2)])]
+	first_set = [OrderedDict([('non_term','S'), ('(',1), (')',0), ('eps',1)])]
+	attrs = OrderedDict()
+	
+	for i in range(len(first_set)):
+		attrs.update({'%d%sfirst'%(i,'non_term'):forms.CharField(widget=forms.TextInput(attrs={'class':'my_custom_class','max_length':3}))})
+
+		for k,t in first_set[i].items():
+			if k == 'non_term':
+				continue;
+			attrs.update({'%d%sfirst'%(i,k):forms.IntegerField(widget=forms.NumberInput(attrs={'class':'my_custom_class','max_length':3}))})
+
+	attrs['__module__'] = TableForm.__module__
+	attrs['Meta'] = type('Meta',(),{})
+	return type('First',(forms.Form,),attrs)
+
+def define_follow_form():
+	# parse_table = [OrderedDict([('non_term','S'),('(',1),(')',2),('$',2)])]
+	follow_set = [OrderedDict([('non_term','S'), ('(',0), (')',1), ('$',1)])]
+	attrs = OrderedDict()
+	
+	for i in range(len(follow_set)):
+		attrs.update({'%d%sfollow'%(i,'non_term'):forms.CharField(widget=forms.TextInput(attrs={'class':'my_custom_class','max_length':3}))})
+
+		for k,t in follow_set[i].items():
+			if k == 'non_term':
+				continue;
+			attrs.update({'%d%sfollow'%(i,k):forms.IntegerField(widget=forms.NumberInput(attrs={'class':'my_custom_class','max_length':3}))})
+
+	attrs['__module__'] = TableForm.__module__
+	attrs['Meta'] = type('Meta',(),{})
+	return type('Follow',(forms.Form,),attrs)
+
+
 class GrammarForm(forms.Form):
 	# original_grammar = get_original_grammar()
 	original_grammar = [['S', '(', 'S',')','S'], ['S', 'eps', 'eps','eps','eps']]
@@ -73,5 +108,9 @@ class GrammarForm(forms.Form):
 class TableForm(forms.Form):
 	pass
 
+
+
 grammar = define_grammar()
 table = define_table_form()
+first = define_first_form()
+follow = define_follow_form()
