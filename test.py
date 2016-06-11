@@ -15,8 +15,10 @@ def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules
 	s = solver['constraints']
 	vars = solver['vars']
 	i = 1
+	constdict = solver["dictconst"]
 	for r in range(num_rules):
-		s.assert_and_track(vars['x%d'%(r*(size_rules+1)+1)] == vars[view_assign[original_grammar[r][0]]], '%d'%(r*(size_rules+1)+1))
+		s.assert_and_track(vars['x%d'%(r*(size_rules+1)+1)] == vars[view_assign[original_grammar[r][0]]], 'input x%d'%(r*(size_rules+1)+1))
+		constdict['input x%d'%(r*(size_rules+1)+1)] = vars['x%d'%(r*(size_rules+1)+1)] == vars[view_assign[original_grammar[r][0]]]
 		
 		print('x%d %s %d'%((r*(size_rules+1)+1),view_assign[original_grammar[r][0]], i))
 		i += 1
@@ -36,7 +38,8 @@ def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules
 			else:
 				if (r*(size_rules+1)+j+1) == 13:
 					continue
-				s.assert_and_track(vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[original_grammar[r][j]]], '%d'%(r*(size_rules+1)+j+1))
+				s.assert_and_track(vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[original_grammar[r][j]]], 'input x%d'%(r*(size_rules+1)+j+1))
+				constdict['input x%d'%(r*(size_rules+1)+j+1)] = vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[original_grammar[r][j]]]
 				
 				print('x%d %s %d'%((r*(size_rules+1)+j+1),view_assign[original_grammar[r][j]], i))
 				i += 1
@@ -45,16 +48,18 @@ def add_parse_table_constraints(solver,parse_table,view_assign):
 	s = solver["constraints"]
 	vars = solver['vars']
 	functions = solver['functions']
-	
+	constdict = solver["dictconst"]
 	for i in range(len(parse_table)):
 		non_terminal = parse_table[i]['non_term']
 		for k,t in parse_table[i].items():
 			if k == 'non_term':
 				continue
 			if t:	
-				s.assert_and_track(functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[k]]) == vars['rule%d'%(t)],'%s %s parse table error'%(non_terminal,k))
+				s.assert_and_track(functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[k]]) == vars['rule%d'%(t)],'%s %s parse table input'%(non_terminal,k))
+				constdict['%s %s parse table input'%(non_terminal,k)] = functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[k]]) == vars['rule%d'%(t)]
 			else:
-				s.assert_and_track(functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[k]]) == 0,'%s %s parse table error'%(non_terminal,k))
+				s.assert_and_track(functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[k]]) == 0,'%s %s parse table input'%(non_terminal,k))
+				constdict['%s %s parse table input'%(non_terminal,k)] = functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[k]]) == 0
 
 
 def repair(solver, original_grammar, num_rules, size_rules):
@@ -73,6 +78,6 @@ def repair(solver, original_grammar, num_rules, size_rules):
 	view_assign['dol'] = 'dol'
 	view_assign['$'] = 'dol'
 	print('view_assign-',view_assign)
-	# add_constraints(solver,view_assign,original_grammar,num_rules, size_rules)
+	add_constraints(solver,view_assign,original_grammar,num_rules, size_rules)
 	add_parse_table_constraints(solver,parse_table,view_assign)
 

@@ -313,5 +313,7 @@ def FirstFollow(request):
 	context = {'gform':gform, 'total_line':total_line, 'firstform':firstform,'followform':followform, 'length':len(first_set[0]), 'first_tokens':first_tokens, 'follow_tokens':follow_tokens}
 	return render(request, "firstfollow.html", context)
 
+def index(request):
+	return render(request,"index.html", {})
 ogrammar = []
 table_parse = []

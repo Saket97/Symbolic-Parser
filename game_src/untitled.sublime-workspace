@@ -4,6 +4,50 @@
 		"selected_items":
 		[
 			[
+				"ba",
+				"background-color"
+			],
+			[
+				"back",
+				"background-repeat"
+			],
+			[
+				"bac",
+				"background-image"
+			],
+			[
+				"make",
+				"makestreeUtil"
+			],
+			[
+				"mak",
+				"makestreeUtil"
+			],
+			[
+				"temp",
+				"tempList"
+			],
+			[
+				"constr",
+				"constraint_no"
+			],
+			[
+				"const",
+				"constdict"
+			],
+			[
+				"con",
+				"constdict"
+			],
+			[
+				"max",
+				"maxlength1"
+			],
+			[
+				"ma",
+				"maxtillnow"
+			],
+			[
 				"m_",
 				"m_vars"
 			],
@@ -182,10 +226,6 @@
 			[
 				"Re",
 				"Response2"
-			],
-			[
-				"ma",
-				"make_subset"
 			]
 		]
 	},
@@ -195,15 +235,15 @@
 			"file": "game/views.py",
 			"settings":
 			{
-				"buffer_size": 9944,
+				"buffer_size": 10005,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "game/models.py",
+			"file": "game/forms.py",
 			"settings":
 			{
-				"buffer_size": 669,
+				"buffer_size": 4179,
 				"line_ending": "Unix"
 			}
 		}
@@ -265,34 +305,51 @@
 	[
 		"/home/saket/Desktop/project/game_src",
 		"/home/saket/Desktop/project/game_src/game",
+		"/home/saket/Desktop/project/game_src/static",
 		"/home/saket/Desktop/project/game_src/static/css",
-		"/home/saket/Desktop/project/game_src/static/js"
+		"/home/saket/Desktop/project/game_src/static/images",
+		"/home/saket/Desktop/project/game_src/static/js",
+		"/home/saket/Desktop/project/game_src/templates"
 	],
 	"file_history":
 	[
-		"/home/saket/Desktop/project/game_src/templates/first.html",
 		"/home/saket/Desktop/project/game_src/templates/parse.html",
+		"/home/saket/Desktop/project/game_src/static/css/base.css",
+		"/home/saket/Desktop/project/game_src/templates/base.html",
+		"/home/saket/Desktop/project/game_src/game/models.py",
+		"/home/saket/Desktop/project/game_src/templates/grammarform.html",
+		"/home/saket/Desktop/test.html",
+		"/home/saket/Desktop/project/game_src/templates/index.html",
+		"/home/saket/Desktop/project/game_src/templates/index1.html",
+		"/home/saket/Desktop/project/game_src/templates/tableform.html",
+		"/home/saket/Desktop/project/game_src/templates/follow.html",
+		"/home/saket/Desktop/project/game_src/templates/first.html",
 		"/home/saket/Desktop/project/game_src/templates/firstfollow.html",
-		"/home/saket/Desktop/project/game_src/game/forms.py",
+		"/home/saket/Desktop/project/game_src/game/views.py",
+		"/home/saket/Desktop/project/game_src/static/js/base.js",
+		"/home/saket/Desktop/project/game_src/app/urls.py",
+		"/home/saket/Desktop/spoj1.cpp",
+		"/home/saket/Desktop/project/synth.py",
+		"/home/saket/Desktop/project/test.py",
+		"/home/saket/Desktop/project/input_specs.py",
+		"/home/saket/Desktop/project/init.py",
+		"/home/saket/Desktop/project/solver.py",
+		"/home/saket/Desktop/project/Game2/solver.py",
+		"/home/saket/Desktop/project/helpers.py",
 		"/home/saket/Desktop/project/game_src/game/solver.py",
+		"/home/saket/Downloads/grammars-infer-grammar-8676bc96c578-old/Game2/grammar_in/ParseTableIn.py",
+		"/home/saket/Downloads/grammars-infer-grammar-8676bc96c578-old/Game2/grammar_in/solver.py",
+		"/home/saket/Desktop/spoj.cpp",
+		"/home/saket/Desktop/project/game_src/game/forms.py",
 		"/home/saket/Desktop/project/game_src/game/synth.py",
 		"/home/saket/Desktop/project/game_src/game/helpers.py",
 		"/home/saket/Desktop/project/game_src/game/test.py",
-		"/home/saket/Desktop/project/game_src/templates/follow.html",
-		"/home/saket/Desktop/project/game_src/app/urls.py",
-		"/home/saket/Desktop/project/game_src/templates/base.html",
-		"/home/saket/Desktop/project/game_src/templates/tableform.html",
-		"/home/saket/Desktop/project/game_src/templates/grammarform.html",
-		"/home/saket/Desktop/project/game_src/game/models.py",
 		"/home/saket/Downloads/grammars-infer-grammar-8676bc96c578-old/Game2/grammar_in/test.py",
-		"/home/saket/Downloads/grammars-infer-grammar-8676bc96c578-old/Game2/grammar_in/solver.py",
 		"/home/saket/Downloads/grammars-infer-grammar-8676bc96c578-old/Game2/grammar_in/input_specs.py",
-		"/home/saket/Downloads/grammars-infer-grammar-8676bc96c578-old/Game2/grammar_in/ParseTableIn.py",
 		"/home/saket/Desktop/spojpermut.cpp",
 		"/home/saket/Desktop/t.tex",
 		"/home/saket/Desktop/project/game_src/game/admin.py",
 		"/home/saket/Desktop/test.py",
-		"/home/saket/Desktop/project/game_src/game/views.py",
 		"/home/saket/Desktop/untitled.sty",
 		"/home/saket/Report/feature.py",
 		"/home/saket/Report/predict.py",
@@ -311,7 +368,7 @@
 	],
 	"find":
 	{
-		"height": 26.0
+		"height": 36.0
 	},
 	"find_in_files":
 	{
@@ -325,6 +382,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"threshold",
 			"print"
 		],
 		"highlight": true,
@@ -352,15 +410,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 9944,
+						"buffer_size": 10005,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								9493,
-								9493
+								3421,
+								3421
 							]
 						],
 						"settings":
@@ -369,7 +427,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 5040.0,
+						"translation.y": 1726.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
@@ -377,11 +435,11 @@
 				},
 				{
 					"buffer": 1,
-					"file": "game/models.py",
-					"semi_transient": true,
+					"file": "game/forms.py",
+					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 669,
+						"buffer_size": 4179,
 						"regions":
 						{
 						},
@@ -398,7 +456,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 285.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,

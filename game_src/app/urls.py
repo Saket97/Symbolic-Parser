@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
-from game.views import fill_response,ParseTable,FirstFollow
+from game.views import fill_response,ParseTable,FirstFollow,index
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^game/$', fill_response),
     url(r'^parse/$', ParseTable),
     url(r'^firstfollow/$', FirstFollow),
+    url(r'^index/$', index),
 
 ]
 if settings.DEBUG:

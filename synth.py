@@ -15,6 +15,7 @@ def main():
 	sp_time = calendar.timegm(time.gmtime())
 	print "Initializing SP..."
 	SP = {}
+	SP['dictconst'] = {}
 	initialize_solver(SP)
 	SP['constraints'].set(unsat_core=True)
 
@@ -29,6 +30,7 @@ def main():
 		sn_time = calendar.timegm(time.gmtime())
 		print "Initializing SN..."
 		SN = {}
+		SN['dictconst'] = {}
 		initialize_solver(SN)
 		add_reject_strings(SN)
 		print "SN initialized in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sn_time)))
@@ -60,6 +62,20 @@ def main():
 			tmp = SP['constraints'].unsat_core()
 			SP['unsat'] = tmp
 			print 'unsat_core',tmp
+			A = []
+			B = []
+			C = []
+			for constraint in tmp:
+				constraint = str(constraint)
+				C.append(SP["dictconst"][constraint])
+
+				if 'input' in constraint:
+					B.append(SP["dictconst"][constraint])
+				else:
+					A.append(SP['dictconst'][constraint])
+			# print binary_interpolant(And(B),And(A))
+			print sequence_interpolant(C)
+			
 			print "No such grammar possible under present constraints"
 			break
 

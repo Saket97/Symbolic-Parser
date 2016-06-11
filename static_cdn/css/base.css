@@ -1,6 +1,25 @@
-p{
-	color: black;
+
+
+/*header{
+	text-align: center;
+	text-shadow: transparent;
+	font-size: 30;
+	font-synthesis: unset;
+}*/
+.my_custom_class{
+	width:40px;
+	background-color: #4169E1;
 }
-body{
-	background-color: orange
+/*p{
+	background-image: url("{% static "images/background-learner.jpg" %}");
+	background-size: 100%;
+	background-repeat: no-repeat;
+	/*background-color: orange;
+}*/
+#rcorners1{
+	border-radius: 25px;
+	    border: 2px solid #73AD21;
+	    padding: 20px; 
+	    width:50%;
 }
+

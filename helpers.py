@@ -2,7 +2,7 @@ from z3 import *
 from solver import *
 from init import *
 from itertools import *
-
+constraint_no = 0
 def req_rules(solver):
 
 	m = solver["model"]
@@ -116,7 +116,6 @@ def assert_grammar_soft(S_target,S_source,req=False):
 
 	s = S_target["constraints"]
 	assumptions = []
-
 	num_rules = config['num_rules']
 	num_nonterms = config['num_nonterms']
 	num_terms = config['num_terms']

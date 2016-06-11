@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="http://iitk.ac.in" target="_blank">
+            <img src="{% static "images/fevicon.png" %}" width="50px" height="50px" alt="" />
+            <a class="navbar-brand" href="http://iitk.ac.in" target="_blank">Indian Institute of Technology Kanpur</a>
+
+          </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Settings</a></li>
+            <li><a href="#">Profile</a></li>
+            <li><a href="#">Help</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <br><br>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Analytics</a></li>
+          </ul>
+          <ul class="nav nav-sidebar">
+            <li  id="no1" class="active"><a href="">Question 1</a></li>
+            <li id="no2"><a href="">Question 2</a></li>
+            <li><a href="#">Question 3</a></li>
+            <li><a href="#">Question 4</a></li>
+            <li><a href="#">Question 5</a></li>
+            <li><a href="#">Question 6</a></li>
+            <li><a href="#">Question 7</a></li>
+            <li><a href="#">Question 8</a></li>
+          </ul>
+           
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <large><h1 class="page-header" align="center">Heading</h1></large>
+    </div>
+
+  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main>
+  <div class="container" align="center">
+    <h3>Table Header</h3>
+    <br>
+    <p>Contextual classes can be used to color table rows or table cells. The classes that can be used are: .active, .success, .info, .warning, and .danger.</p>            
+    <table class="table" style="width:75%">
+      <thead>
+        <tr>
+          <th>Firstname</th>
+          <th>Lastname</th>
+          <th>Email</th>
+          <th>usernamee</th>
+          <th>something</th>
+          <th>else</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="success">
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+        </tr>
+        <tr class="danger">
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+        </tr>
+        <tr class="info">
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+        </tr>
+        <tr class="success">
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+        </tr>
+        <tr class="danger">
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+        </tr>
+        <tr class="info">
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+          <td><input type=text maxlength="1" size="1"></td>
+        </tr>
+      </tbody>
+    </table>
+  <!-- Small modal -->
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-sm">Submit</button>
+
+    <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      ...
+    </div>
+    </div>
+    <hr>
+    </div>
+    <hr>
+    
+{% endblock content %}

@@ -1,15 +1,19 @@
-<table>
+<table class="table" style="width:50%">
 <caption>FOLLOW SET TABLE</caption>
+<thead>
 <tr>
 <th>NonTerm</th>
 {% for t in follow_tokens %}
 	<th>{{t}}</th>
 {% endfor %}
-
+</tr>
+</thead>
+<tbody>
+<tr>
 	{% for field in followform %}
 	
 		{% if forloop.counter0|divisibleby:length %}
-			</tr><tr>
+			</tr><tr class="success">
 		{% endif %}
 	
 		<td>{{ field }} </td>
@@ -17,6 +21,6 @@
 	{% endfor %}
 
 	</tr>
-
+</tbody>
 
 </table>

@@ -14,6 +14,8 @@ class Game(models.Model):
 
 
 class questions(models.Model):
+	
+	name = models.CharField(null = False, max_length=15, default="question")
 	grammar = models.TextField(null = True)
 	parsetable = models.TextField(null = True)
 	firstset = models.TextField(null = True)
