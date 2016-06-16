@@ -1,9 +1,35 @@
-{% extends "base.html" %}
-{% load staticfiles %}
-{% block content %}
+<!DOCTYPE HTML>
+<!--
+	Directive by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+	{% load static %}
+		<title>Compiler Game</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<link rel="stylesheet" href="{% static "assets/css/main.css" %}" />
+		<!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+		<style>
+			input[type=text] {
+				/*background-color:white;*/
+				color:white;
+			}
+			input[type=password] {
+				/*background-color:white;*/
+				color:white;
+			}
+		</style>
+	</head>
+	<body>
 
-  <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container-fluid">
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
             <span class="sr-only">Toggle navigation</span>
@@ -11,128 +37,188 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a href="http://iitk.ac.in" target="_blank">
-            <img src="{% static "images/fevicon.png" %}" width="50px" height="50px" alt="" />
-            <a class="navbar-brand" href="http://iitk.ac.in" target="_blank">Indian Institute of Technology Kanpur</a>
-
-          </a>
+          <a class="navbar-brand" href="http://iitk.ac.in" target=_blank>Indian Institute of Technology Kanpur</a>	
+          <img src='{% static "images/fevicon.png" %}' height="50px" width="50px"></img>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="#">Dashboard</a></li>
-            <li><a href="#">Settings</a></li>
-            <li><a href="#">Profile</a></li>
-            <li><a href="#">Help</a></li>
-          </ul>
-        </div>
+          <form class="navbar-form navbar-right">
+            <div class="form-group">
+              <input type="text" placeholder="Email" class="form-control" >
+            </div>
+            <div class="form-group">
+              <input type="password" placeholder="Password" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-success">Sign in</button>
+          </form>
+        </div><!--/.navbar-collapse -->
       </div>
     </nav>
 
-    <br><br>
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-            <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
-            <li><a href="#">Reports</a></li>
-            <li><a href="#">Analytics</a></li>
-          </ul>
-          <ul class="nav nav-sidebar">
-            <li  id="no1" class="active"><a href="">Question 1</a></li>
-            <li id="no2"><a href="">Question 2</a></li>
-            <li><a href="#">Question 3</a></li>
-            <li><a href="#">Question 4</a></li>
-            <li><a href="#">Question 5</a></li>
-            <li><a href="#">Question 6</a></li>
-            <li><a href="#">Question 7</a></li>
-            <li><a href="#">Question 8</a></li>
-          </ul>
-           
-        </div>
-      </div>
-    </div>
-    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <large><h1 class="page-header" align="center">Heading</h1></large>
-    </div>
+		<!-- Header -->
+			<div id="header">
+				<span class="logo icon fa-puzzle-piece"></span>
+				<h1>Hi. This is for practice.</h1>
+				<p>A game where you can master your LL(1) grammar skills.
+				<br />
+				</p>
+			</div>
 
-  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main>
-  <div class="container" align="center">
-    <h3>Table Header</h3>
-    <br>
-    <p>Contextual classes can be used to color table rows or table cells. The classes that can be used are: .active, .success, .info, .warning, and .danger.</p>            
-    <table class="table" style="width:75%">
-      <thead>
-        <tr>
-          <th>Firstname</th>
-          <th>Lastname</th>
-          <th>Email</th>
-          <th>usernamee</th>
-          <th>something</th>
-          <th>else</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="success">
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-        </tr>
-        <tr class="danger">
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-        </tr>
-        <tr class="info">
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-        </tr>
-        <tr class="success">
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-        </tr>
-        <tr class="danger">
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-        </tr>
-        <tr class="info">
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-          <td><input type=text maxlength="1" size="1"></td>
-        </tr>
-      </tbody>
-    </table>
-  <!-- Small modal -->
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-sm">Submit</button>
+		<!-- Main -->
+			<div id="main">
 
-    <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
-    <div class="modal-dialog modal-sm">
-    <div class="modal-content">
-      ...
-    </div>
-    </div>
-    <hr>
-    </div>
-    <hr>
-    
-{% endblock content %}
+				<header class="major container 75%">
+					<h2>We conduct experiments that
+					<br />
+					may or may not seriously
+					<br />
+					break the universe</h2>
+					<!--
+					<p>Tellus erat mauris ipsum fermentum<br />
+					etiam vivamus nunc nibh morbi.</p>
+					-->
+				</header>
+
+				<div class="box alt container">
+					<section class="feature left">
+						<a href="#" class="image icon"><img src="{% static "images/info.jpg" %}" alt="" /></a>
+						<div class="content">
+							<h3>About</h3>
+							<p>Vitae natoque dictum etiam semper magnis enim feugiat amet curabitur tempor orci penatibus. Tellus erat mauris ipsum fermentum etiam vivamus eget. Nunc nibh morbi quis fusce lacus.</p>
+						</div>
+					</section>
+					<section class="feature right">
+						<a href="#" class="image icon"><img src="{% static "images/compsc.jpg" %}" alt="..." height="100px" width="100px" /></a>
+						<div class="content">
+							<h3>Game 1</h3>
+							<p>Vitae natoque dictum etiam semper magnis enim feugiat amet curabitur tempor orci penatibus. Tellus erat mauris ipsum fermentum etiam vivamus eget. Nunc nibh morbi quis fusce lacus.</p>
+							<a href="/parse/Question1" class="btn btn-success btn-lg">Play</a>
+						</div>
+					</section>
+					<section class="feature left">
+						<a href="#" class="image icon"><img src="{% static "images/big-data.jpg" %}" alt="..." height="100px" width="100px" /></a>
+						<div class="content">
+							<h3>Game 2</h3>
+							<p>Vitae natoque dictum etiam semper magnis enim feugiat amet curabitur tempor orci penatibus. Tellus erat mauris ipsum fermentum etiam vivamus eget. Nunc nibh morbi quis fusce lacus.</p>
+							<a href="/firstfollow/Question1" class="btn btn-success btn-lg">Play</a>
+
+						</div>
+					</section>
+				</div>
+
+				
+
+				<footer class="major container 75%">
+					<h2>CREDITS</h2>
+					<br>
+					<!-- <p>Vitae natoque dictum etiam semper magnis enim feugiat amet curabitur tempor orci penatibus. Tellus erat mauris ipsum fermentum etiam vivamus.</p>
+					<ul class="actions">
+						<li><a href="#" class="button">Join our crew</a></li>
+					</ul> -->
+					<div class="row">
+
+						<div class="col-sm-6 col-md-4">
+							<div class="thumbnail">
+	  							<img src="{% static "images/face.jpeg" %}" alt="...">
+	  							<div class="caption">
+	    							<h3>Name</h3>
+	    							<p>blah blah blah......</p>
+	    							<p><a href="#" class="btn btn-primary" role="button">Get in Touch</a> </p>
+	  							</div>
+							</div>
+						</div>
+						<div class="col-sm-6 col-md-4 pull-right">
+							<div class="thumbnail">
+	  							<img src="{% static "images/face_dhruv.jpg" %}" alt="...">
+	  							<div class="caption">
+	    							<h3>Name</h3>
+	    							<p>blah blah blah......</p>
+	    							<p><a href="#" class="btn btn-primary" role="button">Get in Touch</a> </p>
+	  							</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-6 col-md-4">
+							<div class="thumbnail">
+	  							<img src="{% static "images/face.jpeg" %}" alt="...">
+	  							<div class="caption">
+	    							<h3>Name</h3>
+	    							<p>blah blah blah......</p>
+	    							<p><a href="#" class="btn btn-primary" role="button">Get in Touch</a> </p>
+	  							</div>
+							</div>
+						</div>
+						<div class="col-sm-6 col-md-4 pull-right">
+							<div class="thumbnail">
+	  							<img src="{% static "images/face.jpeg" %}" alt="...">
+	  							<div class="caption">
+	    							<h3>Name</h3>
+	    							<p>blah blah blah......</p>
+	    							<p><a href="#" class="btn btn-primary" role="button">Get in Touch</a> </p>
+	  							</div>
+							</div>
+						</div>
+					</div>
+				</footer>
+
+			</div>
+
+		
+<!-- Footer -->
+			<div id="footer">
+				<div class="container 75%">
+
+					<header class="major last">
+						<h2>Questions or comments?</h2>
+					</header>
+
+					<p>Vitae natoque dictum etiam semper magnis enim feugiat amet curabitur tempor
+					orci penatibus. Tellus erat mauris ipsum fermentum etiam vivamus.</p>
+
+					<form method="post" action="#">
+						<div class="row">
+							<div class="6u 12u(mobilep)">
+								<input type="text" name="name" placeholder="Name" />
+							</div>
+							<div class="6u 12u(mobilep)">
+								<input type="email" name="email" placeholder="Email" />
+							</div>
+						</div>
+						<div class="row">
+							<div class="12u">
+								<textarea name="message" placeholder="Message" rows="6"></textarea>
+							</div>
+						</div>
+						<div class="row">
+							<div class="12u">
+								<ul class="actions">
+									<li><input type="submit" value="Send Message" /></li>
+								</ul>
+							</div>
+						</div>
+					</form>
+
+					<ul class="icons">
+						<li><a href="#" class="icon fa-twitter"><span class="label">Twitter</span></a></li>
+						<li><a href="#" class="icon fa-facebook"><span class="label">Facebook</span></a></li>
+						<li><a href="#" class="icon fa-instagram"><span class="label">Instagram</span></a></li>
+						<li><a href="#" class="icon fa-github"><span class="label">Github</span></a></li>
+						<li><a href="#" class="icon fa-dribbble"><span class="label">Dribbble</span></a></li>
+					</ul>
+
+					<ul class="copyright">
+						<li>&copy; Untitled. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li> 
+					</ul>
+
+				</div>
+			</div>
+
+		<!-- Scripts -->
+			<script src="{% static "assets/js/jquery.min.js" %}"></script>
+			<script src="{% static "assets/js/skel.min.js" %}"></script>
+			<script src="{% static "assets/js/util.js" %}"></script>
+			<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
+			<script src="{% static "assets/js/main.js" %}"></script>
+
+	</body>
+</html>
