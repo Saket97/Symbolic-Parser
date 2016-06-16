@@ -6,7 +6,7 @@ import json
 from django import forms
 # from ...input_specs import * 
 # from ...synth import * 
-from .models import Game
+from .models import Game,questions
 from .forms import GameForm,GrammarForm,TableForm,grammar,table,first,follow
 from synth import *
 from itertools import *
@@ -108,14 +108,25 @@ def fill_response(request):
 	return render(request,'game_form.html',context)
 
 
-def ParseTable(request):
+def ParseTable(request, username):
 
-	original_grammar = [['S', '(', 'S',')','S'], ['S', 'eps', 'eps','eps','eps']]
+	question_instance = questions.objects.get(name=username)
+	original_grammar = json.loads(question_instance.grammar)
+	print "original_grammar: ",original_grammar
+	# original_grammar = [['S', '(', 'S',')','S'], ['S', 'eps', 'eps','eps','eps']]
 	# data = serializers.serialize("xml",original_grammar)
 	# gameinstance = Game()
 	# gameinstance.Response4 = json.dumps(original_grammar)
-	parse_table = [OrderedDict([('non_term','S'),('(',1),(')',2),('$',2)])]
-	ptable_entries = ['non_term','(',')','$']
+	# parse_table = [OrderedDict([('non_term','S'),('(',1),(')',2),('$',2)])]
+	# ptable_entries = ['non_term','(',')','$']
+	ptable_entries = []
+	parse_table = json.loads(question_instance.parsetable)
+	for i in range(len(parse_table)):
+		parse_table[i] = OrderedDict(parse_table[i])
+	for k,t in parse_table[0].items():
+		ptable_entries.append(str(k))
+	print "parse_table: ",parse_table
+
 
 	n_rules = len(original_grammar)
 	size_rules = len(original_grammar[0])-1
@@ -135,7 +146,7 @@ def ParseTable(request):
 		if k == 'non_term':
 			continue;
 		else:
-			tokens.append(k)
+			tokens.append(str(k))
 	########################################################
 	
 	takingParseTableAsInput = False
@@ -146,7 +157,8 @@ def ParseTable(request):
 		parseTableData = {}
 		for i in range(len(parse_table)):
 			for k,t in parse_table[i].items():
-				parseTableData['%d%s'%(i,k)] = t
+				parseTableData['%d%s'%(i,str(k))] = t
+		print "ptable data: ",parseTableData
 
 	###########################################################################################################
 	
@@ -175,17 +187,20 @@ def ParseTable(request):
 			for r in range(n_rules):
 				tmp = []
 				var = 'X%d'%(r*total_line+1)
-				tmp.append(gform.cleaned_data[var])
+				tmp.append(str(gform.cleaned_data[var]))
 				for i in range(1,size_rules+1):
 					var = 'X%d'%(r*total_line+1+i)
-					tmp.append(gform.cleaned_data[var])
+					tmp.append(str(gform.cleaned_data[var]))
 				ogrammar.append(tmp)
 
 			for i in range(n_table):
 				tmp = OrderedDict()
 				for k in ptable_entries:
 					var = '%d%s'%(i,k)
-					tmp[k] = tform.cleaned_data[var]
+					if k=="non_term":
+						tmp[str(k)] = str(tform.cleaned_data[var])
+					else:
+						tmp[str(k)] = int(tform.cleaned_data[var])
 				table_parse.append(tmp)
 			answer = main(ogrammar,table_parse,parsetablegrammar = True)
 			if answer[1]:
@@ -205,15 +220,23 @@ def ParseTable(request):
 			gform = grammar()
 			tform = table(parseTableData)
 	
-	
-	context = {'tokens':tokens,'length':len(parse_table[0]),'tform':tform,'gform':gform,'total_line':total_line,'accept_strings':accept_strings,'reject_strings':reject_strings,'parse_table':parse_table}
+	qset = questions.objects.all()
+	context = {'qset':qset,'tokens':tokens,'length':len(parse_table[0]),'tform':tform,'gform':gform,'total_line':total_line,'accept_strings':accept_strings,'reject_strings':reject_strings,'parse_table':parse_table}
 	# pdb.set_trace()
 	return render(request,"parse.html",context)
 
-def FirstFollow(request):
-	original_grammar = [['S', '(', 'S',')','S'], ['S', 'eps', 'eps','eps','eps']]
+def FirstFollow(request, username):
+	question_instance = questions.objects.get(name=username)
+	original_grammar = json.loads(question_instance.grammar)
+	# original_grammar = [['S', '(', 'S',')','S'], ['S', 'eps', 'eps','eps','eps']]
 	first_set = [OrderedDict([('non_term','S'),('(',1), (')',0), ('eps',1)])]
 	follow_set = [OrderedDict([('non_term','S'), ('(',0), (')',1), ('$',1)])]
+	first_set = json.loads(question_instance.firstset)
+	for i in range(len(first_set)):
+		first_set[i] = OrderedDict(first_set[i])
+	follow_set = json.loads(question_instance.followset)
+	for i in range(len(follow_set)):
+		follow_set[i] = OrderedDict(follow_set[i])
 
 	first_set_data = {}
 	follow_set_data = {}
@@ -225,7 +248,7 @@ def FirstFollow(request):
 	for k,t in first_set[0].items():
 		if k == 'non_term':
 			continue
-		first_tokens.append(k)
+		first_tokens.append(str(k))
 	###################################################################
 
 	########## follow set table header ################################
@@ -233,19 +256,26 @@ def FirstFollow(request):
 	for k,t in follow_set[0].items():
 		if k=='non_term':
 			continue
-		follow_tokens.append(k)
+		follow_tokens.append(str(k))
 	###################################################################
 	########## binding data to first/follow set form ###################
 
 	for i in range(len(first_set)):
 		for k,t in first_set[i].items():
 			var = '%d%sfirst'%(i,k)
-			first_set_data[var] = t
+			if k=="non_term":
+				first_set_data[str(var)] = str(t)
+			else:
+				first_set_data[str(var)] = int(t)
 	
 	for i in range(len(follow_set)):
 		for k,t in follow_set[i].items():
 			var = '%d%sfollow'%(i,k)
-			follow_set_data[var] = t
+			if k == 'non_term':
+				follow_set_data[str(var)] = str(t)
+			else:
+				follow_set_data[str(var)] = int(t)
+
 
 	####################################################################	
 
@@ -272,7 +302,7 @@ def FirstFollow(request):
 			for i in range(n_rules):
 				tmp = []
 				for j in range(size_rules+1):
-					tmp.append(gform.cleaned_data['X%d'%(i*total_line+j+1)])
+					tmp.append(str(gform.cleaned_data['X%d'%(i*total_line+j+1)]))
 				ogrammar.append(tmp)
 			#########################################
 
@@ -280,7 +310,11 @@ def FirstFollow(request):
 			for i in range(len(first_set)):
 				tmp = OrderedDict()
 				for k,t in first_set[i].items():
-					tmp[k] = firstform.cleaned_data['%d%sfirst'%(i,k)]
+					if k == 'non_term':
+						tmp[str(k)] = str(firstform.cleaned_data['%d%sfirst'%(i,k)])
+					else:
+						tmp[str(k)] = int(firstform.cleaned_data['%d%sfirst'%(i,k)])
+
 				set_first.append(tmp)
 			print "first set in views: ",set_first
 			print "first set form S(:",firstform.cleaned_data['0(first']
@@ -290,7 +324,11 @@ def FirstFollow(request):
 			for i in range(len(follow_set)):
 				tmp = OrderedDict()
 				for k,t in follow_set[i].items():
-					tmp[k] = followform.cleaned_data['%d%sfollow'%(i,k)]
+					if k == 'non_term':
+						tmp[str(k)] = str(followform.cleaned_data['%d%sfollow'%(i,k)])
+					else:
+						tmp[str(k)] = int(followform.cleaned_data['%d%sfollow'%(i,k)])
+
 				set_follow.append(tmp)
 
 			##########################################
@@ -309,8 +347,8 @@ def FirstFollow(request):
 		firstform = first(first_set_data)
 		followform = follow(follow_set_data)
 		# pdb.set_trace()
-
-	context = {'gform':gform, 'total_line':total_line, 'firstform':firstform,'followform':followform, 'length':len(first_set[0]), 'first_tokens':first_tokens, 'follow_tokens':follow_tokens}
+	qset = questions.objects.all()
+	context = {'qset':qset,'gform':gform, 'total_line':total_line, 'firstform':firstform,'followform':followform, 'length':len(first_set[0]), 'first_tokens':first_tokens, 'follow_tokens':follow_tokens}
 	return render(request, "firstfollow.html", context)
 
 def index(request):

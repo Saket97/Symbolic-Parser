@@ -17,7 +17,7 @@ def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules
 	vars = solver['vars']
 	i = 1
 	for r in range(num_rules):
-		s.assert_and_track(vars['x%d'%(r*(size_rules+1)+1)] == vars[view_assign[original_grammar[r][0]]], '%d'%(r*(size_rules+1)+1))
+		s.assert_and_track(vars['x%d'%(r*(size_rules+1)+1)] == vars[view_assign[str(original_grammar[r][0])]], '%d'%(r*(size_rules+1)+1))
 		
 		print('x%d %s %d'%((r*(size_rules+1)+1),view_assign[original_grammar[r][0]], i))
 		i += 1
@@ -37,7 +37,7 @@ def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules
 			else:
 				if (r*(size_rules+1)+j+1) == 13:
 					continue
-				s.assert_and_track(vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[original_grammar[r][j]]], '%d'%(r*(size_rules+1)+j+1))
+				s.assert_and_track(vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[str(original_grammar[r][j])]], '%d'%(r*(size_rules+1)+j+1))
 				
 				print('x%d %s %d'%((r*(size_rules+1)+j+1),view_assign[original_grammar[r][j]], i))
 				i += 1
@@ -57,9 +57,9 @@ def add_parse_table_constraints(solver,parse_table,view_assign):
 			print t
 			if t:	
 				# pass
-				s.assert_and_track(functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[k]]) == vars['rule%d'%(t)],'%s %s parse table error'%(non_terminal,k))
+				s.assert_and_track(functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[str(k)]]) == vars['rule%d'%(t)],'%s %s parse table error'%(non_terminal,k))
 			else:
-				s.assert_and_track(functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[k]]) == 0,'%s %s parse table error'%(non_terminal,k))
+				s.assert_and_track(functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[str(k)]]) == 0,'%s %s parse table error'%(non_terminal,k))
 
 def add_first_set_constraints(solver, first_set, follow_set, view_assign):
 	s = solver["constraints"]
@@ -74,9 +74,9 @@ def add_first_set_constraints(solver, first_set, follow_set, view_assign):
 			if k == 'non_term':
 				continue;
 			if t != 0:
-				s.assert_and_track(functions["first"](vars[view_assign[non_terminal]], vars[view_assign[k]]), 'first set %s %s'%(non_terminal,k))
+				s.assert_and_track(functions["first"](vars[view_assign[non_terminal]], vars[view_assign[str(k)]]), 'first set %s %s'%(non_terminal,k))
 			else:
-				s.assert_and_track(Not(functions["first"](vars[view_assign[non_terminal]], vars[view_assign[k]])), 'first set %s %s'%(non_terminal,k))
+				s.assert_and_track(Not(functions["first"](vars[view_assign[non_terminal]], vars[view_assign[str(k)]])), 'first set %s %s'%(non_terminal,k))
 
 	for i in range(len(follow_set)):
 		non_terminal = str(follow_set[i]['non_term'])
@@ -84,9 +84,9 @@ def add_first_set_constraints(solver, first_set, follow_set, view_assign):
 			if k == 'non_term':
 				continue;
 			if t != 0:
-				s.assert_and_track(functions["follow"](vars[view_assign[non_terminal]], vars[view_assign[k]]), 'follow set %s %s'%(non_terminal, k))
+				s.assert_and_track(functions["follow"](vars[view_assign[non_terminal]], vars[view_assign[str(k)]]), 'follow set %s %s'%(non_terminal, k))
 			else:
-				s.assert_and_track(Not(functions["follow"](vars[view_assign[non_terminal]], vars[view_assign[k]])), 'follow set %s %s'%(non_terminal, str(k)))
+				s.assert_and_track(Not(functions["follow"](vars[view_assign[non_terminal]], vars[view_assign[str(k)]])), 'follow set %s %s'%(non_terminal, str(k)))
 
 
 

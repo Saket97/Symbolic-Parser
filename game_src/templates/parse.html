@@ -41,12 +41,10 @@
           <ul class="nav nav-sidebar">
             <li  id="no1" class="active"><a href="">Question 1</a></li>
             <li id="no2"><a href="">Question 2</a></li>
-            <li><a href="#">Question 3</a></li>
-            <li><a href="#">Question 4</a></li>
-            <li><a href="#">Question 5</a></li>
-            <li><a href="#">Question 6</a></li>
-            <li><a href="#">Question 7</a></li>
-            <li><a href="#">Question 8</a></li>
+  
+            {% for question in qset %}
+            <li><a href="/parse/{{question.name}}">{{question.name}}</a></li>
+            {% endfor %}
           </ul>
            
         </div>

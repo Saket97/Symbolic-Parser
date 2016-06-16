@@ -22,8 +22,8 @@ from django.conf import settings
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^game/$', fill_response),
-    url(r'^parse/$', ParseTable),
-    url(r'^firstfollow/$', FirstFollow),
+    url(r'^parse/(?P<username>[\w.@+-]+)/$', ParseTable),
+    url(r'^firstfollow/(?P<username>[\w.@+-]+)/$', FirstFollow),
     url(r'^index/$', index),
 
 ]

@@ -22,6 +22,6 @@ class questions(models.Model):
 	followset = models.TextField(null = True)
 
 	def __unicode__(self):
-		return self.id
+		return self.name
 
 
