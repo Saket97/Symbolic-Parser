@@ -19,17 +19,26 @@ def specs():
 	return accept_strings,reject_strings,config
 
 def find_original_grammar():
-	original_grammar = [['S', '(', 'S', ')', ')'], ['S', 'eps', 'eps', 'eps', 'eps']]
+	original_grammar = [['S', '(', 'S', ')', 'S'], ['S', 'eps', 'eps', 'eps', 'eps']]
 	# return get_original_grammar()
 	return original_grammar
 
 def get_parse_table():
-	parse_table = [OrderedDict([('non_term','S'),('(',1),(')',2),('$',2)])]
+	parse_table = [{'non_term':'S', '(':1,')':2,'$':2}]
 	return parse_table
 
 def nums():
-	num_vars = {'num_rules':2, 'size_rules':4}
+	original_grammar = find_original_grammar()
+	num_vars = {'num_rules':len(original_grammar), 'size_rules':len(original_grammar[0])-1}
 	return num_vars
+
+def get_first_set():
+	first_set = [{'non_term':'S','(':1,")":0,'eps':1}]
+	return first_set
+
+def get_follow_set():
+	follow_set = [{'non_term':'S','(':0,")":1,'$':1}]
+	return follow_set
 
 accept_strings = ["( )","( ) ( )", "( ( ) )","( ) ( ( ) )"]
 reject_strings = ["(",")","( ) ("]

@@ -5,12 +5,47 @@ from helpers import *
 from solver import *
 from test import *
 
-
+from collections import OrderedDict
 import calendar
 import time
 import datetime
+from itertools import *
 
 #SP instance
+def analyse_unsat(u_core, solver):
+	category = OrderedDict([('first_set_first_Subset',0), ('first_set_eps_subset',0) ,('eps_first_set_rule',0),('next_first_in_follow',0),('$_in_follow_N1',0),('follow_lhs_in_rhs',0),('parse_table_first',0),('parse_table_follow',0)])
+	for constraint in u_core:
+		if 'first_set_first_Subset' in str(constraint):# A -> B C first B < First A
+			category['first_set_first_Subset'] += 1
+		else:
+			if 'first_set_eps_subset' in str(constraint):# A -> B C first B has eps then first C < first A
+				category['first_set_eps_subset'] += 1
+			else:
+
+				if 'eps_first_set_rule' in str(constraint): # A -> B C first B and C has eps then First A has eps
+					category['eps_first_set_rule'] += 1
+				else:
+					if 'next_first_in_follow' in str(constraint): # A -> B C D if firs C has eps then first D in follow B
+						category['next_first_in_follow'] += 1
+					else:
+						if '$_in_follow_N1' in str(constraint):
+							category['$_in_follow_N1'] += 1
+						else:
+							if 'follow_lhs_in_rhs' in str(constraint):
+								category['follow_lhs_in_rhs'] += 1
+							else:
+								if 'parse_table_first' in str(constraint):
+									category['parse_table_first'] += 1
+								else:
+									if 'parse_table_follow' in str(constraint):
+										category['parse_table_follow'] += 1
+
+	for k,t in category.items():
+		print k," : ",t
+
+
+
+
 def main():
 	sp_time = calendar.timegm(time.gmtime())
 	print "Initializing SP..."
@@ -65,17 +100,18 @@ def main():
 			A = []
 			B = []
 			C = []
-			for constraint in tmp:
-				constraint = str(constraint)
-				C.append(SP["dictconst"][constraint])
+			# for constraint in tmp:
+			# 	constraint = str(constraint)
+			# 	C.append(SP["dictconst"][constraint])
 
-				if 'input' in constraint:
-					B.append(SP["dictconst"][constraint])
-				else:
-					A.append(SP['dictconst'][constraint])
+			# 	if 'input' in constraint:
+			# 		B.append(SP["dictconst"][constraint])
+			# 	else:
+			# 		A.append(SP['dictconst'][constraint])
 			# print binary_interpolant(And(B),And(A))
-			print sequence_interpolant(C)
-			
+			# print sequence_interpolant(C)
+			# print "proof: ",SP["constraints"].proof()
+			analyse_unsat(tmp, SP)
 			print "No such grammar possible under present constraints"
 			break
 

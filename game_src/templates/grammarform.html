@@ -9,14 +9,14 @@ Reject Strings = {{ reject_strings }}
 		{{ fields }} 
 	{% endif %}
 {% endfor %} -->
-
-<table class="table" style="width:50%">
-<caption>GRAMMAR</caption>
+<div class="table-responsive" id="corners2">
+<table class="table" >
+<caption><font color="#F0F8FF">GRAMMAR</font></caption>
 <tbody>
 <tr>
 	{% for fields in gform %}
 	{% if forloop.counter0|divisibleby:total_line %}
-		</tr><tr class="success"> <td><pre>{{ fields }}        -></pre></td>
+		</tr><tr > <td><pre>{{ fields }}    -></pre></td>
 	{% else %}
 		<td>{{ fields }}</td> 
 	{% endif %}
@@ -25,3 +25,4 @@ Reject Strings = {{ reject_strings }}
 </tbody>
 
 </table>
+</div>

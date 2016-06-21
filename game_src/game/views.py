@@ -219,7 +219,8 @@ def ParseTable(request, username):
 		else:
 			gform = grammar()
 			tform = table(parseTableData)
-	
+	accept_strings = ["( )","( ) ( )", "( ( ) )","( ) ( ( ) )"]
+	reject_strings = ["(",")","( ) ("]
 	qset = questions.objects.all()
 	context = {'qset':qset,'tokens':tokens,'length':len(parse_table[0]),'tform':tform,'gform':gform,'total_line':total_line,'accept_strings':accept_strings,'reject_strings':reject_strings,'parse_table':parse_table}
 	# pdb.set_trace()
@@ -348,7 +349,9 @@ def FirstFollow(request, username):
 		followform = follow(follow_set_data)
 		# pdb.set_trace()
 	qset = questions.objects.all()
-	context = {'qset':qset,'gform':gform, 'total_line':total_line, 'firstform':firstform,'followform':followform, 'length':len(first_set[0]), 'first_tokens':first_tokens, 'follow_tokens':follow_tokens}
+	accept_strings = ["( )","( ) ( )", "( ( ) )","( ) ( ( ) )"]
+	reject_strings = ["(",")","( ) ("]
+	context = {'qset':qset,'gform':gform, 'total_line':total_line, 'firstform':firstform,'followform':followform, 'length':len(first_set[0]), 'first_tokens':first_tokens, 'follow_tokens':follow_tokens, 'accept_strings':accept_strings, 'reject_strings':reject_strings}
 	return render(request, "firstfollow.html", context)
 
 def index(request):

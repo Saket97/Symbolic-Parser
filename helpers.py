@@ -111,10 +111,14 @@ def print_grammar(solver):
 				elif symbolValue == num_nonterms + num_terms:
 					print "eps\t",
 			print ""
+	# print "follow: ",m.evaluate(m_funs["follow"](m_vars['N3'], m_vars['dol']))
+	# print "follow: ",m.evaluate(m_funs["follow"](m_vars['N1'], m_vars['dol']))
+
 
 def assert_grammar_soft(S_target,S_source,req=False):
 
 	s = S_target["constraints"]
+	constdict = S_target["dictconst"]
 	assumptions = []
 	num_rules = config['num_rules']
 	num_nonterms = config['num_nonterms']
@@ -207,6 +211,7 @@ def add_bad_grammar(S_target,S_source,iterationNo):
 def add_accept_string(solver,accept_string):
 
 	s = solver["constraints"]
+	constdict = solver["dictconst"]
 	vars = solver["vars"]
 	functions = solver["functions"]
 
@@ -226,8 +231,10 @@ def add_accept_string(solver,accept_string):
 	strNum = solver["num_strings"]
 	# Take input and construct the ip_str function
 	for j in range(len(accept_string)):
-		s.add(functions["ip_str"](strNum,j) == vars[accept_string[j]])
-	s.add(functions["ip_str"](strNum,len(accept_string))==vars["dol"])
+		s.assert_and_track(functions["ip_str"](strNum,j) == vars[accept_string[j]],'make_ipstr_strNum%d_pos%d'%(strNum,j))
+		constdict['make_ipstr_strNum%d_pos%d'%(strNum,j)] = functions["ip_str"](strNum,j) == vars[accept_string[j]]
+	s.assert_and_track(functions["ip_str"](strNum,len(accept_string))==vars["dol"], 'make_ipstr_strNum%d_pos%d'%(strNum,len(accept_string)	))
+	constdict['make_ipstr_strNum%d_pos%d'%(strNum,len(accept_string))] = functions["ip_str"](strNum,len(accept_string))==vars["dol"]
 
 	# Start parsing with N1 as the first symbol
 	s.add(functions["symbolAt"](strNum,1) == vars["N1"])
@@ -241,14 +248,15 @@ def add_accept_string(solver,accept_string):
 	# Do required number of steps
 	for i in range(expansion_constant*len(accept_string)):
 		single_step(solver,strNum,i+1)
-	s.add(functions["success"](strNum,expansion_constant*len(accept_string)))
-
+	s.assert_and_track(functions["success"](strNum,expansion_constant*len(accept_string)),'parsing_string%d_success'%(strNum))
+	constdict['parsing_string%d_success'%(strNum)] = functions["success"](strNum,expansion_constant*len(accept_string))
 
 def add_reject_strings(solver):
 
 	s = solver["constraints"]
 	vars = solver["vars"]
 	functions = solver["functions"]
+	constdict = solver["dictconst"]
 
 	assert("type" not in solver)
 	solver["type"] = "reject"
@@ -260,8 +268,10 @@ def add_reject_strings(solver):
 	# Take input and construct the ip_str function
 	for strNum in range(len(reject_list)):
 		for j in range(len(reject_list[strNum])):
-			s.add(functions["ip_str"](strNum,j) == vars[reject_list[strNum][j]])
-		s.add(functions["ip_str"](strNum,len(reject_list[strNum]))==vars["dol"])
+			s.assert_and_track(functions["ip_str"](strNum,j) == vars[reject_list[strNum][j]],'make_ipstr_reject_strNum%d_pos%d'%(strNum,j))
+			constdict['make_ipstr_reject_strNum%d_pos%d'%(strNum,j)] = functions["ip_str"](strNum,j) == vars[reject_list[strNum][j]]
+		s.assert_and_track(functions["ip_str"](strNum,len(reject_list[strNum]))==vars["dol"], 'make_ipstr_reject_strNum%d_pos%d'%(strNum,len(reject_list[strNum])))
+		constdict['make_ipstr_reject_strNum%d_pos%d'%(strNum,len(reject_list[strNum]))] = functions["ip_str"](strNum,len(reject_list[strNum]))==vars["dol"]
 
 	# Start parsing with N1 as the first symbol
 	for strNum in range(len(reject_list)):
@@ -283,7 +293,7 @@ def add_reject_strings(solver):
 			single_step(solver,strNum,i+1)
 		SuccessList.append(functions["success"](strNum,expansion_constant*len(reject_list[strNum])))
 
-	s.add(Or(SuccessList))
+	s.assert_and_track(Or(SuccessList), 'successful_parsing_reject_strings')
 
 ######################################################
 
@@ -303,6 +313,7 @@ def add_threshold(solver,unsat_core,threshold):
 def get_solution_optimize(SP):
 
 	i=0
+	s = SP["constraints"]
 	print "Adding string " + str(i+1)
 	accept_string=accept_list[0]
 	add_accept_string(SP,accept_string)

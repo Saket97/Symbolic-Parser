@@ -1,26 +1,28 @@
-<table class="table" style="width:50%">
-<caption>FOLLOW SET TABLE</caption>
-<thead>
-<tr>
-<th>NonTerm</th>
-{% for t in follow_tokens %}
-	<th>{{t}}</th>
-{% endfor %}
-</tr>
-</thead>
-<tbody>
-<tr>
-	{% for field in followform %}
-	
-		{% if forloop.counter0|divisibleby:length %}
-			</tr><tr class="success">
-		{% endif %}
-	
-		<td>{{ field }} </td>
+<div class="table-responsive" id="corners_follow">
+	<table class="table"  >
+		<thead>
+			<caption><font color="#F0F8FF">FOLLOW SET TABLE</font></caption>
+			<tr>
+				<th><font color="#F0F8FF">NonTerm</font></th>
+				{% for t in follow_tokens %}
+				<th><font color="#F0F8FF">{{t}}</font></th>
+				{% endfor %}
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				{% for field in followform %}
 
-	{% endfor %}
+				{% if forloop.counter0|divisibleby:length %}
+					</tr><tr >
+				{% endif %}
 
-	</tr>
-</tbody>
+					<td>{{ field }} </td>
 
-</table>
+				{% endfor %}
+
+			</tr>
+		</tbody>
+
+	</table>
+</div>

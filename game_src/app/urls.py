@@ -24,7 +24,7 @@ urlpatterns = [
     url(r'^game/$', fill_response),
     url(r'^parse/(?P<username>[\w.@+-]+)/$', ParseTable),
     url(r'^firstfollow/(?P<username>[\w.@+-]+)/$', FirstFollow),
-    url(r'^index/$', index),
+    url(r'$', index),
 
 ]
 if settings.DEBUG:

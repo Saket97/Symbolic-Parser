@@ -1,4 +1,4 @@
-from input_specs import *
+from input_specs8i1 import *
 
 def discover_tokens(strings):
 	tokens = []

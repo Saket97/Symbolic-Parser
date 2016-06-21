@@ -1,11 +1,11 @@
 <div class="table-responsive" id="rcorners1">
-	<table class="table"  >
+	<table class="table" >
 		<thead>
-			<caption>PARSE TABLE</caption>
+			<caption><font color="#F0F8FF">PARSE TABLE</font></caption>
 			<tr>
-				<th>NonTerm</th>
+				<th><font color="#F0F8FF">NonTerm</font></th>
 				{% for t in tokens %}
-				<th>{{t}}</th>
+				<th><font color="#F0F8FF">{{t}}</font></th>
 				{% endfor %}
 			</tr>
 		</thead>
@@ -14,7 +14,7 @@
 				{% for field in tform %}
 
 				{% if forloop.counter0|divisibleby:length %}
-			</tr><tr class="success">
+			</tr><tr >
 			{% endif %}
 
 			<td>{{ field }} </td>

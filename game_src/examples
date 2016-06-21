@@ -1,12 +1,3 @@
- Given the following grammar:
-E -> E + E | E - E | E * E | E / E | - E | int
-Show two different left-most derivations of the string int + int * int / int. Also show the corresponding parse trees. What does this tell you?
-
-
-How would you change the following grammar:
-E -> E + E | E - E | E * E | E / E | - E | int
-so that all of the binary operations are left associative and the precedence of the operators is (highest to lowest): +,* (highest), /, - (middle), unary - (lowest)?
-
 
 The following grammar is clearly not LL(1), how would you transform the grammar to make it LL(1)?
 A -> A + B | A - B | B

@@ -1,17 +1,18 @@
-from z3 import *
 from init import *
+from z3 import *
 from test import *
-from input_specs import *
+from input_specs8i1 import *
 
 constraint_no = 0
 def initialize_solver(solver):
 	global config
 	global constraint_no
+	set_param(proof=True)
 	s = Solver()
-
+	s.set(unsat_core=True)
 	s.set(mbqi=True)
-	if config['optimize']:
-		s.set(unsat_core=True)
+	# if config['optimize']:
+	s.set(unsat_core=True)
 	constdict = solver['dictconst']
 	num_rules = config['num_rules'] #Number of rules
 	size_rules = config['size_rules']  #Max number of symbols in RHS
@@ -43,19 +44,19 @@ def initialize_solver(solver):
 	vars.update({"eps": Int('eps')})
 
 	for nt in nonterms:
-		s.assert_and_track(vars[nt]==symbol_counter,'constraint45-%d'%(constraint_no))
-		constdict['constraint45-%d'%(constraint_no)] = vars[nt]==symbol_counter
+		s.assert_and_track(vars[nt]==symbol_counter,'assign_int_%d_to_var_%s'%(symbol_counter,nt))
+		constdict['assign_int_%d_to_var_%s'%(symbol_counter,nt)] = vars[nt]==symbol_counter
 		constraint_no += 1
 		symbol_counter+=1
 
 	for t in terms:
-		s.assert_and_track(vars[t]==symbol_counter, 'constraint51-%d'%(constraint_no))
-		constdict['constraint51-%d'%(constraint_no)] = vars[t]==symbol_counter
+		s.assert_and_track(vars[t]==symbol_counter, 'assign_int_%d_to_var_%s'%(symbol_counter,t))
+		constdict['assign_int_%d_to_var_%s'%(symbol_counter,t)] = vars[t]==symbol_counter
 		constraint_no += 1
 		symbol_counter+=1
 
-	s.assert_and_track(vars['eps']==symbol_counter, 'constraint56-%d'%(constraint_no))
-	constdict['constraint56-%d'%(constraint_no)] = vars['eps']==symbol_counter
+	s.assert_and_track(vars['eps']==symbol_counter, 'assign_int_%d_to_var_eps'%(symbol_counter))
+	constdict['assign_int_%d_to_var_eps'%(symbol_counter)] = vars['eps']==symbol_counter
 	constraint_no += 1
 	symbol_counter+=1
 
@@ -117,8 +118,8 @@ def initialize_solver(solver):
 	# Initialize symbolInRHS and symbolInLHS
 	for r in range(num_rules):
 		for i in range(2,size_rules+2):
-			s.assert_and_track(functions["symbolInRHS"](r+1,i-1) == vars["x%d"%(r*(size_rules+1)+i)], 'sInRhs%d'%(r*(size_rules+1)+i))
-			constdict['sInRhs%d'%(r*(size_rules+1)+i)]= functions["symbolInRHS"](r+1,i-1) == vars["x%d"%(r*(size_rules+1)+i)]
+			s.assert_and_track(functions["symbolInRHS"](r+1,i-1) == vars["x%d"%(r*(size_rules+1)+i)], 'sInRhs_x%d'%(r*(size_rules+1)+i))
+			constdict['sInRhs_x%d'%(r*(size_rules+1)+i)]= functions["symbolInRHS"](r+1,i-1) == vars["x%d"%(r*(size_rules+1)+i)]
 		s.assert_and_track(functions["symbolInLHS"](r+1) == vars["x%d"%(r*(size_rules+1)+1)],'sInlhs:x%d'%(r*(size_rules+1)+1))
 		constdict['sInlhs:x%d'%(r*(size_rules+1)+1)] = functions["symbolInLHS"](r+1) == vars["x%d"%(r*(size_rules+1)+1)]
 
@@ -127,25 +128,25 @@ def initialize_solver(solver):
 		OrList = []
 		for n in nonterms:
 			OrList.append(functions["symbolInLHS"](r+1)==vars[n])
-		s.assert_and_track(Or(OrList), 'constraint129-%d'%(constraint_no))
-		constdict['constraint129-%d'%(constraint_no)] = Or(OrList)
+		s.assert_and_track(Or(OrList), 'LHS_non_term_rule%d'%(r))
+		constdict['LHS_non_term_rule%d'%(r)] = Or(OrList)
 		constraint_no += 1
 
 		for i in range(2,size_rules+2):
 			OrList = []
 			for v in terms+nonterms+["eps"]:
 				OrList.append(functions["symbolInRHS"](r+1,i-1)==vars[v])
-			s.assert_and_track(Or(OrList), 'constraint137-%d'%(constraint_no))
-			constdict['constraint137-%d'%(constraint_no)] = Or(OrList)
+			s.assert_and_track(Or(OrList), 'RHS_rule_%d_pos_%d'%(r,i))
+			constdict['RHS_rule_%d_pos_%d'%(r,i)] = Or(OrList)
 
 
 	#Avoid trivial num_rules-+-+
 	for r in range(1,num_rules+1):
 		s.assert_and_track(Implies(functions["symbolInRHS"](r,size_rules)==functions["symbolInLHS"](r),functions["symbolInRHS"](r,size_rules-1)!=vars["eps"]),'leftRecursion%d'%(r))
+		constdict['leftRecursion%d'%(r)] = Implies(functions["symbolInRHS"](r,size_rules)==functions["symbolInLHS"](r),functions["symbolInRHS"](r,size_rules-1)!=vars["eps"])
 		for i in range(2,size_rules+1):
 			s.assert_and_track(Implies(functions["symbolInRHS"](r,i)==vars["eps"],functions["symbolInRHS"](r,i-1)==vars["eps"]), 'epsConst%d,%d'%(r,i))
 			constdict['epsConst%d,%d'%(r,i)] = Implies(functions["symbolInRHS"](r,i)==vars["eps"],functions["symbolInRHS"](r,i-1)==vars["eps"])
-			constdict['leftRecursion%d'%(r)] = Implies(functions["symbolInRHS"](r,size_rules)==functions["symbolInLHS"](r),functions["symbolInRHS"](r,size_rules-1)!=vars["eps"])
 	functionArgs = [IntSort() for i in range(size_rules+1)]
 	functions["derivedBy"] = Function('derivedBy',functionArgs)
 
@@ -165,15 +166,15 @@ def initialize_solver(solver):
 
 	for r in range(1,num_rules+1):
 		vars.update({"rule%d"%r: Int('rule%d'%r)})
-		s.assert_and_track(vars["rule%d"%r]==r, 'constraint167-%d'%(constraint_no))
-		constdict['constraint167-%d'%(constraint_no)] = vars["rule%d"%(r)]==r
+		s.assert_and_track(vars["rule%d"%r]==r, 'first_set_rule%d'%(r))
+		constdict['first_set_rule%d'%(r)] = vars["rule%d"%(r)]==r
 		constraint_no += 1
 
 	num_conds = 1
 	for r in range(1,2*size_rules+1):
 		vars.update({"cond%d"%r: Int('cond%d'%r)})
-		s.assert_and_track(vars["cond%d"%r]==r, 'constraint174-%d'%(constraint_no))
-		constdict['constraint174-%d'%(constraint_no)] = vars["cond%d"%r]==r
+		s.assert_and_track(vars["cond%d"%r]==r, 'first_set_cond%d'%(r))
+		constdict['first_set_cond%d'%(r)] = vars["cond%d"%r]==r
 		constraint_no += 1
 		num_conds+=1
 
@@ -182,30 +183,33 @@ def initialize_solver(solver):
 		for t in terms:
 			for r in (1,num_rules+1):
 				for c in range(1,2*size_rules+1):
-					s.assert_and_track(And(functions["firstWitness"](vars[n],vars[t],r,c) >= -1, functions["firstWitness"](vars[n],vars[t],r,c) < vars['eps'] ),'firstWitnessReturn%s,%s,%d,%d'%(n,t,r,c) )
-					constdict['firstWitnessReturn%s,%s,%d,%d'%(n,t,r,c)] = And(functions["firstWitness"](vars[n],vars[t],r,c) >= -1, functions["firstWitness"](vars[n],vars[t],r,c) < vars['eps'] )
+					s.assert_and_track(And(functions["firstWitness"](vars[n],vars[t],r,c) >= -1, functions["firstWitness"](vars[n],vars[t],r,c) < vars['eps'] ),'first_witness_%s_%s_%d_%d'%(n,t,r,c) )
+					constdict['first_witness_%s_%s_%d_%d'%(n,t,r,c)] = And(functions["firstWitness"](vars[n],vars[t],r,c) >= -1, functions["firstWitness"](vars[n],vars[t],r,c) < vars['eps'] )
 
 	# Definition constraint: forall terms t, functions["firstWitness"](t,t,i_tt,j_tt) = t
 	for t in terms:
 		var = "%s%s"%(str(vars[t]),str(vars[t]))
 		vars["i_%s"%var] = Int('i_%s'%var)
 		vars["j_%s"%var] = Int('j_%s'%var)
-		s.add(functions["firstWitness"](vars[t],vars[t],vars["i_%s"%var],vars["j_%s"%var])==vars[t])
-		s.add(functions["get_i"](vars[t],vars[t])==vars["i_%s"%var])
-		s.add(functions["get_j"](vars[t],vars[t])==vars["j_%s"%var])
+		s.assert_and_track(functions["firstWitness"](vars[t],vars[t],vars["i_%s"%var],vars["j_%s"%var])==vars[t], 'first_witness_%s_%s_i_%s_j_%s'%(t,t,var,var))
+		constdict['first_witness_%s_%s_i_%s_j_%s'%(t,t,var,var)] = functions["firstWitness"](vars[t],vars[t],vars["i_%s"%var],vars["j_%s"%var])==vars[t]
+		s.assert_and_track(functions["get_i"](vars[t],vars[t])==vars["i_%s"%var], 'get_i_%s_%s'%(t,t))
+		constdict['get_i_%s_%s'%(t,t)] = functions["get_i"](vars[t],vars[t])==vars["i_%s"%var]
+		s.assert_and_track(functions["get_j"](vars[t],vars[t])==vars["j_%s"%var], 'get_j_%s_%s'%(t,t))
+		constdict[ 'get_j_%s_%s'%(t,t)] = functions["get_j"](vars[t],vars[t])==vars["j_%s"%var]
 
 	# Definition constraint: firstWitness must return -1 for -1 as nonterm arg
 	for t in terms:
 		for r in (1,num_rules+1):
 			for c in range(1,2*size_rules+1):
-				s.assert_and_track(functions["firstWitness"](-1,vars[t],r,c) == -1, 'constraint200-%d'%(constraint_no) )
-				constdict['constraint200-%d'%(constraint_no)] = functions["firstWitness"](-1,vars[t],r,c) == -1
+				s.assert_and_track(functions["firstWitness"](-1,vars[t],r,c) == -1, 'first_witness_-1_%s_%d_%d'%(t,r,c) )
+				constdict['first_witness_-1_%s_%d_%d'%(t,r,c)] = functions["firstWitness"](-1,vars[t],r,c) == -1
 				constraint_no += 1
 
 	# Definition constraint: epsWitness must be true for eps
 	for i in range(num_rules+1):
-		s.assert_and_track(functions["epsWitness"](i,vars["eps"]), 'constraint206-%d'%(constraint_no))
-		constdict['constraint206-%d'%(constraint_no)] = functions["epsWitness"](i,vars["eps"])
+		s.assert_and_track(functions["epsWitness"](i,vars["eps"]), 'eps_witness_eps')
+		constdict['eps_witness_eps'] = functions["epsWitness"](i,vars["eps"])
 		constraint_no += 1
 
 	######################################################
@@ -228,8 +232,8 @@ def initialize_solver(solver):
 					temp = functions["firstWitness"](temp,vars[t],functions["get_i"](temp,vars[t]),functions["get_j"](temp,vars[t]))
 				tempList.append(temp==vars[t])
 
-				s.assert_and_track(If(And(tempList), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(i)]) == functions["symbolInRHS"](r,i)), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(i)]) == -1) ), 'firstseteps%d,%d,%s'%(r,i,t))
-				constdict['firstseteps%d,%d,%s'%(r,i,t)] = If(And(tempList), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(i)]) == functions["symbolInRHS"](r,i)), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(i)]) == -1) )
+				s.assert_and_track(If(And(tempList), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(i)]) == functions["symbolInRHS"](r,i)), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(i)]) == -1) ), 'first_set_first_Subset__rule%d_pos%d_%s'%(r,i,t))
+				constdict['first_set_first_Subset__rule%d_pos%d_%s'%(r,i,t)] = If(And(tempList), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(i)]) == functions["symbolInRHS"](r,i)), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(i)]) == -1) )
 
 					
 		for i in range(1,size_rules+1):
@@ -245,8 +249,8 @@ def initialize_solver(solver):
 					temp = functions["firstWitness"](temp,vars[t],functions["get_i"](temp,vars[t]),functions["get_j"](temp,vars[t]))
 				tempList.append(temp==vars[t])
 
-				s.assert_and_track(If(And(tempList), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(size_rules+i)]) == functions["symbolInRHS"](r,i)), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(size_rules+i)]) == -1) ), 'firstsetfirsteps%d,%d,%s'%(r,i,t))
-				constdict['firstsetfirsteps%d,%d,%s'%(r,i,t)] = If(And(tempList), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(size_rules+i)]) == functions["symbolInRHS"](r,i)), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(size_rules+i)]) == -1) )
+				s.assert_and_track(If(And(tempList), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(size_rules+i)]) == functions["symbolInRHS"](r,i)), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(size_rules+i)]) == -1) ), 'first_set_eps_subset_rule%d_pos%d_%s'%(r,i,t))
+				constdict['first_set_eps_subset_rule%d_pos%d_%s'%(r,i,t)] = If(And(tempList), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(size_rules+i)]) == functions["symbolInRHS"](r,i)), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(size_rules+i)]) == -1) )
 	##################### HANDLING FREE VARIABLES ##########################################
 	for nt in nonterms:
 		for t in terms:
@@ -280,7 +284,8 @@ def initialize_solver(solver):
 						temp = functions["firstWitness"](temp,vars[t],functions["get_i"](temp,vars[t]),functions["get_j"](temp,vars[t]))
 					tempList.append(temp==vars[t])					
 					firstCondList.append(And(tempList))
-			s.add(Implies(Not(Or(firstCondList)), Not(functions["first"](vars[nt],vars[t]))))
+			s.assert_and_track(Implies(Not(Or(firstCondList)), Not(functions["first"](vars[nt],vars[t]))), 'eliminating_%s_from_first_%s'%(t,nt))
+			constdict[ 'eliminating_%s_from_first_%s'%(t,nt)] = Implies(Not(Or(firstCondList)), Not(functions["first"](vars[nt],vars[t])))
 	########################################################################################
 	for n in nonterms:
 		OrList = []
@@ -309,8 +314,8 @@ def initialize_solver(solver):
 					tempList.append(functions["epsWitness"](i-1,functions["symbolInRHS"](r,j)))
 				OrList.append(And(tempList))
 
-			s.assert_and_track(Or(OrList)==functions["epsWitness"](i,vars[n]), 'constraint311-%d'%(constraint_no))
-			constdict['constraint311-%d'%(constraint_no)] = Or(OrList)==functions["epsWitness"](i,vars[n])
+			s.assert_and_track(Or(OrList)==functions["epsWitness"](i,vars[n]), 'eps_first_set_rule%d_%s'%(i,n))
+			constdict['eps_first_set_rule%d_%s'%(i,n)] = Or(OrList)==functions["epsWitness"](i,vars[n])
 			constraint_no += 1
 
 	######################################################
@@ -327,11 +332,11 @@ def initialize_solver(solver):
 
 	# Definition constraint: functions["first"](eps) = {eps}
 	for t in terms:
-		s.assert_and_track(Not(functions["first"](vars["eps"],vars[t])), 'constraint330-%d'%(constraint_no))
-		constdict['constraint330-%d'%(constraint_no)] = Or(OrList)==functions["epsWitness"](i,vars[n])
+		s.assert_and_track(Not(functions["first"](vars["eps"],vars[t])), '%s_not_in_first_set_eps'%(t))
+		constdict['%s_not_in_first_set_eps'%(t)] = Not(functions["first"](vars["eps"],vars[t]))
 		constraint_no += 1
-	s.assert_and_track(functions["first"](vars["eps"],vars["eps"]), 'constraint332-%d'%(constraint_no))
-	constdict['constraint332-%d'%(constraint_no)] = functions["first"](vars["eps"],vars["eps"])
+	s.assert_and_track(functions["first"](vars["eps"],vars["eps"]), 'eps_in_first_set_eps')
+	constdict['eps_in_first_set_eps'] = functions["first"](vars["eps"],vars["eps"])
 	constraint_no += 1
 	
 
@@ -339,12 +344,12 @@ def initialize_solver(solver):
 	for nt in terms:
 		for t in terms+["eps"]:
 			if nt == t:
-				s.assert_and_track(functions["first"](vars[nt],vars[t]), 'constraint342-%d'%(constraint_no))
-				constdict['constraint342-%d'%(constraint_no)] = functions["first"](vars[nt],vars[t])
+				s.assert_and_track(functions["first"](vars[nt],vars[t]), '%s_in_first_Set_%s'%(t,t))
+				constdict['%s_in_first_Set_%s'%(t,t)] = functions["first"](vars[nt],vars[t])
 				constraint_no += 1
 			else:
-				s.assert_and_track(Not(functions["first"](vars[nt],vars[t])), 'constraint345-%d'%(constraint_no))
-				constdict['constraint345-%d'%(constraint_no)] = Not(functions["first"](vars[nt],vars[t]))
+				s.assert_and_track(Not(functions["first"](vars[nt],vars[t])), '%s_not_in_first_Set_%s'%(nt,t))
+				constdict['%s_not_in_first_Set_%s'%(nt,t)] = Not(functions["first"](vars[nt],vars[t]))
 				constraint_no += 1
 
 
@@ -396,8 +401,8 @@ def initialize_solver(solver):
 				for j in range(1,2*size_rules+1):
 					tempList.append( (functions["firstWitness"](vars[n],vars[t],vars["rule%d"%i],vars["cond%d"%j])) == -1)
 
-			s.assert_and_track(Implies(Not(functions["first"](vars[n],vars[t])),And(tempList)), 'constraint398-%d'%(constraint_no))
-			constdict['constraint398-%d'%(constraint_no)] = Implies(Not(functions["first"](vars[n],vars[t])),And(tempList))
+			s.assert_and_track(Implies(Not(functions["first"](vars[n],vars[t])),And(tempList)), '%s_not_in_first_%s_first_witness_-1'%(t,n))
+			constdict['%s_not_in_first_%s_first_witness_-1'%(t,n)] = Implies(Not(functions["first"](vars[n],vars[t])),And(tempList))
 			constraint_no += 1
 
 		s.assert_and_track(functions["first"](vars[n],vars["eps"])==functions["epsWitness"](num_rules,vars[n]), 'epsInFirstSet%s'%(n))
@@ -410,8 +415,8 @@ def initialize_solver(solver):
 	######################################################
 
 	vars.update({"dol": Int('dol')})
-	s.assert_and_track(vars["dol"]==symbol_counter, 'constraint412-%d'%(constraint_no))
-	constdict['constraint412-%d'%(constraint_no)] = vars["dol"]==symbol_counter
+	s.assert_and_track(vars["dol"]==symbol_counter, 'assign_int_%d_to_var_dol'%(symbol_counter))
+	constdict['assign_int_%d_to_var_dol'%(symbol_counter)] = vars["dol"]==symbol_counter
 	constraint_no + 1
 
 	while (num_conds <= (size_rules*(size_rules+1))/2):
@@ -423,8 +428,8 @@ def initialize_solver(solver):
 		for t in terms+["dol"]:
 			for r in (1,num_rules+1):
 				for c in range(1,(size_rules*(size_rules+1))/2):
-					s.assert_and_track(And(functions["followWitness"](vars[n],vars[t],r,c) >= -1, functions["followWitness"](vars[n],vars[t],r,c) < vars['eps'] ), 'constraint425-%d'%(constraint_no) )
-					constdict['constraint425-%d'%(constraint_no)] = And(functions["followWitness"](vars[n],vars[t],r,c) >= -1, functions["followWitness"](vars[n],vars[t],r,c) < vars['eps'] ) 
+					s.assert_and_track(And(functions["followWitness"](vars[n],vars[t],r,c) >= -1, functions["followWitness"](vars[n],vars[t],r,c) < vars['eps'] ), 'follow_witness_%s_%s_%d_%d'%(n,t,r,c) )
+					constdict['follow_witness_%s_%s_%d_%d'%(n,t,r,c)] = And(functions["followWitness"](vars[n],vars[t],r,c) >= -1, functions["followWitness"](vars[n],vars[t],r,c) < vars['eps'] ) 
 					constraint_no +=1
 
 	# Definition constraint: forall terms and dol t, functions["followWitness"](t,t,m_tt,n_tt) = t
@@ -432,45 +437,45 @@ def initialize_solver(solver):
 		var = "%s%s"%(str(vars[t]),str(vars[t]))
 		vars["m_%s"%var] = Int('m_%s'%var)
 		vars["n_%s"%var] = Int('n_%s'%var)
-		s.assert_and_track(functions["followWitness"](vars[t],vars[t],vars["m_%s"%var],vars["n_%s"%var])==vars[t], 'constraint434-%d'%(constraint_no))
-		constdict['constraint434-%d'%(constraint_no)] = functions["followWitness"](vars[t],vars[t],vars["m_%s"%var],vars["n_%s"%var])==vars[t]
+		s.assert_and_track(functions["followWitness"](vars[t],vars[t],vars["m_%s"%var],vars["n_%s"%var])==vars[t], '%s_in_follow_set_%s'%(t,t))
+		constdict['%s_in_follow_set_%s'%(t,t)] = functions["followWitness"](vars[t],vars[t],vars["m_%s"%var],vars["n_%s"%var])==vars[t]
 		constraint_no += 1
-		s.assert_and_track(functions["get_m"](vars[t],vars[t])==vars["m_%s"%var], 'constraint437-%d'%(constraint_no))
-		constdict['constraint437-%d'%(constraint_no)] = functions["get_m"](vars[t],vars[t])==vars["m_%s"%var]
+		s.assert_and_track(functions["get_m"](vars[t],vars[t])==vars["m_%s"%var], 'get_m_%s_%s'%(t,t))
+		constdict['get_m_%s_%s'%(t,t)] = functions["get_m"](vars[t],vars[t])==vars["m_%s"%var]
 		constraint_no += 1
-		s.assert_and_track(functions["get_n"](vars[t],vars[t])==vars["n_%s"%var], 'constraint440-%d'%(constraint_no))
-		constdict['constraint440-%d'%(constraint_no)] = functions["get_m"](vars[t],vars[t])==vars["m_%s"%var]
+		s.assert_and_track(functions["get_n"](vars[t],vars[t])==vars["n_%s"%var], 'get_n_%s_%s'%(t,t))
+		constdict['get_n_%s_%s'%(t,t)] = functions["get_m"](vars[t],vars[t])==vars["m_%s"%var]
 		constraint_no += 1
 
 	# Definition constraint: followWitness must return -1 for -1 as nonterm arg
 	for t in terms+["dol"]:
 		for r in (1,num_rules+1):
 			for c in range(1,(size_rules*(size_rules+1))/2):
-				s.assert_and_track(functions["followWitness"](-1,vars[t],r,c) == -1 , 'constraint448-%d'%(constraint_no))
-				constdict['constraint448-%d'%(constraint_no)] = functions["followWitness"](-1,vars[t],r,c) == -1 
+				s.assert_and_track(functions["followWitness"](-1,vars[t],r,c) == -1 , 'follow_witness_-1_%s_%d_%d'%(t,r,c))
+				constdict['follow_witness_-1_%s_%d_%d'%(t,r,c)] = functions["followWitness"](-1,vars[t],r,c) == -1 
 				constraint_no += 1
 
 	# Definition constraint: dol has been witnessed to be in functions["follow"](N1)
 	# NOTE: N1 is the starting nonterm
 	vars["m_N1dol"] = Int('m_N1dol')
 	vars["n_N1dol"] = Int('n_N1dol')
-	s.assert_and_track(functions["get_m"](vars["N1"],vars["dol"])==vars["m_N1dol"], 'constraint456-%d'%(constraint_no))
-	constdict['constraint456-%d'%(constraint_no)] = functions["get_m"](vars["N1"],vars["dol"])==vars["m_N1dol"]
+	s.assert_and_track(functions["get_m"](vars["N1"],vars["dol"])==vars["m_N1dol"], '$_start_symbol')
+	constdict['$_start_symbol'] = functions["get_m"](vars["N1"],vars["dol"])==vars["m_N1dol"]
 	constraint_no += 1
 	
-	s.assert_and_track(functions["get_n"](vars["N1"],vars["dol"])==vars["n_N1dol"], 'constraint460-%d'%(constraint_no))
-	constdict['constraint460-%d'%(constraint_no)] = functions["get_n"](vars["N1"],vars["dol"])==vars["n_N1dol"]
+	s.assert_and_track(functions["get_n"](vars["N1"],vars["dol"])==vars["n_N1dol"], 'get_n_N1_dol')
+	constdict['get_n_N1_dol'] = functions["get_n"](vars["N1"],vars["dol"])==vars["n_N1dol"]
 	constraint_no += 1
 
-	s.assert_and_track(functions["followWitness"](vars["N1"],vars["dol"],vars["m_N1dol"],vars["n_N1dol"])==vars["dol"], 'constraint464-%d'%(constraint_no))
-	constdict['constraint464-%d'%(constraint_no)] = functions["followWitness"](vars["N1"],vars["dol"],vars["m_N1dol"],vars["n_N1dol"])==vars["dol"]
+	s.assert_and_track(functions["followWitness"](vars["N1"],vars["dol"],vars["m_N1dol"],vars["n_N1dol"])==vars["dol"], 'follow_witness_N1_dol_m_N1dol_n_N1dol')
+	constdict['follow_witness_N1_dol_m_N1dol_n_N1dol'] = functions["followWitness"](vars["N1"],vars["dol"],vars["m_N1dol"],vars["n_N1dol"])==vars["dol"]
 	constraint_no += 1
 
 	######################################################
 
 	# FOLLOW SET WITNESS CONSTRUCTION
 
-	###############+																#######################################
+	######################################################
 
 	for r in range(1,num_rules+1):
 		condNo = 1
@@ -482,8 +487,8 @@ def initialize_solver(solver):
 						tempList.append(functions["first"](functions["symbolInRHS"](r,k),vars["eps"]))
 					tempList.append(functions["first"](functions["symbolInRHS"](r,j),vars[t]))
 
-					s.assert_and_track((functions["followWitness"](functions["symbolInRHS"](r,i),vars[t],vars["rule%d"%(r)],vars["cond%d"%condNo])==vars[t])==And(tempList), 'followWitnesseps%d,%d,%d,%s'%(r,i,j,t))
-					constdict['followWitnesseps%d,%d,%d,%s'%(r,i,j,t)] = (functions["followWitness"](functions["symbolInRHS"](r,i),vars[t],vars["rule%d"%(r)],vars["cond%d"%condNo])==vars[t])==And(tempList)
+					s.assert_and_track((functions["followWitness"](functions["symbolInRHS"](r,i),vars[t],vars["rule%d"%(r)],vars["cond%d"%condNo])==vars[t])==And(tempList), 'next_first_in_follow_rule%d_pos%d_pos%d_%s'%(r,i,j,t))
+					constdict['next_first_in_follow_rule%d_pos%d_pos%d_%s'%(r,i,j,t)] = (functions["followWitness"](functions["symbolInRHS"](r,i),vars[t],vars["rule%d"%(r)],vars["cond%d"%condNo])==vars[t])==And(tempList)
 
 				condNo += 1
 
@@ -502,8 +507,8 @@ def initialize_solver(solver):
 					temp = functions["followWitness"](temp,vars[t],functions["get_m"](temp,vars[t]),functions["get_n"](temp,vars[t]))
 				tempList.append(temp==vars[t])
 
-				s.assert_and_track((functions["followWitness"](functions["symbolInRHS"](r,i),vars[t],vars["rule%d"%(r)],vars["cond%d"%condNo])==functions["symbolInLHS"](r))==And(tempList), 'followWiitnessepsEnd%d,%d,%s'%(r,i,t))
-				constdict['followWiitnessepsEnd%d,%d,%s'%(r,i,t)] = (functions["followWitness"](functions["symbolInRHS"](r,i),vars[t],vars["rule%d"%(r)],vars["cond%d"%condNo])==functions["symbolInLHS"](r))==And(tempList)
+				s.assert_and_track((functions["followWitness"](functions["symbolInRHS"](r,i),vars[t],vars["rule%d"%(r)],vars["cond%d"%condNo])==functions["symbolInLHS"](r))==And(tempList), 'follow_lhs_in_rhs_rule%d_pos%d_%s'%(r,i,t))
+				constdict['follow_lhs_in_rhs_rule%d_pos%d_%s'%(r,i,t)] = (functions["followWitness"](functions["symbolInRHS"](r,i),vars[t],vars["rule%d"%(r)],vars["cond%d"%condNo])==functions["symbolInLHS"](r))==And(tempList)
 			condNo += 1
 
 		followCondEnd = condNo
@@ -540,7 +545,8 @@ def initialize_solver(solver):
 					followCondList.append(And(tempList))				
 					# s.add(((functions["followWitness"](functions["symbolInRHS"](r,i),vars[t],vars["rule%d"%(r)],vars["cond%d"%condNo])==functions["symbolInLHS"](r))==And(tempList)))
 			
-			s.add(Implies(Not(Or(followCondList)), Not (functions["follow"](vars[nt], vars[t]))))	
+			s.assert_and_track(Implies(Not(Or(followCondList)), Not (functions["follow"](vars[nt], vars[t]))), 'eliminating_%s_from_follow_%s'%(t,nt))
+			constdict['eliminating_%s_from_follow_%s'%(t,nt)] = Implies(Not(Or(followCondList)), Not (functions["follow"](vars[nt], vars[t])))	
 	#######################################################################################
 	######################################################
 
@@ -551,13 +557,13 @@ def initialize_solver(solver):
 	# Definition constraints: no nonterm and eps in follow sets
 	for n in nonterms+["eps"]:
 		for nt in nonterms+["eps"]:
-			s.assert_and_track(Not(functions["follow"](vars[n],vars[nt])), '%sInFollowSetOf%s'%(n,nt))
-			constdict['%sInFollowSetOf%s'%(n,nt)] = Not(functions["follow"](vars[n],vars[nt]))
+			s.assert_and_track(Not(functions["follow"](vars[n],vars[nt])), '%s_not_in_follow_set_%s'%(n,nt))
+			constdict['%s_not_in_follow_set_%s'%(n,nt)] = Not(functions["follow"](vars[n],vars[nt]))
 
 	# Definition constraint: dol is in functions["follow"](N1)
 	# NOTE: N1 is the starting nonterm
-	s.assert_and_track(functions["follow"](vars["N1"],vars["dol"]), 'constraint558-%d'%(constraint_no))
-	constdict['constraint558-%d'%(constraint_no)] = functions["follow"](vars["N1"],vars["dol"])
+	s.assert_and_track(functions["follow"](vars["N1"],vars["dol"]), '$_in_follow_N1')
+	constdict['$_in_follow_N1'] = functions["follow"](vars["N1"],vars["dol"])
 	constraint_no += 1
 
 	######################################################
@@ -615,8 +621,8 @@ def initialize_solver(solver):
 			for i in range(1,num_rules+1):
 				for j in range(1,followCondEnd):
 					tempList.append(functions["followWitness"](vars[n],vars[t],vars["rule%d"%i],vars["cond%d"%j])==-1)
-			s.assert_and_track(Implies(Not(functions["follow"](vars[n],vars[t])),And(tempList)), 'constraint617-%d'%(constraint_no))
-			constdict['constraint617-%d'%(constraint_no)] = Implies(Not(functions["follow"](vars[n],vars[t])),And(tempList))
+			s.assert_and_track(Implies(Not(functions["follow"](vars[n],vars[t])),And(tempList)), '%s_not_in_follow_%s_follow_witness_-1'%(t,n))
+			constdict['%s_not_in_follow_%s_follow_witness_-1'%(t,n)] = Implies(Not(functions["follow"](vars[n],vars[t])),And(tempList))
 			constraint_no += 1
 
 		t = "dol"
@@ -664,7 +670,7 @@ def initialize_solver(solver):
 				for j in range(followCondMid,followCondEnd):
 					tempList.append(functions["followWitness"](vars[n],vars[t],vars["rule%d"%i],vars["cond%d"%j])==-1)
 			s.assert_and_track(Implies(Not(functions["follow"](vars[n],vars[t])),And(tempList)), 'constraint665-%d'%(constraint_no))
-			constdict['constraint666'%(constraint_no)] = Implies(Not(functions["follow"](vars[n],vars[t])),And(tempList))
+			constdict['constraint666 %s'%(constraint_no)] = Implies(Not(functions["follow"](vars[n],vars[t])),And(tempList))
 			constraint_no += 1
 
 	######################################################
@@ -675,8 +681,8 @@ def initialize_solver(solver):
 
 	for n in nonterms:
 		for t in terms+['dol']:
-			s.assert_and_track(And(functions["parseTable"](vars[n],vars[t])<=num_rules,functions["parseTable"](vars[n],vars[t])>=0), 'constraint677-%d'%(constraint_no))
-			constdict['constraint677-%d'%(constraint_no)] = And(functions["parseTable"](vars[n],vars[t])<=num_rules,functions["parseTable"](vars[n],vars[t])>=0)
+			s.assert_and_track(And(functions["parseTable"](vars[n],vars[t])<=num_rules,functions["parseTable"](vars[n],vars[t])>=0), 'parse_table_input_range_%s_%s'%(n,t))
+			constdict['parse_table_input_range_%s_%s'%(n,t)] = And(functions["parseTable"](vars[n],vars[t])<=num_rules,functions["parseTable"](vars[n],vars[t])>=0)
 			constraint_no += 1
 
 	######################################################
@@ -695,15 +701,16 @@ def initialize_solver(solver):
 						tempList.append(functions["first"](functions["symbolInRHS"](r,j),vars["eps"]))
 					tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars[t]))
 					tempAnd.append(And(tempList))
-				
+				# s.assert_and_track((functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd)), 'parse_table_first_%s_%s_rule%d'%(n,t,r))
+				# constdict['parse_table_first_%s-%s_rule%d'%(n,t,r)] = (functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd))
 				tempList = []	
 				for i in range(1,size_rules+1):
 					tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars["eps"]))
 				tempList.append(functions["follow"](functions["symbolInLHS"](r),vars[t]))
 				tempAnd.append(And(tempList))
 
-				s.assert_and_track((functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd)), 'parseTable%s,%s,%d'%(n,t,r))
-				constdict['parseTable%s,%s,%d'%(n,t,r)] = (functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd))
+				s.assert_and_track((functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd)), 'parse_table_first_%s_%s_rule%d'%(n,t,r))
+				constdict['parse_table_first_%s_%s_rule%d'%(n,t,r)] = (functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd))
 		
 		for r in range(1,num_rules+1):
 			tempList = []
@@ -711,8 +718,8 @@ def initialize_solver(solver):
 				tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars["eps"]))
 			tempList.append(functions["follow"](functions["symbolInLHS"](r),vars["dol"]))
 
-			s.assert_and_track((functions["parseTable"](vars[n],vars["dol"])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],And(tempList)), 'constraint713-%d'%(constraint_no))
-			constdict['constraint713-%d'%(constraint_no)] = (functions["parseTable"](vars[n],vars["dol"])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],And(tempList))
+			s.assert_and_track((functions["parseTable"](vars[n],vars["dol"])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],And(tempList)), 'parse_table_follow_%s_$_rule%d'%(n,r))
+			constdict['parse_table_follow_%s_$_rule%d'%(n,r)] = (functions["parseTable"](vars[n],vars["dol"])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],And(tempList))
 			constraint_no += 1
 
 	######################################################
@@ -721,10 +728,10 @@ def initialize_solver(solver):
 
 	######################################################
 
-	#We take an 'array' of parse actions and use that to process the input, using the following functions
+	# #We take an 'array' of parse actions and use that to process the input, using the following functions
 
-	#The following functions are defined for parsing the (first arg) input string
-	# Lookup and constraint application was successful on step (second arg) in parse action array
+	# #The following functions are defined for parsing the (first arg) input string
+	# # Lookup and constraint application was successful on step (second arg) in parse action array
 	functions["step"] = Function('step', IntSort(), IntSort(), BoolSort())
 
 	# True if parsing was completed on or before step (second arg)
@@ -745,12 +752,18 @@ def initialize_solver(solver):
 	# The ending index in the parse action array of the expansion of the functions["symbolAt"](second arg)
 	functions["end"] = Function('end', IntSort(), IntSort(), IntSort())
 
+	for t in terms:
+		OrList = []
+		for r in range(1, num_rules):
+			for i in range(1,size_rules+1):
+				OrList.append(functions["symbolInRHS"](r, i) == vars[t])
+		s.assert_and_track(Or(OrList),'all_term_must_be_present')
+
 	solver["constraints"] = s
 	solver["vars"] = vars
 	solver["functions"] = functions
 	solver["terms"] = terms
 	solver["nonterms"] = nonterms
-
 
 
 
@@ -778,13 +791,13 @@ def single_step(solver,strNum,i):
 	x = Int('x')
 
 	# Termination condition
-	s.assert_and_track(Implies(And(functions["end"](strNum,1) == (i-1), functions["step"](strNum,i-1)), If(functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)) == vars["dol"], And(Not(functions["step"](strNum,i)),functions["success"](strNum,i)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i))) ) ), 'constraint779-%d'%(constraint_no))
-	constdict['constraint779-%d'%(constraint_no)] = Implies(And(functions["end"](strNum,1) == (i-1), functions["step"](strNum,i-1)), If(functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)) == vars["dol"], And(Not(functions["step"](strNum,i)),functions["success"](strNum,i)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i))) ) )
+	s.assert_and_track(Implies(And(functions["end"](strNum,1) == (i-1), functions["step"](strNum,i-1)), If(functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)) == vars["dol"], And(Not(functions["step"](strNum,i)),functions["success"](strNum,i)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i))) ) ), 'parsing_termination_string%d'%(strNum))
+	constdict['parsing_termination_string%d'%(strNum)] = Implies(And(functions["end"](strNum,1) == (i-1), functions["step"](strNum,i-1)), If(functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)) == vars["dol"], And(Not(functions["step"](strNum,i)),functions["success"](strNum,i)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i))) ) )
 	constraint_no += 1
 	
 	#Propagate success state on end of parse
-	s.assert_and_track(Implies(Not(functions["step"](strNum,i)),And(Not(functions["step"](strNum,i+1)),functions["success"](strNum,i+1)==functions["success"](strNum,i))), 'constraint784-%d'%(constraint_no))
-	constdict['constraint784-%d'%(constraint_no)] = Implies(Not(functions["step"](strNum,i)),And(Not(functions["step"](strNum,i+1)),functions["success"](strNum,i+1)==functions["success"](strNum,i)))
+	s.assert_and_track(Implies(Not(functions["step"](strNum,i)),And(Not(functions["step"](strNum,i+1)),functions["success"](strNum,i+1)==functions["success"](strNum,i))), 'propagating_success_strNum%d_pos%d'%(strNum,i))
+	constdict['propagating_success_strNum%d_pos%d'%(strNum,i)] = Implies(Not(functions["step"](strNum,i)),And(Not(functions["step"](strNum,i+1)),functions["success"](strNum,i+1)==functions["success"](strNum,i)))
 	constraint_no += 1
 
 	# For consuming term
@@ -796,8 +809,8 @@ def single_step(solver,strNum,i):
 	OrList = []
 	for t in terms:
 		OrList.append(functions["symbolAt"](strNum,i)==vars[t])
-	s.assert_and_track(Implies(And(Or(OrList),functions["step"](strNum,i-1)), If(functions["symbolAt"](strNum,i)==functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)), And(AndList), And(Not(functions["step"](strNum,i)), Not(functions["success"](strNum,i))) ) ), 'constraint797-%d'%(constraint_no))
-	constdict['constraint797-%d'%(constraint_no)] =  Implies(And(Or(OrList),functions["step"](strNum,i-1)), If(functions["symbolAt"](strNum,i)==functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)), And(AndList), And(Not(functions["step"](strNum,i)), Not(functions["success"](strNum,i))) ) )
+	s.assert_and_track(Implies(And(Or(OrList),functions["step"](strNum,i-1)), If(functions["symbolAt"](strNum,i)==functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)), And(AndList), And(Not(functions["step"](strNum,i)), Not(functions["success"](strNum,i))) ) ), 'consuming_term%d_%d'%(strNum,i))
+	constdict['consuming_term%d_%d'%(strNum,i)] =  Implies(And(Or(OrList),functions["step"](strNum,i-1)), If(functions["symbolAt"](strNum,i)==functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)), And(AndList), And(Not(functions["step"](strNum,i)), Not(functions["success"](strNum,i))) ) )
 	constraint_no += 1
 
 	# For expanding nonterm
@@ -830,6 +843,6 @@ def single_step(solver,strNum,i):
 		OrList = []
 		for n in nonterms:
 			OrList.append(functions["symbolAt"](strNum,i)==vars[n])
-		s.assert_and_track(Implies(And(Or(OrList),functions["step"](strNum,i-1)),If(functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i))) != 0, Implies(And(RHSList),And(AndList)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i)) ) )), 'constraint831-%d'%(constraint_no))
-		constdict['constraint831-%d'%(constraint_no)] = Implies(And(Or(OrList),functions["step"](strNum,i-1)),If(functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i))) != 0, Implies(And(RHSList),And(AndList)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i)) ) ))
+		s.assert_and_track(Implies(And(Or(OrList),functions["step"](strNum,i-1)),If(functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i))) != 0, Implies(And(RHSList),And(AndList)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i)) ) )), 'expanding_non_term_strNum%d_%d'%(strNum,i))
+		constdict['expanding_non_term_strNum%d_%d'%(strNum,i)] = Implies(And(Or(OrList),functions["step"](strNum,i-1)),If(functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i))) != 0, Implies(And(RHSList),And(AndList)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i)) ) ))
 		constraint_no += 1
