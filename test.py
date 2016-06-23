@@ -1,16 +1,6 @@
-from input_specs8i1 import *
+from input_specs7 import *
 from init import *
 from z3 import *
-
-def discover(original_grammar):
-	non_tokens = []
-	for string in original_grammar:
-		ch = string[0]
-		if ch not in non_tokens:
-			non_tokens.append(ch)
-		else:
-			pass
-	return non_tokens
 
 def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules):
 	s = solver['constraints']
@@ -98,7 +88,7 @@ def add_first_set_constraints(solver, first_set, follow_set, view_assign):
 
 def repair(solver, original_grammar, num_rules, size_rules):
 	view_assign = {}
-	non_tokens = discover(original_grammar)
+	
 	i = 1
 	for ch in non_tokens:
 		view_assign[ch] = 'N%d'%(i)
@@ -117,4 +107,5 @@ def repair(solver, original_grammar, num_rules, size_rules):
 	print('view_assign-',view_assign)
 	add_constraints(solver,view_assign,original_grammar,num_rules, size_rules)
 	add_parse_table_constraints(solver,parse_table,view_assign)
-	add_first_set_constraints(solver, first_set, follow_set, view_assign)
+	# add_first_set_constraints(solver, first_set, follow_set, view_assign)
+

@@ -12,7 +12,7 @@ def specs():
 		'num_nonterms' : 3, #Number of nonterms
 		'expansion_constant' : 5, #Determines the max. number of parse actions to take while parsing
 		'optimize' : False, # enable optimized mode
-		'neg_egs' : True, # consider negative examples 
+		'neg_egs' : False, # consider negative examples 
 		'threshold' : 0.2  # number of unsat cores to break
 	}
 
@@ -41,8 +41,8 @@ def get_follow_set():
 	follow_set = [{'non_term':'S' ,'a':0 ,'b':0 ,'c':0 ,'d':0 ,'$':1},{'non_term':'A' ,'a':0 ,'b':1 ,'c':1 ,'d':0 ,'$':0},{'non_term':'B' ,'a':0 ,'b':1 ,'c':0 ,'d':0 ,'$':0}]
 	return follow_set
 
-accept_strings = ["a d c b", "a d b c b"]
-reject_strings = ["b c", "c d"]
+#accept_strings = ["a d c b", "a d b c b"]
+#reject_strings = ["b c", "c d"]
 
 # S -> a A B b
 # A -> a A c

@@ -233,6 +233,7 @@ def add_accept_string(solver,accept_string):
 	for j in range(len(accept_string)):
 		s.assert_and_track(functions["ip_str"](strNum,j) == vars[accept_string[j]],'make_ipstr_strNum%d_pos%d'%(strNum,j))
 		constdict['make_ipstr_strNum%d_pos%d'%(strNum,j)] = functions["ip_str"](strNum,j) == vars[accept_string[j]]
+	
 	s.assert_and_track(functions["ip_str"](strNum,len(accept_string))==vars["dol"], 'make_ipstr_strNum%d_pos%d'%(strNum,len(accept_string)	))
 	constdict['make_ipstr_strNum%d_pos%d'%(strNum,len(accept_string))] = functions["ip_str"](strNum,len(accept_string))==vars["dol"]
 

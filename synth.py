@@ -47,8 +47,13 @@ def analyse_unsat(u_core, solver):
 
 
 def main():
+
 	sp_time = calendar.timegm(time.gmtime())
+	
 	print "Initializing SP..."
+	print "to-proceed in synth: ",to_proceed
+	if  to_proceed == False:
+		return
 	SP = {}
 	SP['dictconst'] = {}
 	initialize_solver(SP)
@@ -94,9 +99,10 @@ def main():
 			check_result = SP["constraints"].check()
 
 		if check_result == unsat:
+			print "this string is not parsable."
 			tmp = SP['constraints'].unsat_core()
 			SP['unsat'] = tmp
-			print 'unsat_core',tmp
+			#print 'unsat_core',tmp
 			A = []
 			B = []
 			C = []
@@ -111,7 +117,7 @@ def main():
 			# print binary_interpolant(And(B),And(A))
 			# print sequence_interpolant(C)
 			# print "proof: ",SP["constraints"].proof()
-			analyse_unsat(tmp, SP)
+			#analyse_unsat(tmp, SP)
 			print "No such grammar possible under present constraints"
 			break
 
@@ -136,7 +142,8 @@ def main():
 				correct = True
 		else:
 			check_result = unsat # negative examples are trivially satisfied
-			
+		
+		print "STRING ACCEPTED"	
 		print_grammar(SP)
 		iterationNo += 1
 

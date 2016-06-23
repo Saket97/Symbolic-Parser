@@ -1,72 +1,19 @@
 from init import *
 from z3 import *
 from test import *
-from input_specs8i1 import *
+from input_specs7 import *
 
 constraint_no = 0
-def initialize_solver(solver):
-	global config
+def insert_first_set_constraints(solver):
+	vars = solver["vars"]
+	s = solver["constraints"]
+	functions = solver["functions"]
+	constdict = solver["dictconst"]
+	terms = solver["terms"]
+	nonterms = solver["nonterms"]
+	num_rules = solver["num_rules"]
+	size_rules = solver["size_rules"]
 	global constraint_no
-	set_param(proof=True)
-	s = Solver()
-	s.set(unsat_core=True)
-	s.set(mbqi=True)
-	# if config['optimize']:
-	s.set(unsat_core=True)
-	constdict = solver['dictconst']
-	num_rules = config['num_rules'] #Number of rules
-	size_rules = config['size_rules']  #Max number of symbols in RHS
-	num_nonterms = config['num_nonterms']  #Number of nonterms
-	num_terms = config['num_terms']   #Number of terms
-
-	vars = {}
-	functions = {}
-
-	x = Int('x')
-	y = Int('y')
-	z = Int('z')
-	w = Int('w')
-
-	######################################################
-
-	# SYMBOLS
-
-	######################################################
-
-	symbol_counter = 0
-
-	nonterms = ['N%d'%i for i in range(1,num_nonterms+1)]
-	vars.update({"%s"%nt : Int('%s'%nt) for nt in nonterms}) #N1 is mapped to an integer variable N1 of z3
-
-	terms = ['t%d'%i for i in range(1,num_terms+1)]
-	vars.update({"%s"%t : Int('%s'%t) for t in terms})  #t1 is mapped to an integer variable t1 of z3
-
-	vars.update({"eps": Int('eps')})
-
-	for nt in nonterms:
-		s.assert_and_track(vars[nt]==symbol_counter,'assign_int_%d_to_var_%s'%(symbol_counter,nt))
-		constdict['assign_int_%d_to_var_%s'%(symbol_counter,nt)] = vars[nt]==symbol_counter
-		constraint_no += 1
-		symbol_counter+=1
-
-	for t in terms:
-		s.assert_and_track(vars[t]==symbol_counter, 'assign_int_%d_to_var_%s'%(symbol_counter,t))
-		constdict['assign_int_%d_to_var_%s'%(symbol_counter,t)] = vars[t]==symbol_counter
-		constraint_no += 1
-		symbol_counter+=1
-
-	s.assert_and_track(vars['eps']==symbol_counter, 'assign_int_%d_to_var_eps'%(symbol_counter))
-	constdict['assign_int_%d_to_var_eps'%(symbol_counter)] = vars['eps']==symbol_counter
-	constraint_no += 1
-	symbol_counter+=1
-
-
-	######################################################
-
-	# BASIC FUNCTIONS
-	#functions is a dictionary
-	######################################################
-
 	#has (second arg) been witnessed to be in first set of (first arg), in template rule number (third arg), according to construction condition number (fourth arg)? if no, return -1 else return the nonterm or term due to which this witness occurred
 	functions["firstWitness"] = Function('firstWitness',IntSort(),IntSort(),IntSort(),IntSort(),IntSort())
 
@@ -94,69 +41,6 @@ def initialize_solver(solver):
 	#is second arg in follow of first arg?
 	functions["follow"] = Function('follow',IntSort(),IntSort(),BoolSort())
 
-	#returns rule number in the parse table cell corresponding to (first arg) nonterm and (second arg) term
-	functions["parseTable"] = Function('parseTable', IntSort(), IntSort(), IntSort())
-
-	######################################################
-
-	# TEMPLATE CONSTRAINTS
-
-	######################################################
-
-	for r in range(num_rules):
-		vars.update({"x%d"%(r*(size_rules+1)+1): Int('x%d'%(r*(size_rules+1)+1))})
-
-		for i in range(2,size_rules+2):
-			vars.update({"x%d"%(r*(size_rules+1)+i): Int('x%d'%(r*(size_rules+1)+i))})
-
-	# What is the symbol at (second arg) location in RHS of rule no (first arg)
-	functions["symbolInRHS"] = Function('symbolInRHS', IntSort(), IntSort(), IntSort())
-
-	# What is the symbol in LHS of rule no (first arg)
-	functions["symbolInLHS"] = Function('symbolInLHS', IntSort(), IntSort())
-
-	# Initialize symbolInRHS and symbolInLHS
-	for r in range(num_rules):
-		for i in range(2,size_rules+2):
-			s.assert_and_track(functions["symbolInRHS"](r+1,i-1) == vars["x%d"%(r*(size_rules+1)+i)], 'sInRhs_x%d'%(r*(size_rules+1)+i))
-			constdict['sInRhs_x%d'%(r*(size_rules+1)+i)]= functions["symbolInRHS"](r+1,i-1) == vars["x%d"%(r*(size_rules+1)+i)]
-		s.assert_and_track(functions["symbolInLHS"](r+1) == vars["x%d"%(r*(size_rules+1)+1)],'sInlhs:x%d'%(r*(size_rules+1)+1))
-		constdict['sInlhs:x%d'%(r*(size_rules+1)+1)] = functions["symbolInLHS"](r+1) == vars["x%d"%(r*(size_rules+1)+1)]
-
-	#Possible values for LHS and RHS. For any particular rule LHS must be non term and RHS should be combinatin of these
-	for r in range(num_rules):
-		OrList = []
-		for n in nonterms:
-			OrList.append(functions["symbolInLHS"](r+1)==vars[n])
-		s.assert_and_track(Or(OrList), 'LHS_non_term_rule%d'%(r))
-		constdict['LHS_non_term_rule%d'%(r)] = Or(OrList)
-		constraint_no += 1
-
-		for i in range(2,size_rules+2):
-			OrList = []
-			for v in terms+nonterms+["eps"]:
-				OrList.append(functions["symbolInRHS"](r+1,i-1)==vars[v])
-			s.assert_and_track(Or(OrList), 'RHS_rule_%d_pos_%d'%(r,i))
-			constdict['RHS_rule_%d_pos_%d'%(r,i)] = Or(OrList)
-
-
-	#Avoid trivial num_rules-+-+
-	for r in range(1,num_rules+1):
-		s.assert_and_track(Implies(functions["symbolInRHS"](r,size_rules)==functions["symbolInLHS"](r),functions["symbolInRHS"](r,size_rules-1)!=vars["eps"]),'leftRecursion%d'%(r))
-		constdict['leftRecursion%d'%(r)] = Implies(functions["symbolInRHS"](r,size_rules)==functions["symbolInLHS"](r),functions["symbolInRHS"](r,size_rules-1)!=vars["eps"])
-		for i in range(2,size_rules+1):
-			s.assert_and_track(Implies(functions["symbolInRHS"](r,i)==vars["eps"],functions["symbolInRHS"](r,i-1)==vars["eps"]), 'epsConst%d,%d'%(r,i))
-			constdict['epsConst%d,%d'%(r,i)] = Implies(functions["symbolInRHS"](r,i)==vars["eps"],functions["symbolInRHS"](r,i-1)==vars["eps"])
-	functionArgs = [IntSort() for i in range(size_rules+1)]
-	functions["derivedBy"] = Function('derivedBy',functionArgs)
-
-	for r in range(num_rules):
-		tempList = []
-		for j in range(size_rules):
-			tempList.append(functions["symbolInRHS"](r+1,j+1))
-		s.assert_and_track(functions["derivedBy"](tempList)==functions["symbolInLHS"](r+1), 'constraint155-%d'%(constraint_no))
-		constdict['constraint155-%d'%(constraint_no)] = functions["derivedBy"](tempList)==functions["symbolInLHS"](r+1)
-		constraint_no += 1
 
 	######################################################
 
@@ -164,12 +48,7 @@ def initialize_solver(solver):
 
 	######################################################
 
-	for r in range(1,num_rules+1):
-		vars.update({"rule%d"%r: Int('rule%d'%r)})
-		s.assert_and_track(vars["rule%d"%r]==r, 'first_set_rule%d'%(r))
-		constdict['first_set_rule%d'%(r)] = vars["rule%d"%(r)]==r
-		constraint_no += 1
-
+	
 	num_conds = 1
 	for r in range(1,2*size_rules+1):
 		vars.update({"cond%d"%r: Int('cond%d'%r)})
@@ -407,18 +286,28 @@ def initialize_solver(solver):
 
 		s.assert_and_track(functions["first"](vars[n],vars["eps"])==functions["epsWitness"](num_rules,vars[n]), 'epsInFirstSet%s'%(n))
 		constdict['epsInFirstSet%s'%(n)] = functions["first"](vars[n],vars["eps"])==functions["epsWitness"](num_rules,vars[n])
+		solver["num_conds"] = num_conds
 
+
+def insert_follow_set_constraints(solver):
+	vars = solver["vars"]
+	s = solver["constraints"]
+	functions = solver["functions"]
+	constdict = solver["dictconst"]
+	terms = solver["terms"]
+	nonterms = solver["nonterms"]
+	num_rules = solver["num_rules"]
+	size_rules = solver["size_rules"]
+	num_conds = solver["num_conds"]
+	global constraint_no
 	######################################################
 
 	# FOLLOW SET WITNESS CONSTRAINTS
 
 	######################################################
 
-	vars.update({"dol": Int('dol')})
-	s.assert_and_track(vars["dol"]==symbol_counter, 'assign_int_%d_to_var_dol'%(symbol_counter))
-	constdict['assign_int_%d_to_var_dol'%(symbol_counter)] = vars["dol"]==symbol_counter
-	constraint_no + 1
 
+	
 	while (num_conds <= (size_rules*(size_rules+1))/2):
 		vars.update({"cond%d"%num_conds: Int('cond%d'%num_conds)})
 		num_conds+=1
@@ -673,7 +562,20 @@ def initialize_solver(solver):
 			constdict['constraint666 %s'%(constraint_no)] = Implies(Not(functions["follow"](vars[n],vars[t])),And(tempList))
 			constraint_no += 1
 
-	######################################################
+
+def insert_parse_table_constraints(solver):
+	functions = solver["functions"]
+	vars = solver["vars"]
+	s = solver["constraints"]
+	constdict = solver["dictconst"]
+	nonterms = solver["nonterms"]
+	terms = solver["terms"]
+	num_rules = solver["num_rules"]
+	size_rules = solver["size_rules"]
+	global constraint_no
+	#returns rule number in the parse table cell corresponding to (first arg) nonterm and (second arg) term
+	functions["parseTable"] = Function('parseTable', IntSort(), IntSort(), IntSort())
+		######################################################
 
 	# PARSE TABLE CONSTRAINTS
 
@@ -685,43 +587,46 @@ def initialize_solver(solver):
 			constdict['parse_table_input_range_%s_%s'%(n,t)] = And(functions["parseTable"](vars[n],vars[t])<=num_rules,functions["parseTable"](vars[n],vars[t])>=0)
 			constraint_no += 1
 
-	######################################################
+	# ######################################################
 
-	# PARSE TABLE CONSTRUCTION
+	# # PARSE TABLE CONSTRUCTION
 
-	######################################################
+	# ######################################################
 
-	for n in nonterms:
-		for t in terms:
-			for r in range(1,num_rules+1):
-				tempAnd = []
-				for i in range(1,size_rules+1):
-					tempList = []
-					for j in range(1,i):
-						tempList.append(functions["first"](functions["symbolInRHS"](r,j),vars["eps"]))
-					tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars[t]))
-					tempAnd.append(And(tempList))
-				# s.assert_and_track((functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd)), 'parse_table_first_%s_%s_rule%d'%(n,t,r))
-				# constdict['parse_table_first_%s-%s_rule%d'%(n,t,r)] = (functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd))
-				tempList = []	
-				for i in range(1,size_rules+1):
-					tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars["eps"]))
-				tempList.append(functions["follow"](functions["symbolInLHS"](r),vars[t]))
-				tempAnd.append(And(tempList))
+	# for n in nonterms:
+	# 	for t in terms:
+	# 		for r in range(1,num_rules+1):
+	# 			tempAnd = []
+	# 			for i in range(1,size_rules+1):
+	# 				tempList = []
+	# 				for j in range(1,i):
+	# 					tempList.append(functions["first"](functions["symbolInRHS"](r,j),vars["eps"]))
+	# 				tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars[t]))
+	# 				tempAnd.append(And(tempList))
+	# 			# s.assert_and_track((functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd)), 'parse_table_first_%s_%s_rule%d'%(n,t,r))
+	# 			# constdict['parse_table_first_%s-%s_rule%d'%(n,t,r)] = (functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd))
+	# 			tempList = []	
+	# 			for i in range(1,size_rules+1):
+	# 				tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars["eps"]))
+	# 			tempList.append(functions["follow"](functions["symbolInLHS"](r),vars[t]))
+	# 			tempAnd.append(And(tempList))
 
-				s.assert_and_track((functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd)), 'parse_table_first_%s_%s_rule%d'%(n,t,r))
-				constdict['parse_table_first_%s_%s_rule%d'%(n,t,r)] = (functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd))
+	# 			s.assert_and_track((functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd)), 'parse_table_first_%s_%s_rule%d'%(n,t,r))
+	# 			constdict['parse_table_first_%s_%s_rule%d'%(n,t,r)] = (functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd))
 		
-		for r in range(1,num_rules+1):
-			tempList = []
-			for i in range(1,size_rules+1):
-				tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars["eps"]))
-			tempList.append(functions["follow"](functions["symbolInLHS"](r),vars["dol"]))
+	# 	for r in range(1,num_rules+1):
+	# 		tempList = []
+	# 		for i in range(1,size_rules+1):
+	# 			tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars["eps"]))
+	# 		tempList.append(functions["follow"](functions["symbolInLHS"](r),vars["dol"]))
 
-			s.assert_and_track((functions["parseTable"](vars[n],vars["dol"])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],And(tempList)), 'parse_table_follow_%s_$_rule%d'%(n,r))
-			constdict['parse_table_follow_%s_$_rule%d'%(n,r)] = (functions["parseTable"](vars[n],vars["dol"])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],And(tempList))
-			constraint_no += 1
+	# 		s.assert_and_track((functions["parseTable"](vars[n],vars["dol"])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],And(tempList)), 'parse_table_follow_%s_$_rule%d'%(n,r))
+	# 		constdict['parse_table_follow_%s_$_rule%d'%(n,r)] = (functions["parseTable"](vars[n],vars["dol"])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],And(tempList))
+	# 		constraint_no += 1
 
+def declare_parsing_functions(solver):
+	vars = solver["vars"]
+	functions = solver["functions"]
 	######################################################
 
 	# PARSING FUNCTIONS
@@ -752,19 +657,155 @@ def initialize_solver(solver):
 	# The ending index in the parse action array of the expansion of the functions["symbolAt"](second arg)
 	functions["end"] = Function('end', IntSort(), IntSort(), IntSort())
 
+def declare_symbols_and_template_constraints(solver):
+	global config
+	global constraint_no
+	set_param(proof=True)
+	s = Solver()
+	s.set(unsat_core=True)
+	s.set(mbqi=True)
+	# if config['optimize']:
+	s.set(unsat_core=True)
+	constdict = solver['dictconst']
+	num_rules = config['num_rules'] #Number of rules
+	size_rules = config['size_rules']  #Max number of symbols in RHS
+	num_nonterms = config['num_nonterms']  #Number of nonterms
+	num_terms = config['num_terms']   #Number of terms
+
+	vars = {}
+	functions = {}
+
+	x = Int('x')
+	y = Int('y')
+	z = Int('z')
+	w = Int('w')
+
+	######################################################
+
+	# SYMBOLS
+
+	######################################################
+
+	symbol_counter = 0
+
+	nonterms = ['N%d'%i for i in range(1,num_nonterms+1)]
+	vars.update({"%s"%nt : Int('%s'%nt) for nt in nonterms}) #N1 is mapped to an integer variable N1 of z3
+
+	terms = ['t%d'%i for i in range(1,num_terms+1)]
+	vars.update({"%s"%t : Int('%s'%t) for t in terms})  #t1 is mapped to an integer variable t1 of z3
+
+	vars.update({"eps": Int('eps')})
+
+	for nt in nonterms:
+		s.assert_and_track(vars[nt]==symbol_counter,'assign_int_%d_to_var_%s'%(symbol_counter,nt))
+		constdict['assign_int_%d_to_var_%s'%(symbol_counter,nt)] = vars[nt]==symbol_counter
+		constraint_no += 1
+		symbol_counter+=1
+
+	for t in terms:
+		s.assert_and_track(vars[t]==symbol_counter, 'assign_int_%d_to_var_%s'%(symbol_counter,t))
+		constdict['assign_int_%d_to_var_%s'%(symbol_counter,t)] = vars[t]==symbol_counter
+		constraint_no += 1
+		symbol_counter+=1
+
+	s.assert_and_track(vars['eps']==symbol_counter, 'assign_int_%d_to_var_eps'%(symbol_counter))
+	constdict['assign_int_%d_to_var_eps'%(symbol_counter)] = vars['eps']==symbol_counter
+	constraint_no += 1
+	symbol_counter+=1
+
+	######################################################
+
+	# TEMPLATE CONSTRAINTS
+
+	######################################################
+
+	for r in range(num_rules):
+		vars.update({"x%d"%(r*(size_rules+1)+1): Int('x%d'%(r*(size_rules+1)+1))})
+
+		for i in range(2,size_rules+2):
+			vars.update({"x%d"%(r*(size_rules+1)+i): Int('x%d'%(r*(size_rules+1)+i))})
+
+	# What is the symbol at (second arg) location in RHS of rule no (first arg)
+	functions["symbolInRHS"] = Function('symbolInRHS', IntSort(), IntSort(), IntSort())
+
+	# What is the symbol in LHS of rule no (first arg)
+	functions["symbolInLHS"] = Function('symbolInLHS', IntSort(), IntSort())
+
+	# Initialize symbolInRHS and symbolInLHS
+	for r in range(num_rules):
+		for i in range(2,size_rules+2):
+			s.assert_and_track(functions["symbolInRHS"](r+1,i-1) == vars["x%d"%(r*(size_rules+1)+i)], 'sInRhs_x%d'%(r*(size_rules+1)+i))
+			constdict['sInRhs_x%d'%(r*(size_rules+1)+i)]= functions["symbolInRHS"](r+1,i-1) == vars["x%d"%(r*(size_rules+1)+i)]
+		s.assert_and_track(functions["symbolInLHS"](r+1) == vars["x%d"%(r*(size_rules+1)+1)],'sInlhs:x%d'%(r*(size_rules+1)+1))
+		constdict['sInlhs:x%d'%(r*(size_rules+1)+1)] = functions["symbolInLHS"](r+1) == vars["x%d"%(r*(size_rules+1)+1)]
+
+	#Possible values for LHS and RHS. For any particular rule LHS must be non term and RHS should be combinatin of these
+	for r in range(num_rules):
+		OrList = []
+		for n in nonterms:
+			OrList.append(functions["symbolInLHS"](r+1)==vars[n])
+		s.assert_and_track(Or(OrList), 'LHS_non_term_rule%d'%(r))
+		constdict['LHS_non_term_rule%d'%(r)] = Or(OrList)
+		constraint_no += 1
+
+		for i in range(2,size_rules+2):
+			OrList = []
+			for v in terms+nonterms+["eps"]:
+				OrList.append(functions["symbolInRHS"](r+1,i-1)==vars[v])
+			s.assert_and_track(Or(OrList), 'RHS_rule_%d_pos_%d'%(r,i))
+			constdict['RHS_rule_%d_pos_%d'%(r,i)] = Or(OrList)
+
+
+	#Avoid trivial num_rules-+-+
+	for r in range(1,num_rules+1):
+		s.assert_and_track(Implies(functions["symbolInRHS"](r,size_rules)==functions["symbolInLHS"](r),functions["symbolInRHS"](r,size_rules-1)!=vars["eps"]),'leftRecursion%d'%(r))
+		constdict['leftRecursion%d'%(r)] = Implies(functions["symbolInRHS"](r,size_rules)==functions["symbolInLHS"](r),functions["symbolInRHS"](r,size_rules-1)!=vars["eps"])
+		for i in range(2,size_rules+1):
+			s.assert_and_track(Implies(functions["symbolInRHS"](r,i)==vars["eps"],functions["symbolInRHS"](r,i-1)==vars["eps"]), 'epsConst%d,%d'%(r,i))
+			constdict['epsConst%d,%d'%(r,i)] = Implies(functions["symbolInRHS"](r,i)==vars["eps"],functions["symbolInRHS"](r,i-1)==vars["eps"])
+	functionArgs = [IntSort() for i in range(size_rules+1)]
+	functions["derivedBy"] = Function('derivedBy',functionArgs)
+
+	for r in range(num_rules):
+		tempList = []
+		for j in range(size_rules):
+			tempList.append(functions["symbolInRHS"](r+1,j+1))
+		s.assert_and_track(functions["derivedBy"](tempList)==functions["symbolInLHS"](r+1), 'constraint155-%d'%(constraint_no))
+		constdict['constraint155-%d'%(constraint_no)] = functions["derivedBy"](tempList)==functions["symbolInLHS"](r+1)
+		constraint_no += 1
+	vars.update({"dol": Int('dol')})
+	s.assert_and_track(vars["dol"]==symbol_counter, 'assign_int_%d_to_var_dol'%(symbol_counter))
+	constdict['assign_int_%d_to_var_dol'%(symbol_counter)] = vars["dol"]==symbol_counter
+	constraint_no + 1
+
 	for t in terms:
 		OrList = []
 		for r in range(1, num_rules):
 			for i in range(1,size_rules+1):
 				OrList.append(functions["symbolInRHS"](r, i) == vars[t])
 		s.assert_and_track(Or(OrList),'all_term_must_be_present')
-
 	solver["constraints"] = s
 	solver["vars"] = vars
 	solver["functions"] = functions
 	solver["terms"] = terms
 	solver["nonterms"] = nonterms
+	solver["num_rules"] = num_rules
+	solver["size_rules"] = size_rules
+	for r in range(1,num_rules+1):
+		vars.update({"rule%d"%r: Int('rule%d'%r)})
+		s.assert_and_track(vars["rule%d"%r]==r, 'first_set_rule%d'%(r))
+		constdict['first_set_rule%d'%(r)] = vars["rule%d"%(r)]==r
+		constraint_no += 1
 
+
+
+def initialize_solver(solver):
+	
+	declare_symbols_and_template_constraints(solver)
+	# insert_first_set_constraints(solver)
+	# insert_follow_set_constraints(solver)
+	insert_parse_table_constraints(solver)
+	declare_parsing_functions(solver)	
 
 
 # Incremental parsing step number i to constrain the parse action array for the input string strNum in the solver of solver
@@ -846,3 +887,5 @@ def single_step(solver,strNum,i):
 		s.assert_and_track(Implies(And(Or(OrList),functions["step"](strNum,i-1)),If(functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i))) != 0, Implies(And(RHSList),And(AndList)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i)) ) )), 'expanding_non_term_strNum%d_%d'%(strNum,i))
 		constdict['expanding_non_term_strNum%d_%d'%(strNum,i)] = Implies(And(Or(OrList),functions["step"](strNum,i-1)),If(functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i))) != 0, Implies(And(RHSList),And(AndList)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i)) ) ))
 		constraint_no += 1
+
+
