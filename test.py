@@ -1,4 +1,4 @@
-from input_specs7 import *
+from input_specs8 import *
 from init import *
 from z3 import *
 
@@ -100,8 +100,8 @@ def repair(solver, original_grammar, num_rules, size_rules):
 		i += 1
 	view_assign['eps'] = 'eps'
 	parse_table = get_parse_table()
-	first_set = get_first_set()
-	follow_set = get_follow_set()
+	# first_set = get_first_set()
+	# follow_set = get_follow_set()
 	view_assign['dol'] = 'dol'
 	view_assign['$'] = 'dol'
 	print('view_assign-',view_assign)

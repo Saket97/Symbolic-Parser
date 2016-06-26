@@ -4,7 +4,7 @@ from init import *
 from helpers import *
 from solver import *
 from test import *
-
+from msat import *
 from collections import OrderedDict
 import calendar
 import time
@@ -44,17 +44,52 @@ def analyse_unsat(u_core, solver):
 		print k," : ",t
 
 
-
-
 def main():
+	print "PROBLEM WITH CODE: IT GIVES UNSAT IF THE NO STRING OF GIVEN LENGTH IS POSSIBLE i.e. NO EXACT POSITION IS RETURNED"
+	print "If we want to insert then we can insert to right, check for left"
+	sp_time = calendar.timegm(time.gmtime())
+	print "Initialising SP..."
+	SP = {}
+	SP["total_var"] = 1000
+	SP["dictconst"] = {}
+	initialize_solver(SP)
+	SP["constraints"].set(unsat_core=True)
+
+	num = nums()
+	original_grammar = find_original_grammar()
+	repair(SP, original_grammar, num['num_rules'], num['size_rules'])
+
+	print "SP initialized in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
+	start_time = calendar.timegm(time.gmtime())
+
+	accept_list, aux, aux_const = assert_soft(accept_strings, SP)
+	SP["aux"] = aux
+	SP["aux_const"] = aux_const
+	# result, doubt_pos = naive_maxsat(SP, accept_strings)
+
+	for accept_string in accept_list:
+		add_accept_string(SP,accept_string)
+
+	result, doubt_pos,m = naive_maxsat(SP, accept_strings)
+
+	print "atmost %d positions in the string are correct"%result
+	print "doubtful positions ",doubt_pos
+	for i in range(len(doubt_pos)):
+		print "correction_proposed ",m.evaluate(SP["vars"][accept_list[0][i]])
+	end_time = calendar.timegm(time.gmtime())
+	print "Solving time taken: %s"%str(datetime.timedelta(seconds=(end_time-start_time)))
+
+def main1():
 
 	sp_time = calendar.timegm(time.gmtime())
 	
 	print "Initializing SP..."
+
 	print "to-proceed in synth: ",to_proceed
 	if  to_proceed == False:
 		return
 	SP = {}
+	SP["total_var"] = 1000
 	SP['dictconst'] = {}
 	initialize_solver(SP)
 	SP['constraints'].set(unsat_core=True)
@@ -83,6 +118,7 @@ def main():
 	# if config['optimize']:
 	#	accept_list.sort(key = len, reverse=True)
 	# 	print accept_list
+	accept_list = list_from_strings(accept_strings, SP)
 
 	while check_result != unsat:
 
@@ -102,7 +138,7 @@ def main():
 			print "this string is not parsable."
 			tmp = SP['constraints'].unsat_core()
 			SP['unsat'] = tmp
-			#print 'unsat_core',tmp
+			print 'unsat_core',tmp
 			A = []
 			B = []
 			C = []
@@ -153,7 +189,7 @@ def main():
 	print "specs:"
 	print config
 	print accept_list
-	print reject_list
+	# print reject_list
 	return SP
 
 

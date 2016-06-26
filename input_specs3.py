@@ -12,7 +12,7 @@ def specs():
 		'num_nonterms' : 3, #Number of nonterms
 		'expansion_constant' : 6, #Determines the max. number of parse actions to take while parsing
 		'optimize' : False, # enable optimized mode
-		'neg_egs' : True, # consider negative examples 
+		'neg_egs' : False, # consider negative examples 
 		'threshold' : 1,  # number of unsat cores to break
 		'num_terms' : 3
 	}

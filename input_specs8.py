@@ -3,7 +3,7 @@ from collections import *
 def specs():
 
 	#Space separated (tokenized) strings
-	accept_strings = ["?", "! ?", "( ? ) ?"]
+	accept_strings = ["?", "! ?", "( ? ) ?","( ? ! ?"]
 	reject_strings = [")", ") ("]
 
 	config = {
