@@ -22,6 +22,18 @@ def assert_soft(in_strings,solver):
     accept_list = []
     num_soft_constraints = 0
     
+    #### in_terms consist of the list of strings in this way [['s','a','k','e','t'],['c','s','e']]
+    #### doubling the length of the string 
+    tmp = []
+    for string in in_terms:
+        tmp1 = []
+        for i in range(len(string)):
+            tmp1.append(string[i])
+            tmp1.append('t1000')
+        tmp.append(tmp1)
+    in_terms = tmp
+    print "in_terms: ",in_terms
+
     aux = []
     aux_const = []
     for i in range(len(in_terms)):
@@ -39,15 +51,19 @@ def assert_soft(in_strings,solver):
         accept_list.append(tmp1)
         
         for i in range(len(in_terms[j])):
-            if in_terms[j][i] not in tokens:
-                print "this string is not accepted."
-                global to_proceed
-                to_proceed = False
-                return
             OrList = []
-            for t in terms:
-                OrList.append(vars["a%d_%d"%(j,i)] == vars[t])
+            for t in terms+['t1000']:
+                if t == 'eps' or t == 'dol':
+                    pass
+                else:
+                    OrList.append(vars['a%d_%d'%(j,i)] == vars[t])
             s.add(Or(OrList))
+            
+            if in_terms[j][i] == 't1000' or (in_terms[j][i] not in tokens):
+                s.assert_and_track(Xor(vars['a%d_%d'%(j,i)] == vars["t1000"], aux[idx]), 'adding_terminal_at_%d_to_str_%d'%(i,j))
+                idx += 1
+                continue
+            
             s.assert_and_track(Xor(vars['a%d_%d'%(j,i)] == vars["t%s"%(tokens.index(in_terms[j][i])+1)], aux[idx]), 'adding_terminal_at_%d_to_str_%d'%(i,j))
             idx += 1
     for i in range(len(aux)):
@@ -103,6 +119,7 @@ def naive_maxsat(solver, accept_strings):
         print "check_Sat: ",is_sat
         
         if is_sat == unsat:
+            # print solver["constraints"].unsat_core()
             if k != solver["num_soft_constraints"] - k -1:
                 unsatisfied_soft_constraints = find_unsatisfied_soft_constraints(m, aux_const)
             else:
@@ -117,6 +134,7 @@ def naive_maxsat(solver, accept_strings):
         
         if k == 0:
             print "it was possible to satisfy all soft constraints"
+            # print_grammar(solver)
             return solver["num_soft_constraints"],[],m
         k -= 1
 

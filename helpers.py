@@ -90,7 +90,7 @@ def print_grammar(solver):
 	m = solver["model"]
 	m_vars = solver["vars"]
 	m_funs = solver["functions"]
-
+	terms = solver["terms"]
 	num_rules = config['num_rules']
 	num_nonterms = config['num_nonterms']
 	num_terms = config['num_terms']
@@ -113,6 +113,27 @@ def print_grammar(solver):
 			print ""
 	# print "follow: ",m.evaluate(m_funs["follow"](m_vars['N3'], m_vars['dol']))
 	# print "follow: ",m.evaluate(m_funs["follow"](m_vars['N1'], m_vars['dol']))
+	accept_list = solver["accept_list"]
+	print "accept_list ",accept_list
+	
+	for t in terms+['dol','eps']:
+		print "%s %d"%(t,int(str(m.evaluate(m_vars[t]))))
+
+	tmp = []
+	for i in range(len(accept_list)):
+		tmp1 = []
+		for j in range(len(accept_list[i])):
+			symbolValue = int(str(m.evaluate(m_vars[accept_list[i][j]])))
+			if symbolValue == 100000:
+				continue 
+			print "symbolValue %d, num_non_terms %d pos %s"%(symbolValue,num_nonterms,accept_list[i][j])
+			tmp1.append(tokens[symbolValue-num_nonterms])
+		tmp.append(tmp1)
+	print "corrected string: ",tmp
+	for i in range(len(accept_list)):
+		for j in range(len(accept_list[i])+1):
+			print int(str(m.evaluate(m_funs["next_terminal_increment"](i+1,j))))
+			# print "str%d pos%d %d"%(i+1,j,int(str(m.evaluate(m_funs["next_terminal_increment"](i+1,j)))))
 
 
 def assert_grammar_soft(S_target,S_source,req=False):
@@ -241,11 +262,17 @@ def add_accept_string(solver,accept_string):
 	s.add(functions["symbolAt"](strNum,1) == vars["N1"])
 
 	# Starting lookAheadIndex
-	s.add(functions["lookAheadIndex"](strNum,1) == 0)
+	s.add(If(vars[accept_string[0]] == vars['t1000'],functions["lookAheadIndex"](strNum,1) == functions["next_terminal_increment"](strNum,0) ,functions["lookAheadIndex"](strNum,1) == 0))
 
 	# Starting step
 	s.add(functions["step"](strNum,0))
 
+	# # AndList = []
+	# for i in range(expansion_constant*len(accept_string)):
+	# 	OrList = []
+	# 	for t in solver["terms"]+['dol']:
+	# 		OrList.append(vars[accept_string[functions["lookAheadIndex"](strNum,i)]] == vars[t])
+	# 	s.add(Or(OrList))
 	# Do required number of steps
 	for i in range(expansion_constant*len(accept_string)):
 		single_step(solver,strNum,i+1)

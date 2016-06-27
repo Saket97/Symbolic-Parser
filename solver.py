@@ -648,6 +648,9 @@ def declare_parsing_functions(solver):
 	# The symbol at location (arg) in the input string
 	functions["ip_str"] = Function('ip_str', IntSort(), IntSort(), IntSort())
 
+	# functions["ip_str1"] = Function('ip_str1', IntSort(), IntSort(), IntSort())
+
+
 	# Index in the input string for the lookAhead symbol for the expansion at location (second arg) in the parse action array
 	functions["lookAheadIndex"] = Function('lookAheadIndex', IntSort(), IntSort(), IntSort())
 
@@ -656,6 +659,44 @@ def declare_parsing_functions(solver):
 
 	# The ending index in the parse action array of the expansion of the functions["symbolAt"](second arg)
 	functions["end"] = Function('end', IntSort(), IntSort(), IntSort())
+
+	# How much increment should be done from pos(second arg) to reach the terminal and skip the t1000 in strNum(first arg) 
+	functions["next_terminal_increment"] = Function('next_terminal_increment', IntSort(),IntSort(),IntSort())
+
+def mk_incremental_function(solver):
+	s = solver["constraints"]
+	vars = solver["vars"]
+	functions = solver["functions"]
+	terms = solver["terms"]
+	accept_list = solver["accept_list"]
+	print "accept_list: ",accept_list
+	# for i in range(len(accept_list)):
+	# 	for j in range(len(accept_list[i])):
+	# 		s.assert_and_track(functions["ip_str1"](i+1,j) == vars[accept_list[i][j]],'make_ipstr1_strNum%d_pos%d'%(i+1,j)) 
+	# 	s.assert_and_track(functions["ip_str1"](i+1,len(accept_list[i]))==vars["dol"], 'make_ipstr1_strNum%d_pos%d'%(i+1,len(accept_list[i])	))
+
+	for i in range(len(accept_list)):
+		for j in range(len(accept_list[i])+1):			
+			OrList = []
+			for t in terms+['dol']:
+				OrList.append(functions["ip_str"](i+1,j+functions["next_terminal_increment"](i+1,j)) == vars[t])
+			# if j == len(accept_list[i]):
+				# OrList.append(functions["ip_str"](i,j+functions["next_terminal_increment"](i,j)) == vars['dol'])
+			s.assert_and_track(Or(OrList), 'adding_orlist_strNum%d_%d'%(i,j) )
+			
+			for k in range(j+1, len(accept_list[i])+1):
+				AndList = [True,True]				
+				for p in range(j+1,k):
+					AndList.append(functions["ip_str"](i+1,p) == vars['t1000'])
+				s.assert_and_track(Implies(functions["next_terminal_increment"](i+1,j) == k-j, And(AndList)), 'first_term_%d_%d_%d'%(i,j,k))
+
+			s.assert_and_track(j + functions["next_terminal_increment"](i+1,j) <= len(accept_list[i]), "range_strNum%d_%d"%(i,j))
+			if j == len(accept_list[i]):
+				s.assert_and_track(functions["next_terminal_increment"](i+1,j) == 0, 'next_incremental_$_strNum_%d_%d'%(i+1,j))
+			else:
+				s.assert_and_track(functions["next_terminal_increment"](i+1,j) > 0,'lower_bound_strNum%d_%d'%(i+1,j))
+	# 		# s.assert_and_track(If(Not((functions["ip_str1"](i+1,j) == vars["dol"])), functions["next_terminal_increment"](i,j) > 0, functions["ip_str1"](i,j) == 0), 'lower_bound_%d_%d'%(i,j))
+				
 
 def declare_symbols_and_template_constraints(solver):
 	global config
@@ -806,7 +847,9 @@ def initialize_solver(solver):
 	# insert_follow_set_constraints(solver)
 	insert_parse_table_constraints(solver)
 	declare_parsing_functions(solver)	
-
+	solver["vars"]['t1000'] = Int('t1000')
+	solver["constraints"].add(solver["vars"]['t1000'] == 100000)
+	# mk_increment dunction is called from synth.py
 
 # Incremental parsing step number i to constrain the parse action array for the input string strNum in the solver of solver
 def single_step(solver,strNum,i):
@@ -822,7 +865,6 @@ def single_step(solver,strNum,i):
 	functions = solver["functions"]
 	terms = solver["terms"]
 	nonterms = solver["nonterms"]
-
 
 	num_rules = config['num_rules'] #Number of rules
 	size_rules = config['size_rules']  #Max number of symbols in RHS
@@ -843,7 +885,7 @@ def single_step(solver,strNum,i):
 
 	# For consuming term
 	AndList=[]
-	AndList.append(functions["lookAheadIndex"](strNum,i+1) == functions["lookAheadIndex"](strNum,i) + 1)
+	AndList.append(functions["lookAheadIndex"](strNum,i+1) == functions["lookAheadIndex"](strNum,i) + functions["next_terminal_increment"](strNum, functions["lookAheadIndex"](strNum,i)))
 	AndList.append(functions["step"](strNum,i))
 	AndList.append(Not(functions["success"](strNum,i)))
 	AndList.append(functions["end"](strNum,i)==i)

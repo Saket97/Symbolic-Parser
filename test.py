@@ -11,7 +11,7 @@ def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules
 	for r in range(num_rules):
 		s.assert_and_track(vars['x%d'%(r*(size_rules+1)+1)] == vars[view_assign[original_grammar[r][0]]], 'input x%d'%(r*(size_rules+1)+1))
 		constdict['input x%d'%(r*(size_rules+1)+1)] = (vars['x%d'%(r*(size_rules+1)+1)] == vars[view_assign[original_grammar[r][0]]])
-		print "constdictx1: ",solver["dictconst"]["input x1"]
+		# print "constdictx1: ",solver["dictconst"]["input x1"]
 		print('x%d %s %d'%((r*(size_rules+1)+1),view_assign[original_grammar[r][0]], i))
 		i += 1
 		
@@ -19,17 +19,11 @@ def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules
 			
 			if original_grammar[r][j] == 'eps':
 				# pass
-				# # if (r*(size_rules+1)+j+1) == 5:
-				# # 	s.assert_and_track(vars['x%d'%(r*(size_rules+1)+j+1)] == vars['eps'], '%d'%(r*(size_rules+1)+j+1))
-				# # 	i += 1	
-				# # 	continue
 				s.assert_and_track(vars['x%d'%(r*(size_rules+1)+j+1)] == vars['eps'], 'input x%d'%(r*(size_rules+1)+j+1))
 				constdict['input x%d'%(r*(size_rules+1)+j+1)] = vars['x%d'%(r*(size_rules+1)+j+1)] == vars['eps']
 				print('x%d  eps %d'%(r*(size_rules+1)+j+1, i))
 				i += 1
 			else:
-				if (r*(size_rules+1)+j+1) == 13:
-					continue
 				s.assert_and_track(vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[original_grammar[r][j]]], 'input x%d'%(r*(size_rules+1)+j+1))
 				constdict['input x%d'%(r*(size_rules+1)+j+1)] = vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[original_grammar[r][j]]]
 				

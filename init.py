@@ -40,36 +40,38 @@ def list_from_strings(in_strings, solver):
 	s = solver["constraints"]
 	vars = solver["vars"]
 	in_terms = [in_strings[i].split(' ') for i in range(len(in_strings))]
+	#### in_terms consist of the list of strings in this way [['s','a','k','e','t'],['c','s','e']]
+	#### doubling the length of the string 
+	tmp = []
+	for string in in_terms:
+		tmp1 = []
+		for i in range(len(string)):
+			tmp1.append(string[i])
+			tmp1.append('t1000')
+		tmp.append(tmp1)
+	in_terms = tmp
+	print "in_terms: ",in_terms
+	
 	accept_list = []
 	for j in range(len(in_terms)):
 		# tmp = []
-		tmp1 = []
-		
+		tmp1 = []		
 		for i in range(len(in_terms[j])):
 			tmp1.append('a%d_%d'%(j,i))
 			vars['a%d_%d'%(j,i)] = Int('a%d_%d'%(j,i))
 		accept_list.append(tmp1)
 		
 		for i in range(len(in_terms[j])):
+			if in_terms[j][i] == 't1000':
+				s.assert_and_track(vars['a%d_%d'%(j,i)] == vars["t1000"], 'adding_terminal_at_%d_to_str_%d'%(i,j))
+				continue
+
 			if in_terms[j][i] not in tokens:
 				print "this string is not accepted."
 				global to_proceed
 				to_proceed = False
 				return
 			s.assert_and_track(vars['a%d_%d'%(j,i)] == vars["t%s"%(tokens.index(in_terms[j][i])+1)], 'adding_terminal_at_%d_to_str_%d'%(i,j))
-
-	
-		# for i in in_terms[j]:
-		# 	if i not in tokens:
-		# 		print "This string is not accepted."
-		# 		global to_proceed
-
-		# 		to_proceed = False
-		# 		print "to_proceed: ",to_proceed
-		# 		return
-		# 		# print "saket"
-		# 	tmp.append("t%s"%(tokens.index(i)+1))
-		# accept_list.append(tmp)
 	
 	return accept_list
 
@@ -92,6 +94,20 @@ def list_from_strings1(in_strings):
 	in_terms = [in_strings[i].split(' ') for i in range(len(in_strings))]
 	return [["t%s"%(tokens.index(i)+1) for i in in_terms[j]] for j in range(len(in_terms))]
 
+def list_from_strings2(in_strings):
+	in_terms = [in_strings[i].split(' ') for i in range(len(in_strings))]
+	tmp = []
+	# print "in_terms: ",in_terms
+	for string in in_terms:
+		# tmp1 = []
+		for j in range(len(string)):
+			# if j == 0:
+			# 	tmp1.append("t1000")
+			# 	tmp1.append("t2")
+			tmp1.append("t%s"%(tokens.index(string[j])+1))
+			tmp1.append('t1000')
+		tmp.append(tmp1)
+	return tmp
 
 def verify():
 	string = "s a k e t"

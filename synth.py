@@ -65,17 +65,20 @@ def main():
 	accept_list, aux, aux_const = assert_soft(accept_strings, SP)
 	SP["aux"] = aux
 	SP["aux_const"] = aux_const
+	SP["accept_list"] = accept_list
 	# result, doubt_pos = naive_maxsat(SP, accept_strings)
-
+	mk_incremental_function(SP)
 	for accept_string in accept_list:
 		add_accept_string(SP,accept_string)
 
 	result, doubt_pos,m = naive_maxsat(SP, accept_strings)
 
 	print "atmost %d positions in the string are correct"%result
+	SP["model"] = m
+	print_grammar(SP)
 	print "doubtful positions ",doubt_pos
-	for i in range(len(doubt_pos)):
-		print "correction_proposed ",m.evaluate(SP["vars"][accept_list[0][i]])
+	# for i in range(len(doubt_pos)):
+		# print "correction_proposed ",m.evaluate(SP["vars"][accept_list[0][i]])
 	end_time = calendar.timegm(time.gmtime())
 	print "Solving time taken: %s"%str(datetime.timedelta(seconds=(end_time-start_time)))
 
@@ -118,7 +121,9 @@ def main1():
 	# if config['optimize']:
 	#	accept_list.sort(key = len, reverse=True)
 	# 	print accept_list
-	accept_list = list_from_strings(accept_strings, SP)
+	# accept_list = list_from_strings(accept_strings, SP)
+	SP["accept_list"] = list_from_strings2(accept_strings)
+	mk_incremental_function(SP)
 
 	while check_result != unsat:
 
@@ -130,7 +135,6 @@ def main1():
 		else:
 			for accept_string in accept_list:
 				add_accept_string(SP,accept_string)
-
 
 			check_result = SP["constraints"].check()
 
