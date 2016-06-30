@@ -743,6 +743,7 @@ def declare_symbols_and_template_constraints(solver):
 		constraint_no += 1
 		symbol_counter+=1
 
+	solver["term_start"] = symbol_counter
 	for t in terms:
 		s.assert_and_track(vars[t]==symbol_counter, 'assign_int_%d_to_var_%s'%(symbol_counter,t))
 		constdict['assign_int_%d_to_var_%s'%(symbol_counter,t)] = vars[t]==symbol_counter
@@ -754,6 +755,7 @@ def declare_symbols_and_template_constraints(solver):
 	constraint_no += 1
 	symbol_counter+=1
 
+	solver["term_end"] = symbol_counter
 	######################################################
 
 	# TEMPLATE CONSTRAINTS
@@ -847,9 +849,12 @@ def initialize_solver(solver):
 	# insert_follow_set_constraints(solver)
 	insert_parse_table_constraints(solver)
 	declare_parsing_functions(solver)	
-	solver["vars"]['t1000'] = Int('t1000')
-	solver["constraints"].add(solver["vars"]['t1000'] == 100000)
-	# mk_increment dunction is called from synth.py
+	solver["vars"]["c0"] = Int('c0')
+	solver["vars"]["c1"] = Int('c1')
+	solver["vars"]["insert"] = Bool('insert')
+	# solver["vars"]['t1000'] = Int('t1000')
+	# solver["constraints"].add(solver["vars"]['t1000'] == 100000)
+	
 
 # Incremental parsing step number i to constrain the parse action array for the input string strNum in the solver of solver
 def single_step(solver,strNum,i):
@@ -873,6 +878,8 @@ def single_step(solver,strNum,i):
 
 	x = Int('x')
 
+	s.add(And(functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)) <= solver["term_end"],functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)) >= solver["term_start"] ))
+	s.add(Not(functions["ip_str"](strNum, functions["lookAheadIndex"](strNum,i)) == vars["eps"]))
 	# Termination condition
 	s.assert_and_track(Implies(And(functions["end"](strNum,1) == (i-1), functions["step"](strNum,i-1)), If(functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)) == vars["dol"], And(Not(functions["step"](strNum,i)),functions["success"](strNum,i)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i))) ) ), 'parsing_termination_string%d'%(strNum))
 	constdict['parsing_termination_string%d'%(strNum)] = Implies(And(functions["end"](strNum,1) == (i-1), functions["step"](strNum,i-1)), If(functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)) == vars["dol"], And(Not(functions["step"](strNum,i)),functions["success"](strNum,i)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i))) ) )
@@ -885,7 +892,7 @@ def single_step(solver,strNum,i):
 
 	# For consuming term
 	AndList=[]
-	AndList.append(functions["lookAheadIndex"](strNum,i+1) == functions["lookAheadIndex"](strNum,i) + functions["next_terminal_increment"](strNum, functions["lookAheadIndex"](strNum,i)))
+	AndList.append(functions["lookAheadIndex"](strNum,i+1) == functions["lookAheadIndex"](strNum,i) + 1)
 	AndList.append(functions["step"](strNum,i))
 	AndList.append(Not(functions["success"](strNum,i)))
 	AndList.append(functions["end"](strNum,i)==i)

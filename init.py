@@ -121,8 +121,8 @@ config.update({'num_terms':len(tokens)})
 assert(config['size_rules']>=2)
 # verify()
 to_proceed = True
-# reject_list = list_from_strings1(reject_strings)
-# accept_list = list_from_strings1(accept_strings)
+reject_list = list_from_strings1(reject_strings)
+accept_list = list_from_strings1(accept_strings)
 # reject_list = list_from_strings(reject_strings)
 # print "Accept_list",accept_list
 # print "type accept_list", type(accept_list)

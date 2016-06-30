@@ -2,6 +2,7 @@ from z3 import *
 from solver import *
 from init import *
 from itertools import *
+from msat import assert_and_track_soft, add_soft
 constraint_no = 0
 def req_rules(solver):
 
@@ -115,26 +116,29 @@ def print_grammar(solver):
 	# print "follow: ",m.evaluate(m_funs["follow"](m_vars['N1'], m_vars['dol']))
 	accept_list = solver["accept_list"]
 	print "accept_list ",accept_list
-	
-	for t in terms+['dol','eps']:
-		print "%s %d"%(t,int(str(m.evaluate(m_vars[t]))))
-
+	print "c1: ",str(m.evaluate(m_vars["c1"]))
+	print "c0: ",str(m.evaluate(m_vars["c0"]))
 	tmp = []
-	for i in range(len(accept_list)):
+	# print "c0: ",int(str(m.evaluate(m_vars["c0"])))
+	print "insert ",str(m.evaluate(m_vars["insert"]))
+	for i in range(len(accept_list)):		
 		tmp1 = []
-		for j in range(len(accept_list[i])):
-			symbolValue = int(str(m.evaluate(m_vars[accept_list[i][j]])))
-			if symbolValue == 100000:
-				continue 
-			print "symbolValue %d, num_non_terms %d pos %s"%(symbolValue,num_nonterms,accept_list[i][j])
-			tmp1.append(tokens[symbolValue-num_nonterms])
+		for j in range(len(accept_list[i])+1):
+			symbolValue = int(str(m.evaluate(m_funs["ip_str"](i+1,j))))
+			# print "symbol_value ",symbolValue
+			if j == len(accept_list[i]):
+				if int(str(m.evaluate(m_vars["c0"]))) < len(accept_list[i]):
+					tmp1.append("%s"%(tokens[symbolValue-num_nonterms]))
+				else:
+					pass
+			else:
+				tmp1.append("%s"%(tokens[symbolValue-num_nonterms]))
+			
+			
 		tmp.append(tmp1)
 	print "corrected string: ",tmp
-	for i in range(len(accept_list)):
-		for j in range(len(accept_list[i])+1):
-			print int(str(m.evaluate(m_funs["next_terminal_increment"](i+1,j))))
-			# print "str%d pos%d %d"%(i+1,j,int(str(m.evaluate(m_funs["next_terminal_increment"](i+1,j)))))
-
+	print str(m.evaluate(m_funs["lookAheadIndex"](1,1)))
+	print str(m.evaluate(m_funs["ip_str"](1,0)))
 
 def assert_grammar_soft(S_target,S_source,req=False):
 
@@ -235,6 +239,7 @@ def add_accept_string(solver,accept_string):
 	constdict = solver["dictconst"]
 	vars = solver["vars"]
 	functions = solver["functions"]
+	terms = solver["terms"]
 
 	if "type" in solver:
 		assert(solver["type"]=="accept")
@@ -250,29 +255,37 @@ def add_accept_string(solver,accept_string):
 	expansion_constant = config['expansion_constant']  #Determines the max. number of parse actions to take while parsing
 
 	strNum = solver["num_strings"]
+	print "terms ",terms
+	for i in range(len(accept_string)+2):
+		OrList = []
+		for t in terms+['dol']:
+			if t == "eps":
+				continue
+			OrList.append(functions["ip_str"](strNum, i) == vars[t])
+		s.add(Or(OrList))
+	s.add(Not(functions["ip_str"](strNum,0) == vars['dol']))
 	# Take input and construct the ip_str function
 	for j in range(len(accept_string)):
-		s.assert_and_track(functions["ip_str"](strNum,j) == vars[accept_string[j]],'make_ipstr_strNum%d_pos%d'%(strNum,j))
+		# assert_and_track_soft(If(vars["c0"]<j, functions["ip_str"](strNum,j+1) == vars[accept_string[j]], functions["ip_str"](strNum,j) == vars[accept_string[j]]),solver ,'make_ipstr_strNum%d_pos%d'%(strNum,j))
+		assert_and_track_soft(If(vars["insert"],If(vars["c0"]<j, functions["ip_str"](strNum,j+1) == vars[accept_string[j]], functions["ip_str"](strNum,j) == vars[accept_string[j]]), If(vars["c1"]<=j, If(vars["c1"] == j, True, functions["ip_str"](strNum,j-1)==vars[accept_string[j]]) , functions["ip_str"](strNum,j)==vars[accept_string[j]])),solver,'make_ipstr_strNum%d_pos%d'%(strNum,j))
 		constdict['make_ipstr_strNum%d_pos%d'%(strNum,j)] = functions["ip_str"](strNum,j) == vars[accept_string[j]]
-	
-	s.assert_and_track(functions["ip_str"](strNum,len(accept_string))==vars["dol"], 'make_ipstr_strNum%d_pos%d'%(strNum,len(accept_string)	))
-	constdict['make_ipstr_strNum%d_pos%d'%(strNum,len(accept_string))] = functions["ip_str"](strNum,len(accept_string))==vars["dol"]
+	# s.add(vars["insert"])
+	for j in range(len(accept_string)):
+		add_soft(functions["ip_str"](strNum,j) == vars[accept_string[j]],solver)
 
+	assert_and_track_soft(If(vars["insert"],If(vars["c0"]<len(accept_string), functions["ip_str"](strNum,len(accept_string)+1) == vars["dol"], functions["ip_str"](strNum,len(accept_string)) == vars["dol"]), If(vars["c1"]<=len(accept_string), If(vars["c1"] == len(accept_string), True, functions["ip_str"](strNum,len(accept_string)-1)==vars["dol"]) , functions["ip_str"](strNum,len(accept_string))==vars["dol"])),solver, 'make_ipstr_strNum%d_pos%d'%(strNum,len(accept_string)	))
+	constdict['make_ipstr_strNum%d_pos%d'%(strNum,len(accept_string))] = functions["ip_str"](strNum,len(accept_string))==vars["dol"]
+	add_soft(Implies(Not(vars["insert"]), Not(vars["c1"] == len(accept_string))),solver)
 	# Start parsing with N1 as the first symbol
 	s.add(functions["symbolAt"](strNum,1) == vars["N1"])
 
 	# Starting lookAheadIndex
-	s.add(If(vars[accept_string[0]] == vars['t1000'],functions["lookAheadIndex"](strNum,1) == functions["next_terminal_increment"](strNum,0) ,functions["lookAheadIndex"](strNum,1) == 0))
+	# s.add(If(vars[accept_string[0]] == vars['t1000'],functions["lookAheadIndex"](strNum,1) == functions["next_terminal_increment"](strNum,0) ,functions["lookAheadIndex"](strNum,1) == 0))
+	s.add(functions["lookAheadIndex"](strNum,1) == 0)
 
 	# Starting step
 	s.add(functions["step"](strNum,0))
 
-	# # AndList = []
-	# for i in range(expansion_constant*len(accept_string)):
-	# 	OrList = []
-	# 	for t in solver["terms"]+['dol']:
-	# 		OrList.append(vars[accept_string[functions["lookAheadIndex"](strNum,i)]] == vars[t])
-	# 	s.add(Or(OrList))
 	# Do required number of steps
 	for i in range(expansion_constant*len(accept_string)):
 		single_step(solver,strNum,i+1)
@@ -384,3 +397,6 @@ def get_solution_optimize(SP):
 		SP["constraints"].pop()
 
 	return check_result
+
+
+

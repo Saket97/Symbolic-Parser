@@ -62,19 +62,31 @@ def main():
 	print "SP initialized in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
 	start_time = calendar.timegm(time.gmtime())
 
-	accept_list, aux, aux_const = assert_soft(accept_strings, SP)
-	SP["aux"] = aux
-	SP["aux_const"] = aux_const
-	SP["accept_list"] = accept_list
+	# accept_list, aux, aux_const = assert_soft(accept_strings, SP)
+	# SP["aux"] = aux
+	# SP["aux_const"] = aux_const
+	# SP["accept_list"] = accept_list
 	# result, doubt_pos = naive_maxsat(SP, accept_strings)
-	mk_incremental_function(SP)
+	# mk_incremental_function(SP)
 	for accept_string in accept_list:
 		add_accept_string(SP,accept_string)
 
-	result, doubt_pos,m = naive_maxsat(SP, accept_strings)
-
+	result, doubt_pos,m = naive_maxsat(SP)
+	SP["accept_list"] = accept_list
 	print "atmost %d positions in the string are correct"%result
 	SP["model"] = m
+	for t in SP["terms"]:
+		print "%s %s"%(t,str(m.evaluate(SP["vars"][t])))
+	print "ip_str(1,0) ",str(m.evaluate(SP["functions"]["ip_str"](1,0)))
+
+	print "ip_str(1,1) ",str(m.evaluate(SP["functions"]["ip_str"](1,1)))
+	print "ip_str(1,2) ",str(m.evaluate(SP["functions"]["ip_str"](1,2)))
+	print "ip_str(1,3) ",str(m.evaluate(SP["functions"]["ip_str"](1,3)))
+	print "ip_str(1,4) ",str(m.evaluate(SP["functions"]["ip_str"](1,4)))
+	print m[SP["functions"]["lookAheadIndex"]]
+	print m[SP["functions"]["ip_str"]]
+	print SP["term_start"]
+	print SP["term_end"]
 	print_grammar(SP)
 	print "doubtful positions ",doubt_pos
 	# for i in range(len(doubt_pos)):

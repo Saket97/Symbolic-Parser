@@ -3,7 +3,8 @@ from collections import *
 def specs():
 
 	#Space separated (tokenized) strings
-	accept_strings = ["?", "! ?", "( ) ) ) ?"]
+	# accept_strings = ["?", "! ?", "( ?"]
+	accept_strings = ["( ? ) ?"]
 	reject_strings = [")", ") ("]
 
 	config = {
@@ -40,7 +41,8 @@ def get_follow_set():
 	follow_set = [{'non_term':'S' ,'(':0 ,')':1 ,'!':0 ,'?':0 ,'$':1},{'non_term':'F' ,'(':1 ,')':0 ,'!':1 ,'?':1 ,'$':0},{'non_term':'Q' ,'(':0 ,')':1 ,'!':0 ,'?':0 ,'$':1},{'non_term':'A' ,'(':1 ,')':1 ,'!':1 ,'?':1 ,'$':1}]
 	return follow_set
 
-accept_strings = ["?", "! ?", "( ) ) ) ?"]
+# accept_strings = ["?", "! ?", "( ?"]
+accept_strings = ["( ? ) ?"]
 reject_strings = [")", ") ("]
 
 ##	S -> (S)S | eps
