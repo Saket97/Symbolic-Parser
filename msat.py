@@ -11,6 +11,7 @@ def get_num_disabled_soft_constraints(m,num_soft_constraints,aux_const):
 
 
 def add_soft(constraint, solver):
+    # print "constraint: ",constraint
     if "aux" not in solver:
         solver["aux"] = []
         solver["aux_const"] = []
@@ -26,6 +27,7 @@ def add_soft(constraint, solver):
     s.add(If(aux[len(aux)-1], aux_const[len(aux_const)-1] == 1, aux_const[len(aux_const)-1] == 0))
 
 def assert_and_track_soft(constraint, solver, name):
+    print "constraint: ",constraint
     if "aux" not in solver:
         solver["aux"] = []
         solver["aux_const"] = []
@@ -37,7 +39,7 @@ def assert_and_track_soft(constraint, solver, name):
     aux_const.append(tmp1)
     solver["total_var"] += 1
     s = solver["constraints"]
-    print "constraint: ",constraint
+    # print "constraint: ",constraint
     # print "aux_const: ",aux_const
     # print "aux: ",aux
     # print "assertions: ",s.assertions()
@@ -55,7 +57,7 @@ def assert_at_most_k(solver, aux_const, k):
 
 def find_unsatisfied_soft_constraints(m,aux_const):
     tmp = []
-    print "aux_const inside function ",aux_const
+    # print "aux_const inside function ",aux_const
     for i in range(len(aux_const)):
         if int(str(m.evaluate(aux_const[i]))) == 1:
             tmp.append(i)

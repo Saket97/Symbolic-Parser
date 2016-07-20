@@ -12,7 +12,7 @@ def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules
 		s.assert_and_track(vars['x%d'%(r*(size_rules+1)+1)] == vars[view_assign[original_grammar[r][0]]], 'input x%d'%(r*(size_rules+1)+1))
 		constdict['input x%d'%(r*(size_rules+1)+1)] = (vars['x%d'%(r*(size_rules+1)+1)] == vars[view_assign[original_grammar[r][0]]])
 		# print "constdictx1: ",solver["dictconst"]["input x1"]
-		print('x%d %s %d'%((r*(size_rules+1)+1),view_assign[original_grammar[r][0]], i))
+		# print('x%d %s %d'%((r*(size_rules+1)+1),view_assign[original_grammar[r][0]], i))
 		i += 1
 		
 		for j in range(1,size_rules+1):
@@ -21,13 +21,13 @@ def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules
 				# pass
 				s.assert_and_track(vars['x%d'%(r*(size_rules+1)+j+1)] == vars['eps'], 'input x%d'%(r*(size_rules+1)+j+1))
 				constdict['input x%d'%(r*(size_rules+1)+j+1)] = vars['x%d'%(r*(size_rules+1)+j+1)] == vars['eps']
-				print('x%d  eps %d'%(r*(size_rules+1)+j+1, i))
+				# print('x%d  eps %d'%(r*(size_rules+1)+j+1, i))
 				i += 1
 			else:
 				s.assert_and_track(vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[original_grammar[r][j]]], 'input x%d'%(r*(size_rules+1)+j+1))
 				constdict['input x%d'%(r*(size_rules+1)+j+1)] = vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[original_grammar[r][j]]]
 				
-				print('x%d %s %d'%((r*(size_rules+1)+j+1),view_assign[original_grammar[r][j]], i))
+				# print('x%d %s %d'%((r*(size_rules+1)+j+1),view_assign[original_grammar[r][j]], i))
 				i += 1
 
 def add_parse_table_constraints(solver,parse_table,view_assign):
@@ -35,7 +35,7 @@ def add_parse_table_constraints(solver,parse_table,view_assign):
 	vars = solver['vars']
 	functions = solver['functions']
 	constdict = solver["dictconst"]
-	print "parse_table: ",parse_table
+	# print "parse_table: ",parse_table
 	for i in range(len(parse_table)):
 		non_terminal = parse_table[i]['non_term']
 		for k,t in parse_table[i].items():
@@ -98,7 +98,7 @@ def repair(solver, original_grammar, num_rules, size_rules):
 	# follow_set = get_follow_set()
 	view_assign['dol'] = 'dol'
 	view_assign['$'] = 'dol'
-	print('view_assign-',view_assign)
+	# print('view_assign-',view_assign)
 	add_constraints(solver,view_assign,original_grammar,num_rules, size_rules)
 	add_parse_table_constraints(solver,parse_table,view_assign)
 	# add_first_set_constraints(solver, first_set, follow_set, view_assign)

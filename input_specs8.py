@@ -1,10 +1,10 @@
-# from 'game_src/game/views' import * 
+from __future__ import print_function 
 from collections import *
 def specs():
 
-	#Space separated (tokenized) strings
+	#Space separated (tokized) strings
 	# accept_strings = ["?", "! ?", "( ?"]
-	accept_strings = ["( ? ) ?"]
+	accept_strings = ["( )"]
 	reject_strings = [")", ") ("]
 
 	config = {
@@ -42,9 +42,108 @@ def get_follow_set():
 	return follow_set
 
 # accept_strings = ["?", "! ?", "( ?"]
-accept_strings = ["( ? ) ?"]
+# accept_strings = ["( ? )"]
 reject_strings = [")", ") ("]
 
 ##	S -> (S)S | eps
 ##
+def convert_grammar(original_grammar):
+	tmp1 = []
+	for i in range(len(original_grammar)):
+		tmp = []
+		n = len(original_grammar[i])
+		tmp.append(original_grammar[i][0])
+		for j in range(1,9-n+1):
+			tmp.append("eps")
+		for j in range(1,n):
+			tmp.append(original_grammar[i][j])
+		tmp1.append(tmp)
+	# print "tmp1  ",tmp1
+	return tmp1
+def print_correct(tmp):			
+	tmp = convert_grammar(tmp)
+	for  i in range(len(tmp)):
+		for j in range(len(tmp[i])):
+			# if j == 0:
+				# print "%s\t   "%(tmp[i][j]),
+			# else:
+			# print "%s\t"%(tmp[i][j]),
+			pass
+		# print ""
+def online_check_hacking(original_grammar):
+	tmp = []
+	for i in range(len(original_grammar)):
+		tmp1 = []
+		for j in range(len(original_grammar[i])):
+			if j == 1:
+				tmp1.append("->")
+			if original_grammar[i][j] == "eps":
+				tmp1.append("EPSILON")
+				continue
+			if original_grammar[i][j] == "|":
+				tmp1.append("#")
+				continue
+			tmp1.append(original_grammar[i][j])
+		tmp.append(tmp1)
+	for  i in range(len(tmp)):
+		for j in range(len(tmp[i])):
+			if j != len(tmp[i])-1:
+				print ("%s"%(tmp[i][j]), end=" ")
+			else:
+				print ("%s"%(tmp[i][j]))
+def online_check_format1(original_grammar):
+	tmp = []
+	for i in range(len(original_grammar)):
+		tmp1 = []
+		for j in range(len(original_grammar[i])):
+			if original_grammar[i][j] == "eps":
+				tmp1.append("''")
+				continue
+			if original_grammar[i][j] == "|":
+				tmp1.append("#")
+				continue
+			tmp1.append(original_grammar[i][j])
+			if j == 0:
+				tmp1.append('->')
+		# tmp1.append(".")
+		tmp.append(tmp1)
+	for  i in range(len(tmp)):
+		for j in range(len(tmp[i])):
+			if j != len(tmp[i])-1:
+				print ("%s"%(tmp[i][j]), end=" ")
+			else:
+				print ("%s"%(tmp[i][j]))
+		# print ("")
+def online_check_format2(original_grammar):
+	tmp =[]
+	for i in range(len(original_grammar)):
+		tmp1 = []
+		for j in range(len(original_grammar[i])):
+			if original_grammar[i][j] == "eps":
+				continue
+			if original_grammar[i][j] == "|":
+				tmp1.append("#")
+				continue
+			if original_grammar[i][j] == ".":
+				tmp1.append("@")
+				continue
+			tmp1.append(original_grammar[i][j])
+			if j == 0:
+				tmp1.append("->")
+		if len(tmp1) == 2:
+			tmp1.append(" ")
+		tmp1.append(".")
+		tmp.append(tmp1)
+	for i in range(len(tmp)):
+		for j in range(len(tmp[i])):
+			if j == len(tmp[i])-2:
+				print(tmp[i][j],end="")
+			else:
+				print(tmp[i][j],end=" ")
+			if j == len(tmp[i])-1:
+				print("")
 
+tmp =[["Prog","Exp"],["Exp","ExpOR","ExpORPr"],["ExpOR","ExpAND","ExpANDPr"],["ExpAND","ArithExp","RelExp"],["ExpORPr","|","Exp"],["ExpORPr","eps"],["ExpANDPr","&",'ExpOR'],['ExpANDPr','eps'],['ArithExp',"Term","TermPr"],["RelExp","RelationOp","ArithExp"],["RelExp","eps"],["Term","Factor","FactorPr"],["TermPr","+","Term","TermPr"],["TermPr","-","Term","TermPr"],["TermPr","eps"],["FactorPr","*","Factor","FactorPr"],["FactorPr","/","Factor","FactorPr"],["FactorPr","eps"],["Factor","nil"],["Factor","integer"],["Factor","string"],["Factor","(","ExpList",")"],["Factor","UnaryOp","Exp"],["Factor","if","Exp","then","Exp","Factor1"],["Factor1","else","Exp"],["Factor1","eps"],["Factor","while","Exp","do","Exp"],["Factor","for","id",":=","Exp","to","Exp","do","Exp"],["Factor","break"],["Factor","let","DecList","in","ExpList","end"],["Factor","LValue"],["Dec1","Dec","Dec1"],["Dec1","eps"],["DecList","Dec1"],["Dec","TyDec"],["Dec","VarDec"],["Dec","FunDec"],["TyDec","type","TypeId","=","Ty"],["Ty","{","FieldList","}"],["Ty","array","of","TypeId"],["Ty","TypeId"],["extra1",",","id",":","TypeId","extra1"],["extra1","eps"],["FieldList","id",":","TypeId","extra1"],["FieldList","eps"],["extra2",",","id","=","Exp","extra2"],["extra2","eps"],["FieldExpList","id","=","Exp","extra2"],["FieldExpList","eps"],["TypeId","id"],["TypeId","string"],["TypeId","int"],["VarDec","var","id","extra3",":=","Exp"],["extra3",":","TypeId"],["extra3","eps"],["FunDec","function","id","(","FieldList",")","extra3","=","Exp"],["LValue","id","extra4"],["extra4","FunctionRecordArray"],["extra4","FunctionRecordArrayPr"],["FunctionRecordArray","(","ArgList",")"],["FunctionRecordArray","{","id","=","Exp","extra2","}"],["FunctionRecordArray","[","Exp","]","extra15"],["extra15","of","Exp"],["extra15","FunctionRecordArrayPr"],["FunctionRecordArrayPr","extra11","extra12","extra13"],["extra11",".","id","extra11"],["extra11","eps"],["extra12","[","Exp","]","extra12"],["extra12","eps"],["extra13","Assign","Exp"],["extra13","eps"],["ExpList","Exp","extra7"],["ExpList","eps"],["extra7",";","Exp","extra7"],["extra7","eps"],["ArgList","Exp","extra6"],["ArgList","eps"],["extra6",",","Exp","extra6"],["extra6","eps"],["UnaryOp","-"],["RelationOp","="],["RelationOp","<>"],["RelationOp",">"],["RelationOp","<"],["RelationOp",">="],["RelationOp","<="]]
+
+# online_check_format1(tmp)
+# online_check_hacking(tmp)

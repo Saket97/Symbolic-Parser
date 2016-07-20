@@ -12,48 +12,18 @@ import datetime
 from itertools import *
 
 #SP instance
-def analyse_unsat(u_core, solver):
-	category = OrderedDict([('first_set_first_Subset',0), ('first_set_eps_subset',0) ,('eps_first_set_rule',0),('next_first_in_follow',0),('$_in_follow_N1',0),('follow_lhs_in_rhs',0),('parse_table_first',0),('parse_table_follow',0)])
-	for constraint in u_core:
-		if 'first_set_first_Subset' in str(constraint):# A -> B C first B < First A
-			category['first_set_first_Subset'] += 1
-		else:
-			if 'first_set_eps_subset' in str(constraint):# A -> B C first B has eps then first C < first A
-				category['first_set_eps_subset'] += 1
-			else:
-
-				if 'eps_first_set_rule' in str(constraint): # A -> B C first B and C has eps then First A has eps
-					category['eps_first_set_rule'] += 1
-				else:
-					if 'next_first_in_follow' in str(constraint): # A -> B C D if firs C has eps then first D in follow B
-						category['next_first_in_follow'] += 1
-					else:
-						if '$_in_follow_N1' in str(constraint):
-							category['$_in_follow_N1'] += 1
-						else:
-							if 'follow_lhs_in_rhs' in str(constraint):
-								category['follow_lhs_in_rhs'] += 1
-							else:
-								if 'parse_table_first' in str(constraint):
-									category['parse_table_first'] += 1
-								else:
-									if 'parse_table_follow' in str(constraint):
-										category['parse_table_follow'] += 1
-
-	for k,t in category.items():
-		print k," : ",t
-
+	# category = OrderedDict([('first_set_first_Subset',0), ('first_set_eps_subset',0) ,('eps_first_set_rule',0),('next_first_in_follow',0),('$_in_follow_N1',0),('follow_lhs_in_rhs',0),('parse_table_first',0),('parse_table_follow',0)])
+	
 
 def main():
-	print "PROBLEM WITH CODE: IT GIVES UNSAT IF THE NO STRING OF GIVEN LENGTH IS POSSIBLE i.e. NO EXACT POSITION IS RETURNED"
-	print "If we want to insert then we can insert to right, check for left"
 	sp_time = calendar.timegm(time.gmtime())
 	print "Initialising SP..."
 	SP = {}
+	SP["n_insertions"] = int(input("Enter the maximum number of insertions: (Time needed depends on this):"))
 	SP["total_var"] = 1000
 	SP["dictconst"] = {}
 	initialize_solver(SP)
-	SP["constraints"].set(unsat_core=True)
+	# SP["constraints"].set(unsat_core=True)
 
 	num = nums()
 	original_grammar = find_original_grammar()
@@ -61,36 +31,24 @@ def main():
 
 	print "SP initialized in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
 	start_time = calendar.timegm(time.gmtime())
-
-	# accept_list, aux, aux_const = assert_soft(accept_strings, SP)
-	# SP["aux"] = aux
-	# SP["aux_const"] = aux_const
-	# SP["accept_list"] = accept_list
-	# result, doubt_pos = naive_maxsat(SP, accept_strings)
-	# mk_incremental_function(SP)
 	for accept_string in accept_list:
 		add_accept_string(SP,accept_string)
-
+	print "starting maxsat solver..."
 	result, doubt_pos,m = naive_maxsat(SP)
 	SP["accept_list"] = accept_list
 	print "atmost %d positions in the string are correct"%result
 	SP["model"] = m
 	for t in SP["terms"]:
 		print "%s %s"%(t,str(m.evaluate(SP["vars"][t])))
-	print "ip_str(1,0) ",str(m.evaluate(SP["functions"]["ip_str"](1,0)))
+	# print "ip_str(1,0) ",str(m.evaluate(SP["functions"]["ip_str"](1,0)))
 
-	print "ip_str(1,1) ",str(m.evaluate(SP["functions"]["ip_str"](1,1)))
-	print "ip_str(1,2) ",str(m.evaluate(SP["functions"]["ip_str"](1,2)))
-	print "ip_str(1,3) ",str(m.evaluate(SP["functions"]["ip_str"](1,3)))
-	print "ip_str(1,4) ",str(m.evaluate(SP["functions"]["ip_str"](1,4)))
-	print m[SP["functions"]["lookAheadIndex"]]
-	print m[SP["functions"]["ip_str"]]
+	# print "lookAheadIndex ",m[SP["functions"]["lookAheadIndex"]]
+	# print "ip_str1 ",m[SP["functions"]["ip_str1"]]
+	print "succ ",m[SP["functions"]["succ"]]
+	print "pred ",m[SP["functions"]["pred"]]
 	print SP["term_start"]
 	print SP["term_end"]
 	print_grammar(SP)
-	print "doubtful positions ",doubt_pos
-	# for i in range(len(doubt_pos)):
-		# print "correction_proposed ",m.evaluate(SP["vars"][accept_list[0][i]])
 	end_time = calendar.timegm(time.gmtime())
 	print "Solving time taken: %s"%str(datetime.timedelta(seconds=(end_time-start_time)))
 
@@ -100,9 +58,6 @@ def main1():
 	
 	print "Initializing SP..."
 
-	print "to-proceed in synth: ",to_proceed
-	if  to_proceed == False:
-		return
 	SP = {}
 	SP["total_var"] = 1000
 	SP['dictconst'] = {}
@@ -135,7 +90,7 @@ def main1():
 	# 	print accept_list
 	# accept_list = list_from_strings(accept_strings, SP)
 	SP["accept_list"] = list_from_strings2(accept_strings)
-	mk_incremental_function(SP)
+	# mk_incremental_function(SP)
 
 	while check_result != unsat:
 

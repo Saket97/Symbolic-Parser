@@ -36,46 +36,6 @@ def discover(original_grammar):
 			pass
 	return non_tokens
 
-def list_from_strings(in_strings, solver):
-	s = solver["constraints"]
-	vars = solver["vars"]
-	in_terms = [in_strings[i].split(' ') for i in range(len(in_strings))]
-	#### in_terms consist of the list of strings in this way [['s','a','k','e','t'],['c','s','e']]
-	#### doubling the length of the string 
-	tmp = []
-	for string in in_terms:
-		tmp1 = []
-		for i in range(len(string)):
-			tmp1.append(string[i])
-			tmp1.append('t1000')
-		tmp.append(tmp1)
-	in_terms = tmp
-	print "in_terms: ",in_terms
-	
-	accept_list = []
-	for j in range(len(in_terms)):
-		# tmp = []
-		tmp1 = []		
-		for i in range(len(in_terms[j])):
-			tmp1.append('a%d_%d'%(j,i))
-			vars['a%d_%d'%(j,i)] = Int('a%d_%d'%(j,i))
-		accept_list.append(tmp1)
-		
-		for i in range(len(in_terms[j])):
-			if in_terms[j][i] == 't1000':
-				s.assert_and_track(vars['a%d_%d'%(j,i)] == vars["t1000"], 'adding_terminal_at_%d_to_str_%d'%(i,j))
-				continue
-
-			if in_terms[j][i] not in tokens:
-				print "this string is not accepted."
-				global to_proceed
-				to_proceed = False
-				return
-			s.assert_and_track(vars['a%d_%d'%(j,i)] == vars["t%s"%(tokens.index(in_terms[j][i])+1)], 'adding_terminal_at_%d_to_str_%d'%(i,j))
-	
-	return accept_list
-
-	# return [["t%s"%(tokens.index(i)+1) for i in in_terms[j]] for j in range(len(in_terms))]
 
 ######################################################
 
@@ -123,7 +83,4 @@ assert(config['size_rules']>=2)
 to_proceed = True
 reject_list = list_from_strings1(reject_strings)
 accept_list = list_from_strings1(accept_strings)
-# reject_list = list_from_strings(reject_strings)
-# print "Accept_list",accept_list
-# print "type accept_list", type(accept_list)
 
