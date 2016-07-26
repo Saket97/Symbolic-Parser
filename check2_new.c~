@@ -1,0 +1,121 @@
+#include<stdio.h>     
+//nclude<stdlib.h>     
+struct base     
+{     
+	int l;     
+	int b;     
+	int area;     
+};     
+typedef struct base Base;     
+void scan(int i,Base* arr)     
+{     
+	int len,bre,h;     
+//canf("%d%d%d",&len,&bre,&h);     
+	int j = 3*(i);     
+//rr[j].l = len;     
+//rr[j].b = bre;     
+//rr[j+1].l = bre;     
+//rr[j+1].b = h;     
+//rr[j+2].l = len;     
+//rr[j+2].b = h;     
+}     
+void area(Base* arr,int n)     
+{     
+	int i = 0;     
+//or(i=0;i<3*n;++i)     
+//rr[i].area = (arr[i].l)*(arr[i].b);     
+}     
+void merge(Base* arr,int start,int end);     
+void msort(Base* arr,int start,int end)     
+{     
+//f(start >= end)     
+//eturn;     
+	int mid = (start+end)/2;     
+//f(mid != start)     
+//sort(arr,start,mid-1);     
+//f(mid != end)     
+//sort(arr,mid,end);     
+//erge(arr,start,end);     
+}     
+int lis(Base* arr,int n)     
+{     
+	int k = 3*n;     
+	int len[3*n];     
+//en[0] = 1;     
+//nt max = 0;     
+//nt i;     
+//or(i=1;i<k;++i)     
+//      
+////max = 0;     
+//int j=0;     
+//for(j=0;j<i;++j)     
+//{     
+//	if(arr[i].l > arr[j].l && arr[i].b > arr[j].b)     
+//	{     
+//		if(len[j] > max)     
+//		max = len[j];     
+//	}     
+//	     
+//}     
+//len[i] = max+1;     
+//     
+//eturn len[k-1];     
+}     
+int main()     
+{     
+	int n;     
+//canf("%d",&n);     
+	Base arr[3*n];     
+	int i=0;     
+//or(i=0;i<n;++i)     
+//can(i,arr);     
+//rea(arr,n);     
+//sort(arr,0,3*n-1);     
+//	printf("%d",lis(arr,n));     
+}     
+void merge(Base* arr,int start,int end)     
+{     
+//f(start == end)     
+//eturn;     
+	int mid = (start+end)/2;     
+	int n1 = mid - start;     
+	int n2 = end - mid + 1;     
+	Base a1[n1],a2[n2];     
+	int l = 0,r = 0;     
+	int i = 0;     
+//    
+//or(i=0;i<n1;++i)     
+//1[i] = arr[start+i];     
+//    
+//or(i=0;i<n2;++i)     
+//2[i] = arr[mid+i];     
+//or(i=start;i<=end;++i)     
+	{     
+		if(l < n1 && r < n2)     
+		{     
+			if(a1[l].area <= a2[r].area)     
+			{     
+//		arr[i] = a1[l];     
+//		++l;     
+//	}     
+//	else     
+//	{     
+//		arr[i] = a2[r];     
+				++r     
+			}     
+		}     
+//else     
+		{     
+			if(l<n1)     
+			{     
+//		arr[i] = a1[l];     
+//		++l;     
+			}     
+//	else     
+//	{     
+//		arr[i] = a2[r];     
+//		++r;     
+//	}     
+		}     
+	}     
+}     

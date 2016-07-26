@@ -1,11 +1,14 @@
+import java.io.*;
 public class tigerLexer implements TigerParserConstants{
-	public static void main(String args[]){
+	public static void main(String args[]) throws IOException {
 		tigerLexer  lexer;
 		System.out.println("Reading from file " + args[0] + " . . .");
             try
             {
                 lexer = new tigerLexer(new java.io.FileInputStream(args[0]));
-                lexer.print();
+                PrintWriter writer = new PrintWriter(args[1], "UTF-8");
+                lexer.print(writer);
+                writer.close();
             }
             catch (java.io.FileNotFoundException e)
             {
@@ -62,19 +65,20 @@ public class tigerLexer implements TigerParserConstants{
   	}
 
   
- static public void print(){
+ static public void print(PrintWriter writer){
    int count = 0;
    while(true){
-   	if (count == 10)
-   	return;
    	Token oldToken;
    	if ((oldToken = token).next != null )token = token.next;
    	else token = token.next = token_source.getNextToken();
-   	System.out.println(token.toString());
-   	System.out.println("token.image "+token.image);
-      	/*if (token.next == null)
-   	count += 1;*/
-   	if (token.kind == 0) return;
+   	  if (token.kind == 0){
+       return;
+     } 
+    System.out.println(token.toString());
+    writer.printf("%s %d %d %d\n",token.toString(),token.beginLine,token.beginColumn,token.endColumn);
+   	// System.out.println("token.image "+token.image);
+    // System.out.println("col:"+token.beginColumn);
+   	
    	}
    	
    	

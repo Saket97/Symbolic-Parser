@@ -67,6 +67,12 @@ def find_end_col(line, index = False):
 			if index:
 				return j
 			return int(a)
+
+def get_new_token():
+	token = ['for','while','do','+','-','=','*','/',';',']','[','(',')','if','else','int','char','bool']
+	n = len(token)
+	i = random.randint(0,n-1)
+	return token[i]
 def file_copy(aux_file, output_file, p, p_delete, p_replace, p_insert):
 	#### iterate through the aux file and copy on the output_file ###
 	b_start_till_prev_line = 0
@@ -90,7 +96,7 @@ def file_copy(aux_file, output_file, p, p_delete, p_replace, p_insert):
 				if x[2] == 1:
 					output_file.seek(b_start_till_prev_line,0)
 					output_file.write(" ")
-					new_token = "Ankit"
+					new_token = get_new_token()
 					output_file.write(new_token)
 			col_add = 0
 			# output_file.write("x")
@@ -119,13 +125,13 @@ def file_copy(aux_file, output_file, p, p_delete, p_replace, p_insert):
 			if x[1] == 1:
 				#### replace operation
 				output_file.seek(b_start_till_prev_line + col_add + begin_col-1,0)
-				new_token = "poonam"
+				new_token = get_new_token()
 				output_file.write(new_token)
 				col_add += len(new_token) - length
 			if x[2] == 1:
 				#### insert operation
 				output_file.seek(b_start_till_prev_line + col_add + begin_col-1,0)
-				new_token = "sunil"
+				new_token = get_new_token()
 				# print "ftell3: ",output_file.tell()
 				col_add += len(new_token) + 1
 				output_file.write("%s "%(new_token))
@@ -142,7 +148,7 @@ def main():
 	input_file_name = sys.argv[1]
 	output_file_name = sys.argv[2]
 	input_file = open(input_file_name,'r')
-	output_file = open(output_file_name,'r+')
+	output_file = open(output_file_name,'w+')
 	### make aux_file ### aux file contains one token in one line along with line and column of starting and ending
 	subprocess.call(['java tigerLexer test1.tig aux_file_name.txt'],shell=True)
 	aux_file = open("aux_file_name.txt",'r')
