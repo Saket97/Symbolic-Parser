@@ -665,9 +665,6 @@ def declare_parsing_functions(solver):
 	# The ending index in the parse action array of the expansion of the functions["symbolAt"](second arg)
 	functions["end"] = Function('end', IntSort(), IntSort(), IntSort())
 
-	# How much increment should be done from pos(second arg) to reach the terminal and skip the t1000 in strNum(first arg) 
-	functions["next_terminal_increment"] = Function('next_terminal_increment', IntSort(),IntSort(),IntSort())
-
 
 
 def declare_symbols_and_template_constraints(solver):

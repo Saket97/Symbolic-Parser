@@ -88,7 +88,7 @@ def main1():
 	# if config['optimize']:
 	#	accept_list.sort(key = len, reverse=True)
 	# 	print accept_list
-	# accept_list = list_from_strings(accept_strings, SP)
+
 	SP["accept_list"] = list_from_strings2(accept_strings)
 	# mk_incremental_function(SP)
 
@@ -110,21 +110,6 @@ def main1():
 			tmp = SP['constraints'].unsat_core()
 			SP['unsat'] = tmp
 			print 'unsat_core',tmp
-			A = []
-			B = []
-			C = []
-			# for constraint in tmp:
-			# 	constraint = str(constraint)
-			# 	C.append(SP["dictconst"][constraint])
-
-			# 	if 'input' in constraint:
-			# 		B.append(SP["dictconst"][constraint])
-			# 	else:
-			# 		A.append(SP['dictconst'][constraint])
-			# print binary_interpolant(And(B),And(A))
-			# print sequence_interpolant(C)
-			# print "proof: ",SP["constraints"].proof()
-			#analyse_unsat(tmp, SP)
 			print "No such grammar possible under present constraints"
 			break
 
@@ -150,7 +135,6 @@ def main1():
 		else:
 			check_result = unsat # negative examples are trivially satisfied
 		
-		print "STRING ACCEPTED"	
 		print_grammar(SP)
 		iterationNo += 1
 
@@ -165,4 +149,3 @@ def main1():
 
 
 main()
-correct = False	
