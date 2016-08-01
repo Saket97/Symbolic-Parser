@@ -19,6 +19,7 @@ def main():
 	sp_time = calendar.timegm(time.gmtime())
 	print "Initialising SP..."
 	SP = {}
+	SP["comment_out"] = True
 	SP["n_insertions"] = int(input("Enter the maximum number of insertions: (Time needed depends on this):"))
 	SP["total_var"] = 1000
 	SP["dictconst"] = {}
@@ -36,7 +37,7 @@ def main():
 	print "starting maxsat solver..."
 	result, doubt_pos,m = naive_maxsat(SP)
 	SP["accept_list"] = accept_list
-	print "atmost %d positions in the string are correct"%result
+	# print "atmost %d positions in the string are correct"%result
 	SP["model"] = m
 	for t in SP["terms"]:
 		print "%s %s"%(t,str(m.evaluate(SP["vars"][t])))
@@ -59,6 +60,7 @@ def main1():
 	print "Initializing SP..."
 
 	SP = {}
+	SP["comment_out"] = False
 	SP["total_var"] = 1000
 	SP['dictconst'] = {}
 	initialize_solver(SP)

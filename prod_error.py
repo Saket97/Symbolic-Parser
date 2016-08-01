@@ -150,7 +150,7 @@ def main():
 	input_file = open(input_file_name,'r')
 	output_file = open(output_file_name,'w+')
 	### make aux_file ### aux file contains one token in one line along with line and column of starting and ending
-	subprocess.call(['java tigerLexer test1.tig aux_file_name.txt'],shell=True)
+	subprocess.call(['java tigerLexer %s aux_file_name.txt'%(input_file_name)],shell=True)
 	aux_file = open("aux_file_name.txt",'r')
 	#####################
 	p_errors = input("Enter the probability of errors you want to introduce ")

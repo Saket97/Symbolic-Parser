@@ -10,6 +10,8 @@ def comment_out(output_file,start,end,offset):# lines are numered from 1
 		output_file.seek(b_start,0)
 		line = output_file.readline()
 		# print "line: %s length: %d line[0]/: %s"%(line,len(line),line[0])
+		# if line[0] == '}' or line[0] == '{':
+			# continue
 		tmp.append("%s%s"%(line[0],line[1]))
 		tmp1 = "//" + line[2:]
 		output_file.seek(b_start,0)
@@ -26,6 +28,8 @@ def uncomment(output_file,start,end,tmp,offset):
 		b_start = offset[i-1]
 		output_file.seek(b_start,0)
 		line = output_file.readline()
+		# if line[0] == '{' or line[0] == '}':
+			# continue
 		l = len(tmp[k])
 		tmp1 = ""
 		for j in range(len(tmp[k])):
@@ -35,19 +39,6 @@ def uncomment(output_file,start,end,tmp,offset):
 		output_file.write(tmp1)
 		k += 1
 	output_file.flush()
-def reduce_program1(output_file,start,end,offset,output):
-	for i in range(start,end+1):
-		tmp = comment_out(output_file,i,i,offset)
-		try:
-			# print "output3 start=end=%d"%(start)
-			output3 = subprocess.check_output(["gcc %s"%("aux.c")],stderr=subprocess.STDOUT,shell = True)
-		except subprocess.CalledProcessError as ex:
-			output3 = ex.output
-		if output3 == output:
-			continue
-		else:
-			uncomment(output_file,i,i,tmp,offset)
-
 
 def reduce_program(output_file,start,end,offset,output):
 	# print "reduce functioin called..."
@@ -63,7 +54,7 @@ def reduce_program(output_file,start,end,offset,output):
 		except subprocess.CalledProcessError as ex:
 			output3 = ex.output
 			
-		print "output3 == output is %s for line:%d"%(output == output3, start)
+		# print "output3 == output is %s for line:%d"%(output == output3, start)
 		if output3 == output:
 			return
 		else:
@@ -71,23 +62,8 @@ def reduce_program(output_file,start,end,offset,output):
 			return
 	
 	mid = (start + end)/2
-	tmp = comment_out(output_file,start,mid,offset)
-	# output_file.flush()
 	up_comment = False
 	down_comment = False
-	try:
-		# print "output1 start:%d end:%d"%(start,mid)
-		output1 = subprocess.check_output(["gcc %s"%("aux.c")],stderr=subprocess.STDOUT,shell = True)
-	except subprocess.CalledProcessError as ex:
-		output1 = ex.output
-		# print "output1: ",output1
-		pass
-	print output1
-	if output1 == output:
-		up_comment= True
-	else:
-		uncomment(output_file,start,mid,tmp,offset)
-		up_comment = False
 
 	tmp = comment_out(output_file,mid+1,end,offset)
 	try:
@@ -102,6 +78,22 @@ def reduce_program(output_file,start,end,offset,output):
 	else:
 		uncomment(output_file,mid+1,end,tmp,offset)
 		down_comment = False
+
+	tmp = comment_out(output_file,start,mid,offset)
+	# output_file.flush()
+	try:
+		# print "output1 start:%d end:%d"%(start,mid)
+		output1 = subprocess.check_output(["gcc %s"%("aux.c")],stderr=subprocess.STDOUT,shell = True)
+	except subprocess.CalledProcessError as ex:
+		output1 = ex.output
+		# print "output1: ",output1
+		pass
+	print output1
+	if output1 == output:
+		up_comment= True
+	else:
+		uncomment(output_file,start,mid,tmp,offset)
+		up_comment = False
 
 	if up_comment == False:
 		reduce_program(output_file,start,mid,offset,output)

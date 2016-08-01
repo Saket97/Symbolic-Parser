@@ -54,33 +54,10 @@ def list_from_strings1(in_strings):
 	in_terms = [in_strings[i].split(' ') for i in range(len(in_strings))]
 	return [["t%s"%(tokens.index(i)+1) for i in in_terms[j]] for j in range(len(in_terms))]
 
-def list_from_strings2(in_strings):
-	in_terms = [in_strings[i].split(' ') for i in range(len(in_strings))]
-	tmp = []
-	# print "in_terms: ",in_terms
-	for string in in_terms:
-		# tmp1 = []
-		for j in range(len(string)):
-			# if j == 0:
-			# 	tmp1.append("t1000")
-			# 	tmp1.append("t2")
-			tmp1.append("t%s"%(tokens.index(string[j])+1))
-			tmp1.append('t1000')
-		tmp.append(tmp1)
-	return tmp
-
-def verify():
-	string = "s a k e t"
-	global accept_strings
-	accept_strings.append(string)
-
-# verify()
 non_tokens = discover(find_original_grammar())
 tokens = discover_tokens_from_grammar()
 config.update({'num_terms':len(tokens)})
 assert(config['size_rules']>=2)
-# verify()
-to_proceed = True
 reject_list = list_from_strings1(reject_strings)
 accept_list = list_from_strings1(accept_strings)
 

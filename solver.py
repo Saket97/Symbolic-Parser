@@ -587,42 +587,43 @@ def insert_parse_table_constraints(solver):
 			constdict['parse_table_input_range_%s_%s'%(n,t)] = And(functions["parseTable"](vars[n],vars[t])<=num_rules,functions["parseTable"](vars[n],vars[t])>=0)
 			constraint_no += 1
 
-	# ######################################################
+	if solver["comment_out"] == False:
+		######################################################
 
-	# # PARSE TABLE CONSTRUCTION
+		# PARSE TABLE CONSTRUCTION
 
-	# ######################################################
+		######################################################
 
-	# for n in nonterms:
-	# 	for t in terms:
-	# 		for r in range(1,num_rules+1):
-	# 			tempAnd = []
-	# 			for i in range(1,size_rules+1):
-	# 				tempList = []
-	# 				for j in range(1,i):
-	# 					tempList.append(functions["first"](functions["symbolInRHS"](r,j),vars["eps"]))
-	# 				tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars[t]))
-	# 				tempAnd.append(And(tempList))
-	# 			# s.assert_and_track((functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd)), 'parse_table_first_%s_%s_rule%d'%(n,t,r))
-	# 			# constdict['parse_table_first_%s-%s_rule%d'%(n,t,r)] = (functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd))
-	# 			tempList = []	
-	# 			for i in range(1,size_rules+1):
-	# 				tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars["eps"]))
-	# 			tempList.append(functions["follow"](functions["symbolInLHS"](r),vars[t]))
-	# 			tempAnd.append(And(tempList))
+		for n in nonterms:
+			for t in terms:
+				for r in range(1,num_rules+1):
+					tempAnd = []
+					for i in range(1,size_rules+1):
+						tempList = []
+						for j in range(1,i):
+							tempList.append(functions["first"](functions["symbolInRHS"](r,j),vars["eps"]))
+						tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars[t]))
+						tempAnd.append(And(tempList))
+					# s.assert_and_track((functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd)), 'parse_table_first_%s_%s_rule%d'%(n,t,r))
+					# constdict['parse_table_first_%s-%s_rule%d'%(n,t,r)] = (functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd))
+					tempList = []	
+					for i in range(1,size_rules+1):
+						tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars["eps"]))
+					tempList.append(functions["follow"](functions["symbolInLHS"](r),vars[t]))
+					tempAnd.append(And(tempList))
 
-	# 			s.assert_and_track((functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd)), 'parse_table_first_%s_%s_rule%d'%(n,t,r))
-	# 			constdict['parse_table_first_%s_%s_rule%d'%(n,t,r)] = (functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd))
-		
-	# 	for r in range(1,num_rules+1):
-	# 		tempList = []
-	# 		for i in range(1,size_rules+1):
-	# 			tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars["eps"]))
-	# 		tempList.append(functions["follow"](functions["symbolInLHS"](r),vars["dol"]))
+					s.assert_and_track((functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd)), 'parse_table_first_%s_%s_rule%d'%(n,t,r))
+					constdict['parse_table_first_%s_%s_rule%d'%(n,t,r)] = (functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd))
+			
+			for r in range(1,num_rules+1):
+				tempList = []
+				for i in range(1,size_rules+1):
+					tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars["eps"]))
+				tempList.append(functions["follow"](functions["symbolInLHS"](r),vars["dol"]))
 
-	# 		s.assert_and_track((functions["parseTable"](vars[n],vars["dol"])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],And(tempList)), 'parse_table_follow_%s_$_rule%d'%(n,r))
-	# 		constdict['parse_table_follow_%s_$_rule%d'%(n,r)] = (functions["parseTable"](vars[n],vars["dol"])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],And(tempList))
-	# 		constraint_no += 1
+				s.assert_and_track((functions["parseTable"](vars[n],vars["dol"])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],And(tempList)), 'parse_table_follow_%s_$_rule%d'%(n,r))
+				constdict['parse_table_follow_%s_$_rule%d'%(n,r)] = (functions["parseTable"](vars[n],vars["dol"])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],And(tempList))
+				constraint_no += 1
 
 def declare_parsing_functions(solver):
 	vars = solver["vars"]
@@ -776,8 +777,9 @@ def declare_symbols_and_template_constraints(solver):
 		for i in range(2,size_rules+1):
 			s.assert_and_track(Implies(functions["symbolInRHS"](r,i)==vars["eps"],functions["symbolInRHS"](r,i-1)==vars["eps"]), 'epsConst%d,%d'%(r,i))
 			constdict['epsConst%d,%d'%(r,i)] = Implies(functions["symbolInRHS"](r,i)==vars["eps"],functions["symbolInRHS"](r,i-1)==vars["eps"])
-	functionArgs = [IntSort() for i in range(size_rules+1)]
-	functions["derivedBy"] = Function('derivedBy',functionArgs)
+	if solver["comment_out"] == False:
+		functionArgs = [IntSort() for i in range(size_rules+1)]
+		functions["derivedBy"] = Function('derivedBy',functionArgs)
 
 	for r in range(num_rules):
 		tempList = []
@@ -815,8 +817,9 @@ def declare_symbols_and_template_constraints(solver):
 def initialize_solver(solver):
 	
 	declare_symbols_and_template_constraints(solver)
-	# insert_first_set_constraints(solver)
-	# insert_follow_set_constraints(solver)
+	if solver["comment_out"] == False:
+		insert_first_set_constraints(solver)
+		insert_follow_set_constraints(solver)
 	insert_parse_table_constraints(solver)
 	declare_parsing_functions(solver)	
 	
