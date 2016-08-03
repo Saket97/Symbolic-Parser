@@ -4,7 +4,7 @@ def specs():
 
 	#Space separated (tokized) strings
 	# accept_strings = ["?", "! ?", "( ?"]
-	accept_strings = ["( )"]
+	accept_strings = ["( ? ) ?"]
 	reject_strings = [")", ") ("]
 
 	config = {
@@ -60,16 +60,7 @@ def convert_grammar(original_grammar):
 		tmp1.append(tmp)
 	# print "tmp1  ",tmp1
 	return tmp1
-def print_correct(tmp):			
-	tmp = convert_grammar(tmp)
-	for  i in range(len(tmp)):
-		for j in range(len(tmp[i])):
-			# if j == 0:
-				# print "%s\t   "%(tmp[i][j]),
-			# else:
-			# print "%s\t"%(tmp[i][j]),
-			pass
-		# print ""
+
 def online_check_hacking(original_grammar):
 	tmp = []
 	for i in range(len(original_grammar)):

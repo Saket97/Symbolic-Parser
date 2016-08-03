@@ -245,54 +245,56 @@ def add_accept_string(solver,accept_string):
 	
 	print "adding string constraints..."
 	######## adding initial succ function constraint ######
-	for j in range(-1,len(accept_string)):
-		add_soft(functions["succ"](strNum,j) == j+1, solver)
+	if solver["comment_out"] == True:
+		for j in range(-1,len(accept_string)):
+			add_soft(functions["succ"](strNum,j) == j+1, solver)
 
 	for j in range(len(accept_string)):
 		s.add(functions["ip_str"](strNum,j) == vars[accept_string[j]])
 	s.add(functions["ip_str"](strNum,len(accept_string)) == vars["dol"])
 
-	####### making ipstr1 function 
-	for j in range(-1,len(accept_string)):
-		add_soft(functions["ip_str1"](strNum,functions["succ"](strNum,j)) == functions["ip_str"](strNum,j+1), solver)
-	
-	tmp = [i for i in range(-1, len(accept_string))]
-	for i in range(solver["n_insertions"]):
-		tmp.append(10000+i)
-	for i in tmp:
-		if i >= 10000:
-			s.add(And(functions["pred"](strNum,i) < len(accept_string), functions["pred"](strNum,i) >= -1))
-		### making pred function ###
-		s.add(Implies(functions["succ"](strNum,i) >= 10000, If(i <= len(accept_string), functions["pred"](strNum,functions["succ"](strNum,i)) == i, functions["pred"](strNum,functions["succ"](strNum,i)) == functions["pred"](strNum,i))))
-		## succ should always be greater than the number if it is not extra ###
-		if i < len(accept_string):
-			OrList = []
-			OrList.append(And(functions["succ"](strNum,i) > i,functions["succ"](strNum,i) <= i+2))
-			for j in range(solver["n_insertions"]):
-				OrList.append(functions["succ"](strNum,i) == 10000+i)
-			s.add(Or(OrList))
-			# s.add(Or(And(functions["succ"](strNum,i) > i,functions["succ"](strNum,i) <= i+2), functions["succ"](strNum,i) == 1000, functions["succ"](strNum,i) == 1001))
-		else:
-			s.add(Or(And(functions["succ"](strNum, i) <= functions["pred"](strNum,i) + 2, functions["succ"](strNum,i) > functions["pred"](strNum,i)), And(functions["succ"](strNum,i) < 10000+solver["n_insertions"], functions["succ"](strNum,i)> 10000)))
-			
-		s.add(functions["succ"](strNum,i) >= 0)
+	if solver["comment_out"] == True:
+		####### making ipstr1 function 
+		for j in range(-1,len(accept_string)):
+			add_soft(functions["ip_str1"](strNum,functions["succ"](strNum,j)) == functions["ip_str"](strNum,j+1), solver)
+		
+		tmp = [i for i in range(-1, len(accept_string))]
+		for i in range(solver["n_insertions"]):
+			tmp.append(10000+i)
+		for i in tmp:
+			if i >= 10000:
+				s.add(And(functions["pred"](strNum,i) < len(accept_string), functions["pred"](strNum,i) >= -1))
+			### making pred function ###
+			s.add(Implies(functions["succ"](strNum,i) >= 10000, If(i <= len(accept_string), functions["pred"](strNum,functions["succ"](strNum,i)) == i, functions["pred"](strNum,functions["succ"](strNum,i)) == functions["pred"](strNum,i))))
+			## succ should always be greater than the number if it is not extra ###
+			if i < len(accept_string):
+				OrList = []
+				OrList.append(And(functions["succ"](strNum,i) > i,functions["succ"](strNum,i) <= i+2))
+				for j in range(solver["n_insertions"]):
+					OrList.append(functions["succ"](strNum,i) == 10000+i)
+				s.add(Or(OrList))
+				# s.add(Or(And(functions["succ"](strNum,i) > i,functions["succ"](strNum,i) <= i+2), functions["succ"](strNum,i) == 1000, functions["succ"](strNum,i) == 1001))
+			else:
+				s.add(Or(And(functions["succ"](strNum, i) <= functions["pred"](strNum,i) + 2, functions["succ"](strNum,i) > functions["pred"](strNum,i)), And(functions["succ"](strNum,i) < 10000+solver["n_insertions"], functions["succ"](strNum,i)> 10000)))
+				
+			s.add(functions["succ"](strNum,i) >= 0)
 
-	for i in tmp:
-		OrList = []
-		for t in terms+['dol']:
-			if t == "eps":
-				continue
-			if t == "dol":
-				if (i >= len(accept_string)-2 and i < 10000):
-					OrList.append(functions["ip_str1"](strNum, i) == vars[t])
-					# print functions["ip_str1"](strNum, i) == vars[t]
-				else:
-					OrList.append(Not(functions["ip_str1"](strNum, i) == vars["dol"]))
-					# print Not(functions["ip_str1"](strNum, i) == vars["dol"])
-				continue
-			OrList.append(functions["ip_str1"](strNum, i) == vars[t])
-			# print functions["ip_str1"](strNum, i) == vars[t]
-		s.add(Or(OrList))
+		for i in tmp:
+			OrList = []
+			for t in terms+['dol']:
+				if t == "eps":
+					continue
+				if t == "dol":
+					if (i >= len(accept_string)-2 and i < 10000):
+						OrList.append(functions["ip_str1"](strNum, i) == vars[t])
+						# print functions["ip_str1"](strNum, i) == vars[t]
+					else:
+						OrList.append(Not(functions["ip_str1"](strNum, i) == vars["dol"]))
+						# print Not(functions["ip_str1"](strNum, i) == vars["dol"])
+					continue
+				OrList.append(functions["ip_str1"](strNum, i) == vars[t])
+				# print functions["ip_str1"](strNum, i) == vars[t]
+			s.add(Or(OrList))
 
 	# Start parsing with N1 as the first symbol
 	

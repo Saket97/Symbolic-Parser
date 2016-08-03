@@ -785,9 +785,10 @@ def declare_symbols_and_template_constraints(solver):
 		tempList = []
 		for j in range(size_rules):
 			tempList.append(functions["symbolInRHS"](r+1,j+1))
-		s.assert_and_track(functions["derivedBy"](tempList)==functions["symbolInLHS"](r+1), 'constraint155-%d'%(constraint_no))
-		constdict['constraint155-%d'%(constraint_no)] = functions["derivedBy"](tempList)==functions["symbolInLHS"](r+1)
-		constraint_no += 1
+		if solver["comment_out"]  == False:
+			s.assert_and_track(functions["derivedBy"](tempList)==functions["symbolInLHS"](r+1), 'constraint155-%d'%(constraint_no))
+			constdict['constraint155-%d'%(constraint_no)] = functions["derivedBy"](tempList)==functions["symbolInLHS"](r+1)
+			constraint_no += 1
 	vars.update({"dol": Int('dol')})
 	s.assert_and_track(vars["dol"]==symbol_counter, 'assign_int_%d_to_var_dol'%(symbol_counter))
 	constdict['assign_int_%d_to_var_dol'%(symbol_counter)] = vars["dol"]==symbol_counter
@@ -846,12 +847,21 @@ def single_step(solver,strNum,i):
 
 	x = Int('x')
 
-	s.add(And(functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)) <= solver["term_end"],functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)) >= solver["term_start"] ))
-	s.add(Not(functions["ip_str1"](strNum, functions["lookAheadIndex"](strNum,i)) == vars["eps"]))
+	if solver["comment_out"] == True:
+		s.add(And(functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)) <= solver["term_end"],functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)) >= solver["term_start"] ))
+		s.add(Not(functions["ip_str1"](strNum, functions["lookAheadIndex"](strNum,i)) == vars["eps"]))
+	# else:
+		# s.add(And(functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)) <= solver["term_end"],functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)) >= solver["term_start"] ))
+		# s.add(Not(functions["ip_str"](strNum, functions["lookAheadIndex"](strNum,i)) == vars["eps"]))
+
 	# Termination condition
-	s.assert_and_track(Implies(And(functions["end"](strNum,1) == (i-1), functions["step"](strNum,i-1)), If(functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)) == vars["dol"], And(Not(functions["step"](strNum,i)),functions["success"](strNum,i)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i))) ) ), 'parsing_termination_string%d'%(strNum))
-	constdict['parsing_termination_string%d'%(strNum)] = Implies(And(functions["end"](strNum,1) == (i-1), functions["step"](strNum,i-1)), If(functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)) == vars["dol"], And(Not(functions["step"](strNum,i)),functions["success"](strNum,i)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i))) ) )
-	constraint_no += 1
+	if solver["comment_out"] == True:
+		s.assert_and_track(Implies(And(functions["end"](strNum,1) == (i-1), functions["step"](strNum,i-1)), If(functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)) == vars["dol"], And(Not(functions["step"](strNum,i)),functions["success"](strNum,i)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i))) ) ), 'parsing_termination_string%d'%(strNum))
+	else:
+		s.assert_and_track(Implies(And(functions["end"](strNum,1) == (i-1), functions["step"](strNum,i-1)), If(functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)) == vars["dol"], And(Not(functions["step"](strNum,i)),functions["success"](strNum,i)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i))) ) ), 'parsing_termination_string%d'%(strNum))
+
+	# constdict['parsing_termination_string%d'%(strNum)] = Implies(And(functions["end"](strNum,1) == (i-1), functions["step"](strNum,i-1)), If(functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)) == vars["dol"], And(Not(functions["step"](strNum,i)),functions["success"](strNum,i)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i))) ) )
+	# constraint_no += 1
 	
 	#Propagate success state on end of parse
 	s.assert_and_track(Implies(Not(functions["step"](strNum,i)),And(Not(functions["step"](strNum,i+1)),functions["success"](strNum,i+1)==functions["success"](strNum,i))), 'propagating_success_strNum%d_pos%d'%(strNum,i))
@@ -860,34 +870,53 @@ def single_step(solver,strNum,i):
 
 	# For consuming term
 	AndList=[]
-	AndList.append(functions["lookAheadIndex"](strNum,i+1) == functions["succ"](strNum,functions["lookAheadIndex"](strNum,i)))
+	if solver["comment_out"] == True:
+		AndList.append(functions["lookAheadIndex"](strNum,i+1) == functions["succ"](strNum,functions["lookAheadIndex"](strNum,i)))
+	else:
+		AndList.append(functions["lookAheadIndex"](strNum,i+1) == functions['lookAheadIndex'](strNum,i)+1)
+
 	AndList.append(functions["step"](strNum,i))
 	AndList.append(Not(functions["success"](strNum,i)))
 	AndList.append(functions["end"](strNum,i)==i)
 	OrList = []
 	for t in terms:
 		OrList.append(functions["symbolAt"](strNum,i)==vars[t])
-	s.assert_and_track(Implies(And(Or(OrList),functions["step"](strNum,i-1)), If(functions["symbolAt"](strNum,i)==functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)), And(AndList), And(Not(functions["step"](strNum,i)), Not(functions["success"](strNum,i))) ) ), 'consuming_term%d_%d'%(strNum,i))
-	constdict['consuming_term%d_%d'%(strNum,i)] =  Implies(And(Or(OrList),functions["step"](strNum,i-1)), If(functions["symbolAt"](strNum,i)==functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)), And(AndList), And(Not(functions["step"](strNum,i)), Not(functions["success"](strNum,i))) ) )
-	constraint_no += 1
+	if solver["comment_out"] == True:
+		s.assert_and_track(Implies(And(Or(OrList),functions["step"](strNum,i-1)), If(functions["symbolAt"](strNum,i)==functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)), And(AndList), And(Not(functions["step"](strNum,i)), Not(functions["success"](strNum,i))) ) ), 'consuming_term%d_%d'%(strNum,i))
+	else:
+		s.assert_and_track(Implies(And(Or(OrList),functions["step"](strNum,i-1)), If(functions["symbolAt"](strNum,i)==functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)), And(AndList), And(Not(functions["step"](strNum,i)), Not(functions["success"](strNum,i))) ) ), 'consuming_term%d_%d'%(strNum,i))
+
+	# constdict['consuming_term%d_%d'%(strNum,i)] =  Implies(And(Or(OrList),functions["step"](strNum,i-1)), If(functions["symbolAt"](strNum,i)==functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)), And(AndList), And(Not(functions["step"](strNum,i)), Not(functions["success"](strNum,i))) ) )
+	# constraint_no += 1
 
 	# For expanding nonterm
 	for k in range(1,size_rules+2):
 		RHSList=[]
 		AndList=[]
 		for j in range(1,k):
-			RHSList.append(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), j) == vars["eps"])
+			if solver["comment_out"] == True:
+				RHSList.append(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), j) == vars["eps"])
+			else:
+				RHSList.append(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i))), j) == vars["eps"])
+
 			AndList.append(functions["startPosition"](strNum,j,i) == i)
 			
 			
 		for j in range(k, size_rules + 1):
-			RHSList.append(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), j) != vars["eps"])
+			if solver["comment_out"] == True:
+				RHSList.append(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), j) != vars["eps"])
+			else:
+				RHSList.append(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i))), j) == vars["eps"])
+
 			if j != k :
 				AndList.append(functions["startPosition"](strNum,j,i) == functions["end"](strNum,functions["startPosition"](strNum,j-1,i)) + 1)	
 			else:
 				AndList.append(functions["startPosition"](strNum,j,i) == i+1)	
-			AndList.append(functions["symbolAt"](strNum,functions["startPosition"](strNum,j,i)) == functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), j))
-		
+			if solver["comment_out"] == True:
+				AndList.append(functions["symbolAt"](strNum,functions["startPosition"](strNum,j,i)) == functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), j))
+			else:
+				AndList.append(functions["symbolAt"](strNum,functions["startPosition"](strNum,j,i)) == functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i))), j))
+
 		AndList.append(functions["lookAheadIndex"](strNum,i+1) == functions["lookAheadIndex"](strNum,i))
 		
 		if k!=size_rules+1:
@@ -901,8 +930,12 @@ def single_step(solver,strNum,i):
 		OrList = []
 		for n in nonterms:
 			OrList.append(functions["symbolAt"](strNum,i)==vars[n])
-		s.assert_and_track(Implies(And(Or(OrList),functions["step"](strNum,i-1)),If(functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))) != 0, Implies(And(RHSList),And(AndList)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i)) ) )), 'expanding_non_term_strNum%d_%d'%(strNum,i))
-		constdict['expanding_non_term_strNum%d_%d'%(strNum,i)] = Implies(And(Or(OrList),functions["step"](strNum,i-1)),If(functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))) != 0, Implies(And(RHSList),And(AndList)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i)) ) ))
-		constraint_no += 1
+		if solver["comment_out"] == True:
+			s.assert_and_track(Implies(And(Or(OrList),functions["step"](strNum,i-1)),If(functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))) != 0, Implies(And(RHSList),And(AndList)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i)) ) )), 'expanding_non_term_strNum%d_%d'%(strNum,i))
+		else:
+			s.assert_and_track(Implies(And(Or(OrList),functions["step"](strNum,i-1)),If(functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i))) != 0, Implies(And(RHSList),And(AndList)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i)) ) )), 'expanding_non_term_strNum%d_%d'%(strNum,i))
+
+		# constdict['expanding_non_term_strNum%d_%d'%(strNum,i)] = Implies(And(Or(OrList),functions["step"](strNum,i-1)),If(functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))) != 0, Implies(And(RHSList),And(AndList)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i)) ) ))
+		# constraint_no += 1
 
 

@@ -63,6 +63,7 @@ def main1():
 	SP["comment_out"] = False
 	SP["total_var"] = 1000
 	SP['dictconst'] = {}
+	# SP["n_insertions"] = 5
 	initialize_solver(SP)
 	SP['constraints'].set(unsat_core=True)
 
@@ -77,7 +78,9 @@ def main1():
 		sn_time = calendar.timegm(time.gmtime())
 		print "Initializing SN..."
 		SN = {}
+		SN["comment_out"] = False
 		SN['dictconst'] = {}
+		# SN["n_insertions"] = 5
 		initialize_solver(SN)
 		add_reject_strings(SN)
 		print "SN initialized in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sn_time)))
@@ -91,7 +94,7 @@ def main1():
 	#	accept_list.sort(key = len, reverse=True)
 	# 	print accept_list
 
-	SP["accept_list"] = list_from_strings2(accept_strings)
+	# SP["accept_list"] = list_from_strings2(accept_strings)
 	# mk_incremental_function(SP)
 
 	while check_result != unsat:
@@ -150,4 +153,4 @@ def main1():
 	return SP
 
 
-main()
+main1()
