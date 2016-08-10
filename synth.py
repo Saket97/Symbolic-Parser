@@ -10,6 +10,7 @@ import calendar
 import time
 import datetime
 from itertools import *
+import sys
 
 #SP instance
 	# category = OrderedDict([('first_set_first_Subset',0), ('first_set_eps_subset',0) ,('eps_first_set_rule',0),('next_first_in_follow',0),('$_in_follow_N1',0),('follow_lhs_in_rhs',0),('parse_table_first',0),('parse_table_follow',0)])
@@ -41,12 +42,20 @@ def main():
 	SP["model"] = m
 	for t in SP["terms"]:
 		print "%s %s"%(t,str(m.evaluate(SP["vars"][t])))
+	print "$ %s"%(str(m.evaluate(SP["vars"]['dol'])))
 	# print "ip_str(1,0) ",str(m.evaluate(SP["functions"]["ip_str"](1,0)))
 
 	# print "lookAheadIndex ",m[SP["functions"]["lookAheadIndex"]]
 	# print "ip_str1 ",m[SP["functions"]["ip_str1"]]
 	print "succ ",m[SP["functions"]["succ"]]
 	print "pred ",m[SP["functions"]["pred"]]
+	print "ip_str1 ",m[SP["functions"]["ip_str1"]]
+	print "symbolAt",m[SP["functions"]["symbolAt"]]
+	print "step ",m[SP["functions"]["step"]]
+	print "success ",m[SP["functions"]["success"]]
+	print "end ",m[SP["functions"]["end"]]
+	print "parseTable ",m[SP["functions"]["parseTable"]]
+	print "lookAheadIndex ",m[SP["functions"]["lookAheadIndex"]]
 	print SP["term_start"]
 	print SP["term_end"]
 	print_grammar(SP)
@@ -70,7 +79,7 @@ def main1():
 	num = nums()
 	original_grammar = find_original_grammar()
 	repair(SP, original_grammar, num['num_rules'], num['size_rules'])
-
+	# SP["constraints"].add(SP["functions"]["derivedBy"](SP["vars"]['t1'],SP["vars"]['t2'],SP["vars"]['t3'],SP["vars"]['t2']) == SP["vars"]["N1"])
 	print "SP initialized in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
 
 	#SN instance
@@ -94,8 +103,6 @@ def main1():
 	#	accept_list.sort(key = len, reverse=True)
 	# 	print accept_list
 
-	# SP["accept_list"] = list_from_strings2(accept_strings)
-	# mk_incremental_function(SP)
 
 	while check_result != unsat:
 
@@ -131,6 +138,8 @@ def main1():
 
 			if check_result != unsat:
 				SN["model"] = SN["constraints"].model()
+				print "SN model"
+				print_grammar(SN)
 				add_bad_grammar(S_target=SP,S_source=SN,iterationNo=iterationNo)
 				SN["constraints"].pop()
 			
@@ -149,8 +158,17 @@ def main1():
 	print "specs:"
 	print config
 	print accept_list
-	# print reject_list
+	print reject_list
 	return SP
 
 
-main1()
+if __name__ == '__main__':
+	mode = sys.argv[1]
+	if mode == 'mode1':
+		main1()
+		comment_out = True
+	else:
+		main()
+		comment_out = False
+# main1()
+# comment_out = 

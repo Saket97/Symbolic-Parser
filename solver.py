@@ -130,41 +130,41 @@ def insert_first_set_constraints(solver):
 
 				s.assert_and_track(If(And(tempList), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(size_rules+i)]) == functions["symbolInRHS"](r,i)), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(size_rules+i)]) == -1) ), 'first_set_eps_subset_rule%d_pos%d_%s'%(r,i,t))
 				constdict['first_set_eps_subset_rule%d_pos%d_%s'%(r,i,t)] = If(And(tempList), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(size_rules+i)]) == functions["symbolInRHS"](r,i)), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(size_rules+i)]) == -1) )
-	##################### HANDLING FREE VARIABLES ##########################################
-	for nt in nonterms:
-		for t in terms:
-			firstCondList = []
-			for r in range(1,num_rules+1):
-				for i in range(1,size_rules+1):
-					tempList = []
-					tempList.append(functions["symbolInLHS"](r) == vars[nt])
-					for j in range(1,i):
-						tempList.append(functions["symbolInRHS"](r,j)==vars["eps"])
-					tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars[t]))
-					tempList.append(functions["symbolInRHS"](r,i)!=functions["symbolInLHS"](r))
+	# ##################### HANDLING FREE VARIABLES ##########################################
+	# for nt in nonterms:
+	# 	for t in terms:
+	# 		firstCondList = []
+	# 		for r in range(1,num_rules+1):
+	# 			for i in range(1,size_rules+1):
+	# 				tempList = []
+	# 				tempList.append(functions["symbolInLHS"](r) == vars[nt])
+	# 				for j in range(1,i):
+	# 					tempList.append(functions["symbolInRHS"](r,j)==vars["eps"])
+	# 				tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars[t]))
+	# 				tempList.append(functions["symbolInRHS"](r,i)!=functions["symbolInLHS"](r))
 
-					temp = functions["firstWitness"](functions["symbolInRHS"](r,i),vars[t],functions["get_i"](functions["symbolInRHS"](r,i),vars[t]),functions["get_j"](functions["symbolInRHS"](r,i),vars[t]))
-					for j in range(num_rules):
-						temp = functions["firstWitness"](temp,vars[t],functions["get_i"](temp,vars[t]),functions["get_j"](temp,vars[t]))
-					tempList.append(temp==vars[t])
-					firstCondList.append(And(tempList))
+	# 				temp = functions["firstWitness"](functions["symbolInRHS"](r,i),vars[t],functions["get_i"](functions["symbolInRHS"](r,i),vars[t]),functions["get_j"](functions["symbolInRHS"](r,i),vars[t]))
+	# 				for j in range(num_rules):
+	# 					temp = functions["firstWitness"](temp,vars[t],functions["get_i"](temp,vars[t]),functions["get_j"](temp,vars[t]))
+	# 				tempList.append(temp==vars[t])
+	# 				firstCondList.append(And(tempList))
 
-			for r in range(1,num_rules+1):
-				for i in range(1,size_rules+1):
-					tempList = []
-					tempList.append(functions["symbolInLHS"](r) == vars[nt])
-					for j in range(1,i):
-						tempList.append(functions["first"](functions["symbolInRHS"](r,j),vars["eps"]))
-					tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars[t]))
-					tempList.append(functions["symbolInRHS"](r,i)!=functions["symbolInLHS"](r))
+	# 		for r in range(1,num_rules+1):
+	# 			for i in range(1,size_rules+1):
+	# 				tempList = []
+	# 				tempList.append(functions["symbolInLHS"](r) == vars[nt])
+	# 				for j in range(1,i):
+	# 					tempList.append(functions["first"](functions["symbolInRHS"](r,j),vars["eps"]))
+	# 				tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars[t]))
+	# 				tempList.append(functions["symbolInRHS"](r,i)!=functions["symbolInLHS"](r))
 
-					temp = functions["firstWitness"](functions["symbolInRHS"](r,i),vars[t],functions["get_i"](functions["symbolInRHS"](r,i),vars[t]),functions["get_j"](functions["symbolInRHS"](r,i),vars[t]))
-					for j in range(num_rules):
-						temp = functions["firstWitness"](temp,vars[t],functions["get_i"](temp,vars[t]),functions["get_j"](temp,vars[t]))
-					tempList.append(temp==vars[t])					
-					firstCondList.append(And(tempList))
-			s.assert_and_track(Implies(Not(Or(firstCondList)), Not(functions["first"](vars[nt],vars[t]))), 'eliminating_%s_from_first_%s'%(t,nt))
-			constdict[ 'eliminating_%s_from_first_%s'%(t,nt)] = Implies(Not(Or(firstCondList)), Not(functions["first"](vars[nt],vars[t])))
+	# 				temp = functions["firstWitness"](functions["symbolInRHS"](r,i),vars[t],functions["get_i"](functions["symbolInRHS"](r,i),vars[t]),functions["get_j"](functions["symbolInRHS"](r,i),vars[t]))
+	# 				for j in range(num_rules):
+	# 					temp = functions["firstWitness"](temp,vars[t],functions["get_i"](temp,vars[t]),functions["get_j"](temp,vars[t]))
+	# 				tempList.append(temp==vars[t])					
+	# 				firstCondList.append(And(tempList))
+	# 		s.assert_and_track(Implies(Not(Or(firstCondList)), Not(functions["first"](vars[nt],vars[t]))), 'eliminating_%s_from_first_%s'%(t,nt))
+	# 		constdict[ 'eliminating_%s_from_first_%s'%(t,nt)] = Implies(Not(Or(firstCondList)), Not(functions["first"](vars[nt],vars[t])))
 	########################################################################################
 	for n in nonterms:
 		OrList = []
@@ -401,42 +401,42 @@ def insert_follow_set_constraints(solver):
 			condNo += 1
 
 		followCondEnd = condNo
-	#################### HANDLING FREE VARIABLES ##########################################
-	for nt in nonterms:
-		for t in terms:
-			followCondList = []
-			for r in range(1,num_rules+1):
-				# condNo = 1
-				for i in range(1,size_rules):
-					for j in range(i+1,size_rules+1):
-						tempList = []
-						tempList.append(functions["symbolInRHS"](r,i) == vars[nt])
-						for k in range(i+1,j):
-							tempList.append(functions["first"](functions["symbolInRHS"](r,k),vars["eps"]))
-						tempList.append(functions["first"](functions["symbolInRHS"](r,j),vars[t]))
+	# #################### HANDLING FREE VARIABLES ##########################################
+	# for nt in nonterms:
+	# 	for t in terms:
+	# 		followCondList = []
+	# 		for r in range(1,num_rules+1):
+	# 			# condNo = 1
+	# 			for i in range(1,size_rules):
+	# 				for j in range(i+1,size_rules+1):
+	# 					tempList = []
+	# 					tempList.append(functions["symbolInRHS"](r,i) == vars[nt])
+	# 					for k in range(i+1,j):
+	# 						tempList.append(functions["first"](functions["symbolInRHS"](r,k),vars["eps"]))
+	# 					tempList.append(functions["first"](functions["symbolInRHS"](r,j),vars[t]))
 
-						followCondList.append(And(tempList))
-						# s.add((functions["followWitness"](functions["symbolInRHS"](r,i),vars[t],vars["rule%d"%(r)],vars["cond%d"%condNo])==vars[t])==And(tempList))
+	# 					followCondList.append(And(tempList))
+	# 					# s.add((functions["followWitness"](functions["symbolInRHS"](r,i),vars[t],vars["rule%d"%(r)],vars["cond%d"%condNo])==vars[t])==And(tempList))
 
-			for r in range(1,num_rules+1):
-				for i in range(1,size_rules+1):
-					tempList = []
-					tempList.append(functions["symbolInRHS"](r,i) == vars[nt])
-					for k in range(i+1,size_rules+1):
-						tempList.append(functions["first"](functions["symbolInRHS"](r,k),vars["eps"]))
-					tempList.append(functions["follow"](functions["symbolInLHS"](r),vars[t]))
-					tempList.append(functions["symbolInRHS"](r,i)!=functions["symbolInLHS"](r))
+	# 		for r in range(1,num_rules+1):
+	# 			for i in range(1,size_rules+1):
+	# 				tempList = []
+	# 				tempList.append(functions["symbolInRHS"](r,i) == vars[nt])
+	# 				for k in range(i+1,size_rules+1):
+	# 					tempList.append(functions["first"](functions["symbolInRHS"](r,k),vars["eps"]))
+	# 				tempList.append(functions["follow"](functions["symbolInLHS"](r),vars[t]))
+	# 				tempList.append(functions["symbolInRHS"](r,i)!=functions["symbolInLHS"](r))
 
-					temp = functions["followWitness"](functions["symbolInLHS"](r),vars[t],functions["get_i"](functions["symbolInLHS"](r),vars[t]),functions["get_j"](functions["symbolInLHS"](r),vars[t]))
-					for j in range(num_rules):
-						temp = functions["followWitness"](temp,vars[t],functions["get_m"](temp,vars[t]),functions["get_n"](temp,vars[t]))
-					tempList.append(temp==vars[t])
-					followCondList.append(And(tempList))				
-					# s.add(((functions["followWitness"](functions["symbolInRHS"](r,i),vars[t],vars["rule%d"%(r)],vars["cond%d"%condNo])==functions["symbolInLHS"](r))==And(tempList)))
+	# 				temp = functions["followWitness"](functions["symbolInLHS"](r),vars[t],functions["get_i"](functions["symbolInLHS"](r),vars[t]),functions["get_j"](functions["symbolInLHS"](r),vars[t]))
+	# 				for j in range(num_rules):
+	# 					temp = functions["followWitness"](temp,vars[t],functions["get_m"](temp,vars[t]),functions["get_n"](temp,vars[t]))
+	# 				tempList.append(temp==vars[t])
+	# 				followCondList.append(And(tempList))				
+	# 				# s.add(((functions["followWitness"](functions["symbolInRHS"](r,i),vars[t],vars["rule%d"%(r)],vars["cond%d"%condNo])==functions["symbolInLHS"](r))==And(tempList)))
 			
-			s.assert_and_track(Implies(Not(Or(followCondList)), Not (functions["follow"](vars[nt], vars[t]))), 'eliminating_%s_from_follow_%s'%(t,nt))
-			constdict['eliminating_%s_from_follow_%s'%(t,nt)] = Implies(Not(Or(followCondList)), Not (functions["follow"](vars[nt], vars[t])))	
-	#######################################################################################
+	# 		s.assert_and_track(Implies(Not(Or(followCondList)), Not (functions["follow"](vars[nt], vars[t]))), 'eliminating_%s_from_follow_%s'%(t,nt))
+	# 		constdict['eliminating_%s_from_follow_%s'%(t,nt)] = Implies(Not(Or(followCondList)), Not (functions["follow"](vars[nt], vars[t])))	
+	# #######################################################################################
 	######################################################
 
 	# FOLLOW SET CONSTRAINTS

@@ -100,6 +100,7 @@ def repair(solver, original_grammar, num_rules, size_rules):
 	view_assign['$'] = 'dol'
 	# print('view_assign-',view_assign)
 	add_constraints(solver,view_assign,original_grammar,num_rules, size_rules)
-	add_parse_table_constraints(solver,parse_table,view_assign)
+	print view_assign
+	# add_parse_table_constraints(solver,parse_table,view_assign)
 	# add_first_set_constraints(solver, first_set, follow_set, view_assign)
 

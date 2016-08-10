@@ -100,7 +100,7 @@ def print_grammar(solver):
 	rules = req_rules(solver)
 
 	for i in range(num_rules):
-		if rules[i]:
+		if rules[i] or True:
 			symbolValue = int(str(m.evaluate(m_funs["symbolInLHS"](i+1))))
 			print "N%d\t->\t"%(symbolValue+1),
 			for j in range(size_rules):
@@ -114,18 +114,20 @@ def print_grammar(solver):
 			print ""
 	# print "follow: ",m.evaluate(m_funs["follow"](m_vars['N3'], m_vars['dol']))
 	# print "follow: ",m.evaluate(m_funs["follow"](m_vars['N1'], m_vars['dol']))
-	accept_list = solver["accept_list"]
-	print "accept_list ",accept_list
-	i = -1
-	# while i < len(accept_list[0]):
-	print "corrected string: "
-	while True:
-		symbolValue = int(str(m.evaluate(m_funs["ip_str1"](1, m_funs["succ"](1,i)))))
-		if symbolValue >= solver["term_end"]:
-			return
-		print "%s "%(tokens[symbolValue-num_nonterms]),
-		i = int(str(m.evaluate(m_funs["succ"](1,i))))
-	print ""
+	
+	if solver["comment_out"] == True:
+		accept_list = solver["accept_list"]
+		print "accept_list ",accept_list
+		i = -1
+		# while i < len(accept_list[0]):
+		print "corrected string: "
+		while True:
+			symbolValue = int(str(m.evaluate(m_funs["ip_str1"](1, m_funs["succ"](1,i)))))
+			if symbolValue >= solver["term_end"]:
+				return
+			print "%s "%(tokens[symbolValue-num_nonterms]),
+			i = int(str(m.evaluate(m_funs["succ"](1,i))))
+		print ""
 
 def assert_grammar_soft(S_target,S_source,req=False):
 
@@ -420,3 +422,117 @@ def get_solution_optimize(SP):
 
 
 
+# succ  [(1, -1) -> 0,
+#  (1, 0) -> 1,
+#  (1, 1) -> 2,
+#  (1, 10000) -> 3,
+#  (1, 10001) -> 2,
+#  (1, 10002) -> 0,
+#  (1, 10003) -> 2,
+#  (1, 10004) -> 10004,
+#  else -> 2]
+# pred  [(1, 10000) -> 1,
+#  (1, 10001) -> 1,
+#  (1, 10002) -> -1,
+#  (1, 10003) -> 0,
+#  (1, 10004) -> 0,
+#  else -> 1]
+# ip_str1  [(1, 2) -> 8,
+#  (1, -1) -> 18,
+#  (1, 0) -> 4,
+#  (1, 1) -> 5,
+#  (1, 10000) -> 19,
+#  (1, 10001) -> 20,
+#  (1, 10002) -> 21,
+#  (1, 10003) -> 22,
+#  (1, 10004) -> 23,
+#  (1, 30) -> 5,
+#  (1, 35) -> 5,
+#  (1, 36) -> 4,
+#  (1, 37) -> 4,
+#  (1, 38) -> 4,
+#  (1, 39) -> 4,
+#  (1, 40) -> 5,
+#  else -> 4]
+# symbolAt [(1, 1) -> 0,
+#  (1, 2) -> 3,
+#  (1, 3) -> 4,
+#  (1, 4) -> 5,
+#  (1, 5) -> 29,
+#  else -> 0]
+# step  [(1, 0) -> True,
+#  (1, 1) -> True,
+#  (1, 2) -> True,
+#  (1, 3) -> True,
+#  (1, 4) -> True,
+#  (1, 5) -> False,
+#  (1, 6) -> False,
+#  (1, 7) -> False,
+#  (1, 8) -> False,
+#  (1, 9) -> False,
+#  (1, 10) -> False,
+#  (1, 11) -> False,
+#  (1, 12) -> False,
+#  (1, 13) -> False,
+#  else -> False]
+# success  [(1, 1) -> False,
+#  (1, 2) -> False,
+#  (1, 3) -> False,
+#  (1, 4) -> False,
+#  (1, 5) -> True,
+#  (1, 6) -> True,
+#  (1, 7) -> True,
+#  (1, 8) -> True,
+#  (1, 9) -> True,
+#  (1, 10) -> True,
+#  (1, 11) -> True,
+#  (1, 12) -> True,
+#  (1, 13) -> True,
+#  else -> True]
+# end  [(1, 1) -> 4,
+#  (1, 2) -> 2,
+#  (1, 3) -> 3,
+#  (1, 4) -> 4,
+#  else -> 4]
+# parseTable  [(0, 4) -> 6,
+#  (0, 5) -> 0,
+#  (0, 6) -> 0,
+#  (0, 8) -> 0,
+#  (1, 4) -> 3,
+#  (1, 5) -> 0,
+#  (1, 6) -> 0,
+#  (1, 8) -> 0,
+#  (2, 4) -> 6,
+#  (2, 5) -> 1,
+#  (2, 6) -> 2,
+#  (2, 8) -> 6,
+#  (3, 4) -> 3,
+#  (3, 5) -> 0,
+#  (3, 6) -> 0,
+#  (3, 8) -> 0,
+#  (29, 8) -> 31,
+#  else -> 0]
+# lookAheadIndex  [(1, 1) -> 0,
+#  (1, 2) -> 0,
+#  (1, 3) -> 0,
+#  (1, 4) -> 1,
+#  (1, 5) -> 2,
+#  (1, 6) -> 30,
+#  (1, 7) -> 35,
+#  (1, 8) -> 36,
+#  (1, 9) -> 37,
+#  (1, 10) -> 38,
+#  (1, 11) -> 39,
+#  (1, 12) -> 40,
+#  else -> 0]
+# 4
+# 8
+# N1	->	)	(	)	N3	
+# N1	->	(	?	)	?	
+# N2	->	eps	eps	eps	eps	
+# N3	->	N2	N2	(	N3	
+# N4	->	N2	?	(	(	
+# N3	->	eps	N4	)	(	
+# accept_list  [['t1', 't2']]
+# corrected string: 
+# )  (  Solving time taken: 0:00:01
