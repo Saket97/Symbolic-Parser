@@ -5,6 +5,7 @@ from input_specs8 import *
 
 constraint_no = 0
 def insert_first_set_constraints(solver):
+	print "inserting first set constraints...."
 	vars = solver["vars"]
 	s = solver["constraints"]
 	functions = solver["functions"]
@@ -290,6 +291,7 @@ def insert_first_set_constraints(solver):
 
 
 def insert_follow_set_constraints(solver):
+	print "inserting follow set constraints"
 	vars = solver["vars"]
 	s = solver["constraints"]
 	functions = solver["functions"]
@@ -564,6 +566,7 @@ def insert_follow_set_constraints(solver):
 
 
 def insert_parse_table_constraints(solver):
+	print "inserting parse table constraints..."
 	functions = solver["functions"]
 	vars = solver["vars"]
 	s = solver["constraints"]
@@ -626,6 +629,7 @@ def insert_parse_table_constraints(solver):
 				constraint_no += 1
 
 def declare_parsing_functions(solver):
+	print "declaring parsing functions..."
 	vars = solver["vars"]
 	functions = solver["functions"]
 	######################################################
@@ -669,6 +673,7 @@ def declare_parsing_functions(solver):
 
 
 def declare_symbols_and_template_constraints(solver):
+	print "declaring symbols and template constraints..."
 	global config
 	global constraint_no
 	# set_param(proof=True)
