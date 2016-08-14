@@ -4,7 +4,7 @@ def specs():
 
 	#Space separated (tokized) strings
 	# accept_strings = ["?", "! ?", "( ?"]
-	accept_strings = [") ("]
+	accept_strings = ["( ? ) ?"]
 	reject_strings = [")", ") ("]
 
 	config = {
@@ -43,7 +43,7 @@ def get_follow_set():
 	return follow_set
 
 # accept_strings = ["?", "! ?", "( ?"]
-accept_strings = [") ("]
+accept_strings = ["( ? ) ?"]
 reject_strings = [")", ") ("]
 
 ##	S -> (S)S | eps
@@ -136,6 +136,7 @@ def online_check_format2(original_grammar):
 				print("")
 
 tmp =[["Prog","Exp"],["Exp","ExpOR","ExpORPr"],["ExpOR","ExpAND","ExpANDPr"],["ExpAND","ArithExp","RelExp"],["ExpORPr","|","Exp"],["ExpORPr","eps"],["ExpANDPr","&",'ExpOR'],['ExpANDPr','eps'],['ArithExp',"Term","TermPr"],["RelExp","RelationOp","ArithExp"],["RelExp","eps"],["Term","Factor","FactorPr"],["TermPr","+","Term","TermPr"],["TermPr","-","Term","TermPr"],["TermPr","eps"],["FactorPr","*","Factor","FactorPr"],["FactorPr","/","Factor","FactorPr"],["FactorPr","eps"],["Factor","nil"],["Factor","integer"],["Factor","string"],["Factor","(","ExpList",")"],["Factor","UnaryOp","Exp"],["Factor","if","Exp","then","Exp","Factor1"],["Factor1","else","Exp"],["Factor1","eps"],["Factor","while","Exp","do","Exp"],["Factor","for","id",":=","Exp","to","Exp","do","Exp"],["Factor","break"],["Factor","let","DecList","in","ExpList","end"],["Factor","LValue"],["Dec1","Dec","Dec1"],["Dec1","eps"],["DecList","Dec1"],["Dec","TyDec"],["Dec","VarDec"],["Dec","FunDec"],["TyDec","type","TypeId","=","Ty"],["Ty","{","FieldList","}"],["Ty","array","of","TypeId"],["Ty","TypeId"],["extra1",",","id",":","TypeId","extra1"],["extra1","eps"],["FieldList","id",":","TypeId","extra1"],["FieldList","eps"],["extra2",",","id","=","Exp","extra2"],["extra2","eps"],["FieldExpList","id","=","Exp","extra2"],["FieldExpList","eps"],["TypeId","id"],["TypeId","string"],["TypeId","int"],["VarDec","var","id","extra3",":=","Exp"],["extra3",":","TypeId"],["extra3","eps"],["FunDec","function","id","(","FieldList",")","extra3","=","Exp"],["LValue","id","extra4"],["extra4","FunctionRecordArray"],["extra4","FunctionRecordArrayPr"],["FunctionRecordArray","(","ArgList",")"],["FunctionRecordArray","{","id","=","Exp","extra2","}"],["FunctionRecordArray","[","Exp","]","extra15"],["extra15","of","Exp"],["extra15","FunctionRecordArrayPr"],["FunctionRecordArrayPr","extra11","extra12","extra13"],["extra11",".","id","extra11"],["extra11","eps"],["extra12","[","Exp","]","extra12"],["extra12","eps"],["extra13","Assign","Exp"],["extra13","eps"],["ExpList","Exp","extra7"],["ExpList","eps"],["extra7",";","Exp","extra7"],["extra7","eps"],["ArgList","Exp","extra6"],["ArgList","eps"],["extra6",",","Exp","extra6"],["extra6","eps"],["UnaryOp","-"],["RelationOp","="],["RelationOp","<>"],["RelationOp",">"],["RelationOp","<"],["RelationOp",">="],["RelationOp","<="]]
+
 
 # online_check_format1(tmp)
 # online_check_hacking(tmp)

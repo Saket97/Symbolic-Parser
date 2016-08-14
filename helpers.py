@@ -2,8 +2,7 @@ from z3 import *
 from solver import *
 from init import *
 from itertools import *
-from msat import assert_and_track_soft, add_soft
-constraint_no = 0
+from msat import *
 def req_rules(solver):
 
 	m = solver["model"]
@@ -67,7 +66,7 @@ def req_rules(solver):
 			producing_rules[i]= True
 
 	changed = True
-
+#considered not producing rules as those which do not have terminals on their RHS..Now rectifying this
 	while changed:
 		changed = False
 		for j in range(num_rules):
@@ -91,7 +90,7 @@ def print_grammar(solver):
 	m = solver["model"]
 	m_vars = solver["vars"]
 	m_funs = solver["functions"]
-	terms = solver["terms"]
+
 	num_rules = config['num_rules']
 	num_nonterms = config['num_nonterms']
 	num_terms = config['num_terms']
@@ -100,7 +99,7 @@ def print_grammar(solver):
 	rules = req_rules(solver)
 
 	for i in range(num_rules):
-		if rules[i] or True:
+		if rules[i]:
 			symbolValue = int(str(m.evaluate(m_funs["symbolInLHS"](i+1))))
 			print "N%d\t->\t"%(symbolValue+1),
 			for j in range(size_rules):
@@ -112,9 +111,7 @@ def print_grammar(solver):
 				elif symbolValue == num_nonterms + num_terms:
 					print "eps\t",
 			print ""
-	# print "follow: ",m.evaluate(m_funs["follow"](m_vars['N3'], m_vars['dol']))
-	# print "follow: ",m.evaluate(m_funs["follow"](m_vars['N1'], m_vars['dol']))
-	
+
 	if solver["comment_out"] == True:
 		accept_list = solver["accept_list"]
 		print "accept_list ",accept_list
@@ -128,12 +125,11 @@ def print_grammar(solver):
 			print "%s "%(tokens[symbolValue-num_nonterms]),
 			i = int(str(m.evaluate(m_funs["succ"](1,i))))
 		print ""
-
 def assert_grammar_soft(S_target,S_source,req=False):
-
+	print "calling assert_grammar_soft\n"
 	s = S_target["constraints"]
-	constdict = S_target["dictconst"]
 	assumptions = []
+
 	num_rules = config['num_rules']
 	num_nonterms = config['num_nonterms']
 	num_terms = config['num_terms']
@@ -225,11 +221,9 @@ def add_bad_grammar(S_target,S_source,iterationNo):
 def add_accept_string(solver,accept_string):
 
 	s = solver["constraints"]
-	constdict = solver["dictconst"]
 	vars = solver["vars"]
 	functions = solver["functions"]
 	terms = solver["terms"]
-
 	if "type" in solver:
 		assert(solver["type"]=="accept")
 		if "num_strings" not in solver:
@@ -244,8 +238,11 @@ def add_accept_string(solver,accept_string):
 	expansion_constant = config['expansion_constant']  #Determines the max. number of parse actions to take while parsing
 
 	strNum = solver["num_strings"]
-	
-	print "adding string constraints..."
+	# Take input and construct the ip_str function
+	# for j in range(len(accept_string)):
+	# 	s.add(functions["ip_str"](strNum,j) == vars[accept_string[j]])
+	# s.add(functions["ip_str"](strNum,len(accept_string))==vars["dol"])
+
 	######## adding initial succ function constraint ######
 	if solver["comment_out"] == True:
 		for j in range(-1,len(accept_string)):
@@ -273,7 +270,7 @@ def add_accept_string(solver,accept_string):
 				OrList = []
 				OrList.append(And(functions["succ"](strNum,i) > i,functions["succ"](strNum,i) <= i+2))
 				for j in range(solver["n_insertions"]):
-					OrList.append(functions["succ"](strNum,i) == 10000+i)
+					OrList.append(functions["succ"](strNum,i) == 10000+j)
 				s.add(Or(OrList))
 				# s.add(Or(And(functions["succ"](strNum,i) > i,functions["succ"](strNum,i) <= i+2), functions["succ"](strNum,i) == 1000, functions["succ"](strNum,i) == 1001))
 			else:
@@ -298,8 +295,8 @@ def add_accept_string(solver,accept_string):
 				# print functions["ip_str1"](strNum, i) == vars[t]
 			s.add(Or(OrList))
 
+
 	# Start parsing with N1 as the first symbol
-	
 	s.add(functions["symbolAt"](strNum,1) == vars["N1"])
 
 	# Starting lookAheadIndex
@@ -311,15 +308,14 @@ def add_accept_string(solver,accept_string):
 	# Do required number of steps
 	for i in range(expansion_constant*len(accept_string)):
 		single_step(solver,strNum,i+1)
-	s.assert_and_track(functions["success"](strNum,expansion_constant*len(accept_string)),'parsing_string%d_success'%(strNum))
-	constdict['parsing_string%d_success'%(strNum)] = functions["success"](strNum,expansion_constant*len(accept_string))
+	s.add(functions["success"](strNum,expansion_constant*len(accept_string)))
+
 
 def add_reject_strings(solver):
 
 	s = solver["constraints"]
 	vars = solver["vars"]
 	functions = solver["functions"]
-	constdict = solver["dictconst"]
 
 	assert("type" not in solver)
 	solver["type"] = "reject"
@@ -331,10 +327,8 @@ def add_reject_strings(solver):
 	# Take input and construct the ip_str function
 	for strNum in range(len(reject_list)):
 		for j in range(len(reject_list[strNum])):
-			s.assert_and_track(functions["ip_str"](strNum,j) == vars[reject_list[strNum][j]],'make_ipstr_reject_strNum%d_pos%d'%(strNum,j))
-			constdict['make_ipstr_reject_strNum%d_pos%d'%(strNum,j)] = functions["ip_str"](strNum,j) == vars[reject_list[strNum][j]]
-		s.assert_and_track(functions["ip_str"](strNum,len(reject_list[strNum]))==vars["dol"], 'make_ipstr_reject_strNum%d_pos%d'%(strNum,len(reject_list[strNum])))
-		constdict['make_ipstr_reject_strNum%d_pos%d'%(strNum,len(reject_list[strNum]))] = functions["ip_str"](strNum,len(reject_list[strNum]))==vars["dol"]
+			s.add(functions["ip_str"](strNum,j) == vars[reject_list[strNum][j]])
+		s.add(functions["ip_str"](strNum,len(reject_list[strNum]))==vars["dol"])
 
 	# Start parsing with N1 as the first symbol
 	for strNum in range(len(reject_list)):
@@ -356,7 +350,7 @@ def add_reject_strings(solver):
 			single_step(solver,strNum,i+1)
 		SuccessList.append(functions["success"](strNum,expansion_constant*len(reject_list[strNum])))
 
-	s.assert_and_track(Or(SuccessList), 'successful_parsing_reject_strings')
+	s.add(Or(SuccessList))
 
 ######################################################
 
@@ -376,7 +370,6 @@ def add_threshold(solver,unsat_core,threshold):
 def get_solution_optimize(SP):
 
 	i=0
-	s = SP["constraints"]
 	print "Adding string " + str(i+1)
 	accept_string=accept_list[0]
 	add_accept_string(SP,accept_string)
@@ -419,120 +412,3 @@ def get_solution_optimize(SP):
 		SP["constraints"].pop()
 
 	return check_result
-
-
-
-# succ  [(1, -1) -> 0,
-#  (1, 0) -> 1,
-#  (1, 1) -> 2,
-#  (1, 10000) -> 3,
-#  (1, 10001) -> 2,
-#  (1, 10002) -> 0,
-#  (1, 10003) -> 2,
-#  (1, 10004) -> 10004,
-#  else -> 2]
-# pred  [(1, 10000) -> 1,
-#  (1, 10001) -> 1,
-#  (1, 10002) -> -1,
-#  (1, 10003) -> 0,
-#  (1, 10004) -> 0,
-#  else -> 1]
-# ip_str1  [(1, 2) -> 8,
-#  (1, -1) -> 18,
-#  (1, 0) -> 4,
-#  (1, 1) -> 5,
-#  (1, 10000) -> 19,
-#  (1, 10001) -> 20,
-#  (1, 10002) -> 21,
-#  (1, 10003) -> 22,
-#  (1, 10004) -> 23,
-#  (1, 30) -> 5,
-#  (1, 35) -> 5,
-#  (1, 36) -> 4,
-#  (1, 37) -> 4,
-#  (1, 38) -> 4,
-#  (1, 39) -> 4,
-#  (1, 40) -> 5,
-#  else -> 4]
-# symbolAt [(1, 1) -> 0,
-#  (1, 2) -> 3,
-#  (1, 3) -> 4,
-#  (1, 4) -> 5,
-#  (1, 5) -> 29,
-#  else -> 0]
-# step  [(1, 0) -> True,
-#  (1, 1) -> True,
-#  (1, 2) -> True,
-#  (1, 3) -> True,
-#  (1, 4) -> True,
-#  (1, 5) -> False,
-#  (1, 6) -> False,
-#  (1, 7) -> False,
-#  (1, 8) -> False,
-#  (1, 9) -> False,
-#  (1, 10) -> False,
-#  (1, 11) -> False,
-#  (1, 12) -> False,
-#  (1, 13) -> False,
-#  else -> False]
-# success  [(1, 1) -> False,
-#  (1, 2) -> False,
-#  (1, 3) -> False,
-#  (1, 4) -> False,
-#  (1, 5) -> True,
-#  (1, 6) -> True,
-#  (1, 7) -> True,
-#  (1, 8) -> True,
-#  (1, 9) -> True,
-#  (1, 10) -> True,
-#  (1, 11) -> True,
-#  (1, 12) -> True,
-#  (1, 13) -> True,
-#  else -> True]
-# end  [(1, 1) -> 4,
-#  (1, 2) -> 2,
-#  (1, 3) -> 3,
-#  (1, 4) -> 4,
-#  else -> 4]
-# parseTable  [(0, 4) -> 6,
-#  (0, 5) -> 0,
-#  (0, 6) -> 0,
-#  (0, 8) -> 0,
-#  (1, 4) -> 3,
-#  (1, 5) -> 0,
-#  (1, 6) -> 0,
-#  (1, 8) -> 0,
-#  (2, 4) -> 6,
-#  (2, 5) -> 1,
-#  (2, 6) -> 2,
-#  (2, 8) -> 6,
-#  (3, 4) -> 3,
-#  (3, 5) -> 0,
-#  (3, 6) -> 0,
-#  (3, 8) -> 0,
-#  (29, 8) -> 31,
-#  else -> 0]
-# lookAheadIndex  [(1, 1) -> 0,
-#  (1, 2) -> 0,
-#  (1, 3) -> 0,
-#  (1, 4) -> 1,
-#  (1, 5) -> 2,
-#  (1, 6) -> 30,
-#  (1, 7) -> 35,
-#  (1, 8) -> 36,
-#  (1, 9) -> 37,
-#  (1, 10) -> 38,
-#  (1, 11) -> 39,
-#  (1, 12) -> 40,
-#  else -> 0]
-# 4
-# 8
-# N1	->	)	(	)	N3	
-# N1	->	(	?	)	?	
-# N2	->	eps	eps	eps	eps	
-# N3	->	N2	N2	(	N3	
-# N4	->	N2	?	(	(	
-# N3	->	eps	N4	)	(	
-# accept_list  [['t1', 't2']]
-# corrected string: 
-# )  (  Solving time taken: 0:00:01
