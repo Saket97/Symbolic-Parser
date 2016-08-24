@@ -14,10 +14,13 @@ def main1():
 	sp_time = calendar.timegm(time.gmtime())
 	print "Initializing SP..."
 	SP = {}
+	SP["dictconst"] = {}
 	SP["comment_out"] = False
 	initialize_solver(SP)
 	print "SP initialized in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
-
+	num = nums()
+	original_grammar = find_original_grammar()
+	repair(SP, original_grammar, num['num_rules'], num['size_rules'])
 	#SN instance
 	if config['neg_egs']:
 		sn_time = calendar.timegm(time.gmtime())
@@ -97,17 +100,21 @@ def main():
 	SP["dictconst"] = {}
 	initialize_solver(SP)
 	# SP["constraints"].set(unsat_core=True)
-
+	print "SP initialized in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
+	
 	num = nums()
 	original_grammar = find_original_grammar()
 	repair(SP, original_grammar, num['num_rules'], num['size_rules'])
 
-	print "SP initialized in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
+	print "checking sat after asserting grammar and parse table constraints: ",SP["constraints"].check()
+	
 	start_time = calendar.timegm(time.gmtime())
 	for accept_string in accept_list:
 		add_accept_string(SP,accept_string)
 	print "starting maxsat solver..."
-	result, doubt_pos,m = naive_maxsat(SP)
+	# result, doubt_pos,m = naive_maxsat(SP)
+	naive_maxsat(SP)
+	# print SP["constraints"].check()
 	SP["accept_list"] = accept_list
 	# print "atmost %d positions in the string are correct"%result
 	SP["model"] = m

@@ -1,14 +1,14 @@
 def specs():
 
 	#Space separated (tokenized) strings
-	accept_strings = ["a c b","a a c c b","a a a c c b b c b","a a c b c b"]
+	accept_strings = ["a b","a a c c b","a a a c c b b c b","a a c b c b"]
 	reject_strings = ["a c","a b","a a c c c b"]
 
 	config = {
 		'num_rules': 5, #Number of rules
 		'size_rules' : 4, #Number of symbols in RHS
 		'num_nonterms' : 3, #Number of nonterms
-		'expansion_constant' : 4, #Determines the max. number of parse actions to take while parsing
+		'expansion_constant' : 9, #Determines the max. number of parse actions to take while parsing
 		'optimize' : True, # enable optimized mode
 		'neg_egs' : True, # consider negative examples 
 		'threshold' : 1  # number of unsat cores to break

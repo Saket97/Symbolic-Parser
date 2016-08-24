@@ -246,7 +246,12 @@ def add_accept_string(solver,accept_string):
 	######## adding initial succ function constraint ######
 	if solver["comment_out"] == True:
 		for j in range(-1,len(accept_string)):
-			add_soft(functions["succ"](strNum,j) == j+1, solver)
+			if solver["n_insertions"] != 0:
+				# s.add_soft(functions["succ"](strNum,j) == j+1)
+				add_soft(functions["succ"](strNum,j) == j+1, solver)
+			else:
+				s.add(functions["succ"](strNum,j) == j+1)
+
 
 	for j in range(len(accept_string)):
 		s.add(functions["ip_str"](strNum,j) == vars[accept_string[j]])
@@ -255,8 +260,11 @@ def add_accept_string(solver,accept_string):
 	if solver["comment_out"] == True:
 		####### making ipstr1 function 
 		for j in range(-1,len(accept_string)):
-			add_soft(functions["ip_str1"](strNum,functions["succ"](strNum,j)) == functions["ip_str"](strNum,j+1), solver)
-		
+			if j == 7 or j == 8:	
+				add_soft(functions["ip_str1"](strNum,functions["succ"](strNum,j)) == functions["ip_str"](strNum,j+1), solver)
+			else:
+				s.add(functions["ip_str1"](strNum,functions["succ"](strNum,j)) == functions["ip_str"](strNum,j+1))
+
 		tmp = [i for i in range(-1, len(accept_string))]
 		for i in range(solver["n_insertions"]):
 			tmp.append(10000+i)
