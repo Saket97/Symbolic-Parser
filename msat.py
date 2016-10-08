@@ -65,6 +65,9 @@ def find_unsatisfied_soft_constraints(m,aux_const):
 
 def naive_maxsat(solver):
     # aux,aux_const = assert_soft_constraints(solver, accept_strings)
+    if "aux" not in solver:
+        solver["aux"] = []
+        solver["aux_const"] = []
     aux = solver["aux"]
     aux_const = solver["aux_const"]
     # if is_sat == unsat:
@@ -76,13 +79,13 @@ def naive_maxsat(solver):
     k = solver["num_soft_constraints"] - 1
     print "%d soft constraints added..."%(k+1)
     # print "hard constraints: ",solver["constraints"].check()
-    k = 4
+    k = 1
     while True:
         print "checking atmost %d constraints can be relaxed"%k      
         assert_at_most_k(solver, aux_const,k)
         is_sat = solver["constraints"].check()
         print "check_Sat: ",is_sat
-        return
+        # return
         if is_sat == unsat:
             # print solver["constraints"].unsat_core()
             if k != solver["num_soft_constraints"] - k -1:
@@ -95,6 +98,7 @@ def naive_maxsat(solver):
         num_disabled = get_num_disabled_soft_constraints( m, solver["num_soft_constraints"], aux_const)
         k = num_disabled
         print "k ",k
+        print "saket"
         if k == 0:
             print "it was possible to satisfy all soft constraints"
             # print_grammar(solver)

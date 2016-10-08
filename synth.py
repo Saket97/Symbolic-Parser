@@ -106,14 +106,14 @@ def main():
 	original_grammar = find_original_grammar()
 	repair(SP, original_grammar, num['num_rules'], num['size_rules'])
 
-	print "checking sat after asserting grammar and parse table constraints: ",SP["constraints"].check()
 	
 	start_time = calendar.timegm(time.gmtime())
 	for accept_string in accept_list:
 		add_accept_string(SP,accept_string)
+	
 	print "starting maxsat solver..."
 	# result, doubt_pos,m = naive_maxsat(SP)
-	naive_maxsat(SP)
+	p, unsat_soft_constrains, m = naive_maxsat(SP)
 	# print SP["constraints"].check()
 	SP["accept_list"] = accept_list
 	# print "atmost %d positions in the string are correct"%result

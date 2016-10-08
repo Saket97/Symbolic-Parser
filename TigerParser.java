@@ -301,19 +301,20 @@ public class TigerParser implements TigerParserConstants {
   }
 
   static final public void DecList() throws ParseException {
-    label_1:
-    while (true) {
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case FUNCTION:
-      case TYPE:
-      case VAR:
-        ;
-        break;
-      default:
-        jj_la1[9] = jj_gen;
-        break label_1;
-      }
+    DL_extra();
+  }
+
+  static final public void DL_extra() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case FUNCTION:
+    case TYPE:
+    case VAR:
       Dec();
+      DL_extra();
+      break;
+    default:
+      jj_la1[9] = jj_gen;
+
     }
   }
 
@@ -375,25 +376,26 @@ public class TigerParser implements TigerParserConstants {
       jj_consume_token(IDENTIFIER);
       jj_consume_token(COLON);
       TypeId();
-      label_2:
-      while (true) {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case COMMA:
-          ;
-          break;
-        default:
-          jj_la1[12] = jj_gen;
-          break label_2;
-        }
-        jj_consume_token(COMMA);
-        jj_consume_token(IDENTIFIER);
-        jj_consume_token(COLON);
-        TypeId();
-      }
+      FL_extra();
+      break;
+    default:
+      jj_la1[12] = jj_gen;
+
+    }
+  }
+
+  static final public void FL_extra() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case COMMA:
+      jj_consume_token(COMMA);
+      jj_consume_token(IDENTIFIER);
+      jj_consume_token(COLON);
+      TypeId();
+      FL_extra();
       break;
     default:
       jj_la1[13] = jj_gen;
-      ;
+
     }
   }
 
@@ -403,25 +405,26 @@ public class TigerParser implements TigerParserConstants {
       jj_consume_token(IDENTIFIER);
       jj_consume_token(EQUALS);
       Exp();
-      label_3:
-      while (true) {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case COMMA:
-          ;
-          break;
-        default:
-          jj_la1[14] = jj_gen;
-          break label_3;
-        }
-        jj_consume_token(COMMA);
-        jj_consume_token(IDENTIFIER);
-        jj_consume_token(EQUALS);
-        Exp();
-      }
+      FEL_extra();
+      break;
+    default:
+      jj_la1[14] = jj_gen;
+
+    }
+  }
+
+  static final public void FEL_extra() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case COMMA:
+      jj_consume_token(COMMA);
+      jj_consume_token(IDENTIFIER);
+      jj_consume_token(EQUALS);
+      Exp();
+      FEL_extra();
       break;
     default:
       jj_la1[15] = jj_gen;
-      ;
+
     }
   }
 
@@ -468,6 +471,12 @@ public class TigerParser implements TigerParserConstants {
     jj_consume_token(LBR);
     FieldList();
     jj_consume_token(RBR);
+    FD_extra();
+    jj_consume_token(EQUALS);
+    Exp();
+  }
+
+  static final public void FD_extra() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case COLON:
       jj_consume_token(COLON);
@@ -475,10 +484,8 @@ public class TigerParser implements TigerParserConstants {
       break;
     default:
       jj_la1[18] = jj_gen;
-      ;
+
     }
-    jj_consume_token(EQUALS);
-    Exp();
   }
 
 /* The following there functions parse accessing assigning variables,  
@@ -492,14 +499,27 @@ public class TigerParser implements TigerParserConstants {
  */
   static final public void LValue() throws ParseException {
     jj_consume_token(IDENTIFIER);
+    LV_extra();
+  }
+
+  static final public void LV_extra() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LBR:
     case LSQB:
     case LCURLB:
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case 0:
+
+        break;
+      default:
+        jj_la1[19] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
       FunctionRecordArray();
       break;
     default:
-      jj_la1[19] = jj_gen;
+      jj_la1[20] = jj_gen;
       FunctionRecordArrayPr();
     }
   }
@@ -516,21 +536,7 @@ public class TigerParser implements TigerParserConstants {
       jj_consume_token(IDENTIFIER);
       jj_consume_token(EQUALS);
       Exp();
-      label_4:
-      while (true) {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case COMMA:
-          ;
-          break;
-        default:
-          jj_la1[20] = jj_gen;
-          break label_4;
-        }
-        jj_consume_token(COMMA);
-        jj_consume_token(IDENTIFIER);
-        jj_consume_token(EQUALS);
-        Exp();
-      }
+      FRA_extra();
       jj_consume_token(RCURLB);
       break;
     case LSQB:
@@ -554,34 +560,46 @@ public class TigerParser implements TigerParserConstants {
     }
   }
 
-  static final public void FunctionRecordArrayPr() throws ParseException {
-    label_5:
-    while (true) {
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case DOT:
-      case LSQB:
-        ;
-        break;
-      default:
-        jj_la1[23] = jj_gen;
-        break label_5;
-      }
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case DOT:
-        jj_consume_token(DOT);
-        jj_consume_token(IDENTIFIER);
-        break;
-      case LSQB:
-        jj_consume_token(LSQB);
-        Exp();
-        jj_consume_token(RSQB);
-        break;
-      default:
-        jj_la1[24] = jj_gen;
-        jj_consume_token(-1);
-        throw new ParseException();
-      }
+  static final public void FRA_extra() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case COMMA:
+      jj_consume_token(COMMA);
+      jj_consume_token(IDENTIFIER);
+      jj_consume_token(EQUALS);
+      Exp();
+      FRA_extra();
+      break;
+    default:
+      jj_la1[23] = jj_gen;
+
     }
+  }
+
+  static final public void FunctionRecordArrayPr() throws ParseException {
+    FRAP_extra();
+    FRAP_extra1();
+  }
+
+  static final public void FRAP_extra() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case DOT:
+      jj_consume_token(DOT);
+      jj_consume_token(IDENTIFIER);
+      FRAP_extra();
+      break;
+    case LSQB:
+      jj_consume_token(LSQB);
+      Exp();
+      jj_consume_token(RSQB);
+      FRAP_extra();
+      break;
+    default:
+      jj_la1[24] = jj_gen;
+
+    }
+  }
+
+  static final public void FRAP_extra1() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case ASSIGN:
       jj_consume_token(ASSIGN);
@@ -589,7 +607,7 @@ public class TigerParser implements TigerParserConstants {
       break;
     default:
       jj_la1[25] = jj_gen;
-      ;
+
     }
   }
 
@@ -608,7 +626,7 @@ public class TigerParser implements TigerParserConstants {
     case INTEGER:
     case STRING:
       Exp();
-      label_6:
+      label_1:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case SEMIC:
@@ -616,7 +634,7 @@ public class TigerParser implements TigerParserConstants {
           break;
         default:
           jj_la1[26] = jj_gen;
-          break label_6;
+          break label_1;
         }
         jj_consume_token(SEMIC);
         Exp();
@@ -643,7 +661,7 @@ public class TigerParser implements TigerParserConstants {
     case INTEGER:
     case STRING:
       Exp();
-      label_7:
+      label_2:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case COMMA:
@@ -651,7 +669,7 @@ public class TigerParser implements TigerParserConstants {
           break;
         default:
           jj_la1[28] = jj_gen;
-          break label_7;
+          break label_2;
         }
         jj_consume_token(COMMA);
         Exp();
@@ -714,20 +732,18 @@ public class TigerParser implements TigerParserConstants {
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x0,0x80000000,0x0,0x18000000,0x18000000,0x60000000,0x60000000,0x2000,0x141a8800,0x3010000,0x3010000,0x400,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x200000,0x0,0x0,0x0,0x0,0x0,0x141a8800,0x0,0x141a8800,0x0,};
+      jj_la1_0 = new int[] {0x0,0x80000000,0x0,0x18000000,0x18000000,0x60000000,0x60000000,0x2000,0x141a8800,0x3010000,0x3010000,0x400,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x200000,0x0,0x0,0x0,0x0,0x0,0x141a8800,0x0,0x141a8800,0x0,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x1,0x0,0x7e,0x0,0x0,0x0,0x0,0x0,0x8c1000,0x0,0x0,0x8d0000,0x200,0x40000,0x200,0x40000,0x8c0000,0x400,0x400,0x15000,0x200,0x0,0x15000,0x4800,0x4800,0x80,0x100,0x8c1000,0x200,0x8c1000,0x7e,};
+      jj_la1_1 = new int[] {0x1,0x0,0x7e,0x0,0x0,0x0,0x0,0x0,0x8c1000,0x0,0x0,0x8d0000,0x40000,0x200,0x40000,0x200,0x8c0000,0x400,0x400,0x0,0x15000,0x0,0x15000,0x200,0x4800,0x80,0x100,0x8c1000,0x200,0x8c1000,0x7e,};
    }
 
   /** Constructor with InputStream. */
   public TigerParser(java.io.InputStream stream) {
      this(stream, null);
-     System.out.println("Constructor1");
   }
   /** Constructor with InputStream and supplied encoding */
   public TigerParser(java.io.InputStream stream, String encoding) {
-    System.out.println("Constructor2");
     if (jj_initialized_once) {
       System.out.println("ERROR: Second call to constructor of static parser.  ");
       System.out.println("       You must either use ReInit() or set the JavaCC option STATIC to false");
@@ -765,7 +781,6 @@ public class TigerParser implements TigerParserConstants {
       System.out.println("       during parser generation.");
       throw new Error();
     }
-    System.out.println("Constructor3");
     jj_initialized_once = true;
     jj_input_stream = new JavaCharStream(stream, 1, 1);
     token_source = new TigerParserTokenManager(jj_input_stream);
@@ -793,7 +808,6 @@ public class TigerParser implements TigerParserConstants {
       System.out.println("       during parser generation.");
       throw new Error();
     }
-    System.out.println("Constructor4");
     jj_initialized_once = true;
     token_source = tm;
     token = new Token();
@@ -815,9 +829,6 @@ public class TigerParser implements TigerParserConstants {
     Token oldToken;
     if ((oldToken = token).next != null) token = token.next;
     else token = token.next = token_source.getNextToken();
-    System.out.println(token);
-    //if (token.image == "10")
-    System.out.println("token "+ token.kind);
     jj_ntk = -1;
     if (token.kind == kind) {
       jj_gen++;

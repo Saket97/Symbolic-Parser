@@ -10,7 +10,7 @@ def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules
 	constdict = solver["dictconst"]
 	for r in range(num_rules):
 		# s.assert_and_track(vars['x%d'%(r*(size_rules+1)+1)] == vars[view_assign[original_grammar[r][0]]], 'input x%d'%(r*(size_rules+1)+1))
-		constdict['input x%d'%(r*(size_rules+1)+1)] = (vars['x%d'%(r*(size_rules+1)+1)] == vars[view_assign[original_grammar[r][0]]])
+		# constdict['input x%d'%(r*(size_rules+1)+1)] = (vars['x%d'%(r*(size_rules+1)+1)] == vars[view_assign[original_grammar[r][0]]])
 		# print "constdictx1: ",solver["dictconst"]["input x1"]
 		# print('x%d %s %d'%((r*(size_rules+1)+1),view_assign[original_grammar[r][0]], i))
 		s.add(vars['x%d'%(r*(size_rules+1)+1)] == vars[view_assign[original_grammar[r][0]]])
@@ -96,6 +96,7 @@ def repair(solver, original_grammar, num_rules, size_rules):
 		view_assign[ch] = 't%d'%(i)
 		i += 1
 	view_assign['eps'] = 'eps'
+	print "view_assign",view_assign
 	parse_table = get_parse_table()
 	# first_set = get_first_set()
 	# follow_set = get_follow_set()

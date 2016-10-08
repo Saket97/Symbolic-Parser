@@ -17,6 +17,7 @@ def discover(original_grammar):
 			non_tokens.append(ch)
 		else:
 			pass
+	print "len(non_tokens):",len(non_tokens)
 	return non_tokens
 def discover_tokens_from_grammar():
 	tokens = []
@@ -50,7 +51,7 @@ accept_strings,reject_strings,config = specs()
 
 ######################################################
 
-if sys.argv[1] == 'mode2' or True:
+if  True or sys.argv[1] == 'mode2':
 	non_tokens = discover(find_original_grammar())
 	tokens = discover_tokens_from_grammar()
 else:

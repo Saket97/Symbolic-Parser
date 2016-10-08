@@ -1,0 +1,495 @@
+/*******************************
+****** Cormac Redmond  ********* 
+****** credmond85 /at/ gmail.com 
+********************************/
+
+/********************************
+****** SECTION 1 - OPTIONS ******
+********************************/
+
+options 
+{
+	JAVA_UNICODE_ESCAPE = true;
+}
+
+/**********************************
+****** SECTION 2 - USER CODE ******
+**********************************/
+
+PARSER_BEGIN(TigerParser)
+
+public class TigerParser 
+{
+	public static void main(String args[]) 
+	{
+    	TigerParser parser;
+        if (args.length == 0) 
+        {
+            System.out.println("Reading from standard input ...");
+            parser = new TigerParser(System.in);
+        } 
+        else if (args.length == 1) 
+        {
+            System.out.println("Reading from file " + args[0] + " . . .");
+            try 
+            {
+                parser = new TigerParser(new java.io.FileInputStream(args[0]));
+            } 
+            catch (java.io.FileNotFoundException e) 
+            {
+                System.out.println("File " + args[0] + " not found.");
+                return;
+            }
+        } 
+        else 
+        {
+            System.out.println("Tiger Tokeniser: Usage is one of:");
+            System.out.println("		java TigerParser < inputfile");
+            System.out.println("OR");
+            System.out.println(" 		java TigerParser inputfile");
+            return;
+        }
+     	
+     	try 
+     	{
+     		parser.Prog();
+     		System.out.println("TigerParser: Program successfully parsed.");
+     	}
+     	
+     	catch(ParseException e)
+     	
+     	{
+     		System.out.println(e.getMessage());
+     		System.out.println("TigerParser: Errors encountered during parse.");		
+     	}
+     	
+     	
+     	/*
+     	    Below: Put an english description for each token into tokenDesc[]
+     		This is nicer than doing many 'if' statements for each token when printing them
+    	*/
+     	String [] tokenDesc = new String[65];
+     	tokenDesc[ARRAY] = "ARRAY"; 
+     	tokenDesc[BREAK] = "BREAK";
+     	tokenDesc[DO] = "DO";
+     	tokenDesc[ELSE] = "ELSE";
+     	tokenDesc[END] = "END";
+     	tokenDesc[FOR] = "FOR";
+     	tokenDesc[FUNCTION] = "FUNCTION";
+     	tokenDesc[IF] = "IF";
+     	tokenDesc[IN] = "IN";
+     	tokenDesc[LET] = "LET";
+     	tokenDesc[NIL] = "NIL";
+     	tokenDesc[OF] = "OF";
+     	tokenDesc[THEN] = "THEN";
+     	tokenDesc[TO] = "TO";
+     	tokenDesc[TYPE] = "TYPE";
+     	tokenDesc[VAR] = "VAR";
+     	tokenDesc[WHILE] = "WHILE";
+     	tokenDesc[PLUS_SIGN] = "PLUS_SIGN";
+     	tokenDesc[MINUS_SIGN] = "MINUS_SIGN";
+     	tokenDesc[MULT_SIGN] = "MULT_SIGN";
+     	tokenDesc[DIV] = "DIV";
+     	tokenDesc[AND] = "AND";
+     	tokenDesc[OR] = "OR";
+     	tokenDesc[EQUALS] = "EQUALS";
+     	tokenDesc[NEQ] = "NEQ";
+     	tokenDesc[LT] = "LT";
+     	tokenDesc[LTE] = "LTE";
+     	tokenDesc[GT] = "GT";
+     	tokenDesc[GTE] = "GTE";
+     	tokenDesc[ASSIGN] = "ASSIGN";
+     	tokenDesc[SEMIC] = "SEMIC";
+     	tokenDesc[COMMA] = "COMMA";
+     	tokenDesc[COLON] = "COLON";
+     	tokenDesc[DOT] = "DOT";
+     	tokenDesc[LBR] = "LBR";
+     	tokenDesc[RBR] = "RBR";
+     	tokenDesc[LSQB] = "LSQB";
+     	tokenDesc[RSQB] = "RSQB";
+     	tokenDesc[LCURLB] = "LCURLB";
+     	tokenDesc[RCURLB] = "RCURLB";
+     	tokenDesc[IDENTIFIER] = "IDENTIFIER";
+     	tokenDesc[INTEGER] = "INTEGER";
+     	tokenDesc[STRING] = "STRING";
+     	tokenDesc[OTHER] = "OTHER";
+     	tokenDesc[SEMIC] = "SEMIC";
+     	
+    }
+}
+
+PARSER_END(TigerParser)
+
+/*******************
+****** TOKENS ******
+*******************/
+
+TOKEN_MGR_DECLS :
+{
+	static int commentNesting = 0;
+}
+
+SKIP : /* Skip white space */
+{
+	" "
+	| "\t"
+	| "\n"
+	| "\r"
+	| "\f"
+}
+
+SKIP : /* Skip comments */
+{
+	"/*" { commentNesting++; } : IN_COMMENT
+}
+
+<IN_COMMENT> SKIP :
+{
+	"/*" 	{ 
+				commentNesting++; 
+			}
+    | "*/" 	{
+				commentNesting--;
+    			if (commentNesting == 0)
+    				SwitchTo(DEFAULT);
+    		}
+    | <~[]>
+}
+
+TOKEN : /* Reserved Words */
+{
+	< ARRAY : "array" >
+	| < BREAK : "break" >
+	| < DO : "do" >
+	| < ELSE : "else" >
+	| < END : "end" >
+	| < FOR : "for" >
+	| < FUNCTION : "function" >
+	| < IF : "if" >
+	| < IN : "in" >
+	| < LET : "let" >
+	| < NIL : "nil" >
+	| < OF : "of" >
+	| < THEN : "then" >
+	| < TO : "to" >
+	| < TYPE : "type" >
+	| < VAR : "var" >
+	| < WHILE : "while" >
+}
+
+TOKEN : /* Operators */
+{
+	< PLUS_SIGN : "+" >
+	| < MINUS_SIGN : "-" >
+	| < MULT_SIGN : "*" >
+	| < DIV : "/" >
+	| < AND : "&" >
+	| < OR : "|" >
+	| < EQUALS : "=" >
+	| < NEQ : "<>" >
+	| < LT : "<" >
+	| < LTE : "<=" >
+	| < GT : ">" >
+	| < GTE : ">=" >
+	| < ASSIGN : ":=" >
+}
+
+TOKEN : /* Punctuation */
+{
+	< SEMIC : ";" >
+	| < COMMA : "," >
+	| < COLON : ":" >
+	| < DOT : "." >
+	| < LBR : "(" >
+	| < RBR : ")" >
+	| < LSQB : "[" >
+	| < RSQB : "]" >
+	| < LCURLB : "{" >
+	| < RCURLB : "}" >
+}
+
+TOKEN : /* Identifiers and integers */
+{
+	< IDENTIFIER : <LETTER> (<LETTER>|<DIGIT>|"_")* >
+	| 	<INTEGER : (<DIGIT>)+ >
+	| 	< #LETTER : ["A"-"Z", "a"-"z"] >
+	| 	< #DIGIT : ["0"-"9"] >
+}
+
+
+MORE : /* Strings */
+{
+	"\"" 
+	: WITHIN_STRING
+}
+
+<WITHIN_STRING> TOKEN :
+{	
+	/* Assigned the altered 'image' to  matchedToken.image */
+	<STRING: "\""> 
+	{
+		matchedToken.image = image.toString();
+	} 
+	: DEFAULT
+}
+
+<WITHIN_STRING> MORE :
+{
+	<	~["\\","\""]  > 
+ 	|	<  "\\" (["n", "t", "\\", "\""]|<DIGIT><DIGIT><DIGIT>|"^"["A"-"Z", "a"-"z"]) > 
+ 	
+ 	/* When we encounter whitespace between two \'s, remove it, including the \'s */
+ 	|	< "\\" ([" ","\t","\n","\r"])+ "\\" > 
+ 	{ 
+ 		image.delete(image.length() - lengthOfMatch, image.length()); 
+ 	}
+	: WITHIN_STRING
+}
+
+
+TOKEN : /* Anything else that we don't recognise */
+{
+	< OTHER : ~[] >
+}
+
+/**************************
+****** TIGER GRAMMAR ******
+***************************/
+
+// A Tiger program is just an expression
+void Prog() : {}
+{
+	Exp() <EOF>
+}
+
+// An expression can be made up of OR'd expressions
+void Exp() : {}
+{
+	ExpOR() ExpORPr()
+}
+
+// These OR'd expressions can contain AND'd expressions
+void ExpOR() : {}
+{ 
+	ExpAND() ExpANDPr()
+}
+
+void ExpORPr() : {}
+{
+ (<OR> Exp() )| {}
+}
+
+void ExpANDPr() : {}
+{
+ (<AND> ExpOR()) | {}
+}
+
+// These are made up of a sequence of arithmetic expressions
+void ExpAND() : {}
+{ 
+	ArithExp() RelationExp()
+}
+
+//An arithmetic expression is made up of a sequence of terms
+void ArithExp() : {}
+{
+	Term() TermPr()
+}
+
+// A relational expression is made up of a relational operator followed  by an arithmetic expression
+void RelationExp() : {}
+{ 
+	(RelationOp() ArithExp()) | {}
+}
+
+
+// Terms are made up of a sequence of factors
+void Term () : {}
+{
+	Factor() FactorPr()
+}
+
+void TermPr() : {}
+{
+	(( <PLUS_SIGN> | <MINUS_SIGN> ) Term() TermPr()) | {}
+}
+
+void FactorPr() : {}
+{
+ (( <MULT_SIGN> |  <DIV> )) Factor() FactorPr() | {}
+
+}
+
+void Factor() : {}
+{
+
+ 		<NIL>
+     | <INTEGER>
+     | <STRING> 
+     | <LBR> ExpList() <RBR>
+     | UnaryOp() Exp()
+     | <IF> Exp() <THEN> Exp() (LOOKAHEAD(1) <ELSE> Exp())?
+     | <WHILE> Exp() <DO> Exp()
+     | <FOR> <IDENTIFIER> <ASSIGN> Exp() <TO> Exp() <DO> Exp()
+     | <BREAK>
+     | <LET> DecList() <IN> ExpList() <END>
+     | LValue()
+}
+
+
+void DecList() : {}
+{
+	  DL_extra()
+}
+
+void DL_extra() : {}
+{
+    Dec() DL_extra() | {}
+}
+
+// A declaration of types, variables and functions
+void Dec() : {} 
+{
+	TyDec() | VarDec() | FunDec()
+}
+
+// Type declarations
+void TyDec() : {}
+{
+ <TYPE> TypeId() <EQUALS> Ty()
+}
+
+// A Type
+void Ty() : {}
+{
+ 	<LCURLB>  FieldList()<RCURLB>
+	| <ARRAY> <OF> TypeId()
+	| TypeId()
+}
+
+void FieldList() : {}
+{
+	<IDENTIFIER> <COLON> TypeId() FL_extra() | {}
+}
+
+void FL_extra() : {}
+{
+    <COMMA> <IDENTIFIER> <COLON> TypeId() FL_extra() | {}
+}
+
+void FieldExpList() : {}
+{
+	<IDENTIFIER> <EQUALS> Exp() FEL_extra() | {}
+}
+
+void FEL_extra() : {}
+{
+    <COMMA> <IDENTIFIER> <EQUALS> Exp() FEL_extra() | {}
+}
+
+// The ID of any type
+void TypeId() : {}
+
+{
+ <IDENTIFIER> | <INTEGER> | <STRING>
+}
+
+// A variable declarataions
+void VarDec() : {}
+{
+ <VAR> <IDENTIFIER>  ( <COLON> TypeId() )? <ASSIGN> Exp()
+}
+// A function declaration
+void FunDec() : {} 
+{
+ 	<FUNCTION> <IDENTIFIER> <LBR>FieldList()<RBR>  FD_extra() <EQUALS> Exp() 
+}
+
+void FD_extra() : {}
+{
+    <COLON> TypeId() | {}
+}
+
+/* The following there functions parse accessing assigning variables,  
+ * i.e. id(ArgList)
+ *		id {FieldExpList} 
+ *		id[Exp] of Exp 
+ *		id 
+ *		LValue.id
+ *		LValue[Exp].
+ *
+ */
+void LValue() : {}
+{
+	<IDENTIFIER> LV_extra()
+}
+
+void LV_extra() : {}
+{
+   (FunctionRecordArray() )| FunctionRecordArrayPr()
+}
+
+void FunctionRecordArray() : {}
+{
+	<LBR> ArgList() <RBR>
+    | <LCURLB> <IDENTIFIER> <EQUALS> Exp() FRA_extra()  <RCURLB>
+    | <LSQB> Exp() <RSQB> ( <OF>  Exp() | FunctionRecordArrayPr() ) 
+}
+
+void FRA_extra() : {}
+{
+    <COMMA> <IDENTIFIER> <EQUALS> Exp() FRA_extra()
+    | {}
+}
+
+void FunctionRecordArrayPr() : {}
+{ 
+
+    FRAP_extra() FRAP_extra1()
+
+}
+
+void FRAP_extra() : {}
+{
+    <DOT> <IDENTIFIER> FRAP_extra()
+    | <LSQB> Exp() <RSQB> FRAP_extra()
+    | {}
+}
+
+void FRAP_extra1() : {}
+{
+    <ASSIGN> Exp() | {}
+}
+
+// A list of expressions 
+void ExpList() : {}
+{ 
+	( Exp() ( <SEMIC> Exp() )* )?
+}
+
+// A list or arguments
+void ArgList() : {}
+{ 
+	( Exp() ( <COMMA> Exp() )* )?
+}
+
+//Unary operator
+void UnaryOp () : {}
+{ 
+	<MINUS_SIGN>
+}
+
+//Relational operators
+void RelationOp () : {}
+{ 
+	<EQUALS> | <NEQ> | <GT> | <LT> | <GTE> | <LTE>
+}
+
+
+
+
+
+
+
+
+
