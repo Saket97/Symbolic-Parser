@@ -2,12 +2,12 @@ def specs():
 
 	#Space separated (tokized) strings
 	# accept_strings = ["?", "! ?", "( ?"]
-	accept_strings = ["let type id = array of id var id : id := id [ id ] of integer in id end"]
+	accept_strings = ["let type id = array of id var id : id := id [ id ] in in integer of id end"]
 	reject_strings = ["let"]
 
 	config = {
 		'num_rules': 87, #Number of rules
-		'size_rules' : 9, #Number of symbols in RHS
+		'size_rules' : 8, #Number of symbols in RHS
 		'num_nonterms' : 40, #Number of nonterms
 		'expansion_constant' : 10, #Determines the max. number of parse actions to take while parsing
 		'optimize' : False, # enable optimized mode
@@ -16,6 +16,19 @@ def specs():
 	}
 
 	return accept_strings,reject_strings,config
+
+def add_eps(original_grammar):
+	grammar = []
+	for i in range(len(original_grammar)):
+		tmp = []
+		t = len(original_grammar[i])
+		tmp.append(original_grammar[i][0])
+		for j in range(9-t):
+			tmp.append("eps")
+		for j in range(1,len(original_grammar[i])):
+			tmp.append(original_grammar[i][j])
+		grammar.append(tmp)
+	return grammar
 
 def find_original_grammar():
 	# original_grammar = [['S','eps','eps','F','S'], ['S','eps','eps','eps','Q'], ['S','(','S',')','S'], ['F','eps','eps','!','A'], ['Q','eps','eps','?','A'],['A','eps','eps','eps','eps']]
@@ -63,6 +76,7 @@ def find_original_grammar():
 ['ArgList','eps'],['ArgList','Exp','AL_extra'],['AL_extra',',','Exp','AL_extra'],['AL_extra','eps'],
 
 ['UnaryOp','-'],['RelationOp','='],['RelationOp','!='],['RelationOp','>'],['RelationOp','<'],['RelationOp','>='],['RelationOp','<=']]
+	original_grammar = add_eps(original_grammar)
 	return original_grammar
 
 def convert_parse_table(ptable):

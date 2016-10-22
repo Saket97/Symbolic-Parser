@@ -127,17 +127,17 @@ def main():
 	# print "ip_str1 ",m[SP["functions"]["ip_str1"]]
 	print "succ ",m[SP["functions"]["succ"]]
 	print "pred ",m[SP["functions"]["pred"]]
-	print "ip_str1 ",m[SP["functions"]["ip_str1"]]
-	print "symbolAt",m[SP["functions"]["symbolAt"]]
-	print "step ",m[SP["functions"]["step"]]
-	print "success ",m[SP["functions"]["success"]]
-	print "follow ",m[SP["functions"]["follow"]]
+	# print "ip_str1 ",m[SP["functions"]["ip_str1"]]
+	# print "symbolAt",m[SP["functions"]["symbolAt"]]
+	# print "step ",m[SP["functions"]["step"]]
+	# print "success ",m[SP["functions"]["success"]]
+	# print "follow ",m[SP["functions"]["follow"]]
 
-	print "end ",m[SP["functions"]["end"]]
-	print "parseTable ",m[SP["functions"]["parseTable"]]
-	print "lookAheadIndex ",m[SP["functions"]["lookAheadIndex"]]
-	print SP["term_start"]
-	print SP["term_end"]
+	# print "end ",m[SP["functions"]["end"]]
+	# print "parseTable ",m[SP["functions"]["parseTable"]]
+	# print "lookAheadIndex ",m[SP["functions"]["lookAheadIndex"]]
+	# print SP["term_start"]
+	# print SP["term_end"]
 	print_grammar(SP)
 	end_time = calendar.timegm(time.gmtime())
 	print "Solving time taken: %s"%str(datetime.timedelta(seconds=(end_time-start_time)))
