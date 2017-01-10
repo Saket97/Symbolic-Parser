@@ -142,7 +142,8 @@ def main():
 	end_time = calendar.timegm(time.gmtime())
 	print "Solving time taken: %s"%str(datetime.timedelta(seconds=(end_time-start_time)))
 
-if sys.argv[1] == 'mode1':
-	main1()
-else:
-	main()
+# if sys.argv[1] == 'mode1':
+# 	main1()
+# else:
+# 	main()
+main()

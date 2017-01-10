@@ -1,0 +1,12 @@
+let
+var
+id
+:=
+integer
+var
+id
+:=
+string
+in
+integer
+end

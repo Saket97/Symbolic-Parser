@@ -1,0 +1,10 @@
+if
+(
+integer
+>
+integer
+)
+then
+integer
+else
+string

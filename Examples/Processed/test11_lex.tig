@@ -1,0 +1,12 @@
+for
+id
+:=
+integer
+to
+string
+do
+id
+:=
+id
+-
+integer

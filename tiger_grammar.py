@@ -1,7 +1,9 @@
+from __future__ import print_function
 def online_check_format1(original_grammar):
 	# mknod("tiger_grammar.txt")
 	# tiger = open("tiger_grammar.txt",'w+')
 	tmp = []
+	prev = None
 	for i in range(len(original_grammar)):
 		tmp1 = []
 		for j in range(len(original_grammar[i])):
@@ -11,7 +13,14 @@ def online_check_format1(original_grammar):
 			if original_grammar[i][j] == "|":
 				tmp1.append("#")
 				continue
-			tmp1.append(original_grammar[i][j])
+			if j == 0:
+				if prev == original_grammar[i][j]:
+					tmp1.append("")
+				else:
+					tmp1.append(original_grammar[i][j])
+					prev = original_grammar[i][j]
+			else:
+				tmp1.append(original_grammar[i][j])
 			if j == 0:
 				tmp1.append('->')
 		# tmp1.append(".")
@@ -23,8 +32,8 @@ def online_check_format1(original_grammar):
 				print ("%s"%(tmp[i][j]), end=" ")
 			else:
 				# tiger.write("%s\n"%(tmp[i][j]))
-				print ("%s"%(tmp[i][j]))
-		# print ("")
+				print ("%s;"%(tmp[i][j]))
+		# print ("saket")
 
 
 a = [['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'],

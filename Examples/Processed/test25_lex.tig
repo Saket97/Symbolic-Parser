@@ -1,0 +1,10 @@
+let
+var
+id
+:=
+integer
+in
+id
+.
+id
+end
