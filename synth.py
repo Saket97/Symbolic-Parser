@@ -7,6 +7,7 @@ import sys
 import calendar
 import time
 import datetime
+import parser
 from msat import *
 
 #SP instance
@@ -95,7 +96,8 @@ def main():
 	print "Initialising SP..."
 	SP = {}
 	SP["comment_out"] = True
-	SP["n_insertions"] = int(input("Enter the maximum number of insertions: (Time needed depends on this):"))
+	# SP["n_insertions"] = int(input("Enter the maximum number of insertions: (Time needed depends on this):"))
+	SP["n_insertions"] = 2
 	SP["total_var"] = 1000
 	SP["dictconst"] = {}
 	initialize_solver(SP)
@@ -108,8 +110,9 @@ def main():
 
 	
 	start_time = calendar.timegm(time.gmtime())
-	for accept_string in accept_list:
-		add_accept_string(SP,accept_string)
+	# for accept_string in accept_list:
+	# 	add_accept_string(SP,accept_string)
+	add_accept_string(SP,accept_list[int(sys.argv[1])])
 	
 	print "starting maxsat solver..."
 	# result, doubt_pos,m = naive_maxsat(SP)
@@ -122,25 +125,22 @@ def main():
 		print "%s %s"%(t,str(m.evaluate(SP["vars"][t])))
 	print "$ %s"%(str(m.evaluate(SP["vars"]['dol'])))
 	# print "ip_str(1,0) ",str(m.evaluate(SP["functions"]["ip_str"](1,0)))
-
+	for i in range(SP["num_soft_constraints"]):
+		if int(str(m.evaluate(SP["aux_const"][i]))) == 1:
+			print "%d "%i,
 	# print "lookAheadIndex ",m[SP["functions"]["lookAheadIndex"]]
 	# print "ip_str1 ",m[SP["functions"]["ip_str1"]]
 	print "succ ",m[SP["functions"]["succ"]]
 	print "pred ",m[SP["functions"]["pred"]]
-	# print "ip_str1 ",m[SP["functions"]["ip_str1"]]
-	# print "symbolAt",m[SP["functions"]["symbolAt"]]
-	# print "step ",m[SP["functions"]["step"]]
-	# print "success ",m[SP["functions"]["success"]]
-	# print "follow ",m[SP["functions"]["follow"]]
-
-	# print "end ",m[SP["functions"]["end"]]
-	# print "parseTable ",m[SP["functions"]["parseTable"]]
-	# print "lookAheadIndex ",m[SP["functions"]["lookAheadIndex"]]
-	# print SP["term_start"]
-	# print SP["term_end"]
-	print_grammar(SP)
+	print "ip_str1 ",m[SP["functions"]["ip_str1"]]
+	tmp = print_grammar(SP)
 	end_time = calendar.timegm(time.gmtime())
-	print "Solving time taken: %s"%str(datetime.timedelta(seconds=(end_time-start_time)))
+	print "\nSolving time taken: %s"%str(datetime.timedelta(seconds=(end_time-start_time)))
+	results = open("results_file1.csv","a+")
+	a,r,c = specs()
+	print "a[0] ",a[0]
+	results.write("%d,%d,%s,%d,%d\n"%(len(find_original_grammar()), len(a[0].split(' ')), str(datetime.timedelta(seconds=(end_time-start_time))), parser.parser_main(tmp),c["size_rules"]))
+	results.close()	
 
 # if sys.argv[1] == 'mode1':
 # 	main1()

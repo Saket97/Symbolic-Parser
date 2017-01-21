@@ -1,4 +1,4 @@
-from  input_specs_tiger import *
+from useful.input_final22 import *
 import sys
 def discover_tokens(strings):
 	tokens = []

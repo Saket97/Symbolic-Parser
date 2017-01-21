@@ -26,6 +26,7 @@ def online_check_format1(original_grammar):
 		# tmp1.append(".")
 		tmp.append(tmp1)
 	for  i in range(len(tmp)):
+                print (i+1, end=" ")
 		for j in range(len(tmp[i])):
 			if j != len(tmp[i])-1:
 				# tiger.write("%s  "%(tmp[i][j]))
@@ -46,9 +47,9 @@ a = [['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'],
 
 ['TermPr','+','Term','TermPr'],['TermPr','-','Term','TermPr'],
 
-['TermPr','eps'],['FactorPr','*','Factor','FactorPr'],['FactorPr','/','Factor','FactorPr'],
+['TermPr','eps'],['FactorPr','*','Factor','FactorPr'],
 
-['FactorPr','eps'],['Factor','nil'],['Factor','integer'],['Factor','string'],
+['FactorPr','eps'],['Factor','nil'],['Factor','integer'],
 
 ['Factor','(','ExpList',')'],['Factor','UnaryOp','Exp'],['Factor','if','Exp','then','Exp','IF_extra'],['IF_extra','else','Exp'],['IF_extra','eps'],
 
@@ -62,7 +63,7 @@ a = [['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'],
 
 ['FieldExpList','id','=','Exp','FEL_extra'],['FEL_extra',',','id','=','Exp','FEL_extra'],['FEL_extra','eps'],
 
-['TypeId','id'],['TypeId','integer'],['TypeId','string'],['VD_extra','eps'],['VD_extra',':','TypeId'],['VarDec','var','id','VD_extra',':=','Exp'],
+['TypeId','id'],['TypeId','integer'],['VD_extra','eps'],['VD_extra',':','TypeId'],['VarDec','var','id','VD_extra',':=','Exp'],
 
 ['FunDec','function','id','(','FieldList',')','VD_extra','=','Exp'],
 
@@ -78,5 +79,5 @@ a = [['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'],
 
 ['ArgList','eps'],['ArgList','Exp','AL_extra'],['AL_extra',',','Exp','AL_extra'],['AL_extra','eps'],
 
-['UnaryOp','-'],['RelationOp','='],['RelationOp','!='],['RelationOp','>'],['RelationOp','<'],['RelationOp','>='],['RelationOp','<=']]
+['UnaryOp','-'],['RelationOp','relop']]
 online_check_format1(a)

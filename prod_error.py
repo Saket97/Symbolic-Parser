@@ -4,7 +4,10 @@ import sys
 import subprocess
 from os import remove
 def flip(p):
-	if random.random() < p:
+	if random.random() < 0.5:
+		n_errors_done += 1
+		if n_errors_done > p:
+			return 1
 		return 0
 	else:
 		return 1
@@ -153,7 +156,7 @@ def main():
 	subprocess.call(['java tigerLexer %s aux_file_name.txt'%(input_file_name)],shell=True)
 	aux_file = open("aux_file_name.txt",'r')
 	#####################
-	p_errors = input("Enter the probability of errors you want to introduce ")
+	p_errors = input("Enter the number of errors you want to introduce ")
 	p_delete = input("Enter the probbility of deleing\n")
 	p_replace = input("Enter the probability of replacing\n")
 	p_insert = 1-p_delete-p_replace
@@ -165,4 +168,5 @@ def main():
 	output_file.close()
 	aux_file.close()
 	remove("aux_file_name.txt")
+n_errors_done = 0
 main()

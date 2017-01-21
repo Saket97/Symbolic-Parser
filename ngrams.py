@@ -1,7 +1,8 @@
+import os
 def find_ngrams(string, n, table):
 	# string = string.split(" ")
 	tmp1 = []
-	print "String: ",string
+	# print "String: ",string
 	for s in string:
 		if s == " " or s == "\n" or s == '\t':
 			continue
@@ -57,7 +58,12 @@ strings = []
 for i in range(1,5):
 	string = prepare_string("Examples/Processed/test%d_lex.tig"%i)
 	strings.append(string)
+for filename in os.listdir("Examples/Examples"):
+	string = prepare_string("Examples/Examples/%s"%filename)
+	if len(string) >= 3:
+		strings.append(string)
 # strings = ["let type id = array of id var id : id := id [ id ] in in integer of id end"]
 for string in strings:
 	table = find_ngrams(string, n, table)
-print table
+for key in table:
+	print "%s   				:    %d"%(key, table[key])

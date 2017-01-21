@@ -117,14 +117,19 @@ def print_grammar(solver):
 		print "accept_list ",accept_list
 		i = -1
 		# while i < len(accept_list[0]):
-		print "corrected string: "
+		print "corrected string saket: "
+		tmp = []
 		while True:
 			symbolValue = int(str(m.evaluate(m_funs["ip_str1"](1, m_funs["succ"](1,i)))))
 			if symbolValue >= solver["term_end"]:
-				return
+				# parser.parser_main(tmp)
+				return tmp
 			print "%s "%(tokens[symbolValue-num_nonterms]),
+			tmp.append("%s"%(tokens[symbolValue-num_nonterms]))
+			# print "tmp:",tmp
 			i = int(str(m.evaluate(m_funs["succ"](1,i))))
 		print ""
+		
 def assert_grammar_soft(S_target,S_source,req=False):
 	print "calling assert_grammar_soft\n"
 	s = S_target["constraints"]
@@ -242,7 +247,7 @@ def add_accept_string(solver,accept_string):
 	# for j in range(len(accept_string)):
 	# 	s.add(functions["ip_str"](strNum,j) == vars[accept_string[j]])
 	# s.add(functions["ip_str"](strNum,len(accept_string))==vars["dol"])
-
+	# print "accept string: ",accept_string
 	######## adding initial succ function constraint ######
 	if solver["comment_out"] == True:
 		for j in range(-1,len(accept_string)):
@@ -265,7 +270,7 @@ def add_accept_string(solver,accept_string):
 			else:
 				s.add(functions["ip_str1"](strNum,functions["succ"](strNum,j)) == functions["ip_str"](strNum,j+1))
 
-		tmp = [i for i in range(-1, len(accept_string))]
+		tmp = [i for i in range(-1, len(accept_string)+2)]
 		for i in range(solver["n_insertions"]):
 			tmp.append(10000+i)
 		for i in tmp:
@@ -308,7 +313,7 @@ def add_accept_string(solver,accept_string):
 	s.add(functions["symbolAt"](strNum,1) == vars["N1"])
 
 	# Starting lookAheadIndex
-	s.add(functions["lookAheadIndex"](strNum,1) == 0)
+	s.add(functions["lookAheadIndex"](strNum,1) == functions["succ"](strNum, -1))
 
 	# Starting step
 	s.add(functions["step"](strNum,0))

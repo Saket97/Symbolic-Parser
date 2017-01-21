@@ -1,4 +1,4 @@
-from input_specs_tiger import *
+from useful.input_final22 import *
 from init import *
 from z3 import *
 
@@ -21,7 +21,7 @@ def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules
 			if original_grammar[r][j] == 'eps':
 				# pass
 				# s.assert_and_track(vars['x%d'%(r*(size_rules+1)+j+1)] == vars['eps'], 'input x%d'%(r*(size_rules+1)+j+1))
-				constdict['input x%d'%(r*(size_rules+1)+j+1)] = vars['x%d'%(r*(size_rules+1)+j+1)] == vars['eps']
+				# constdict['input x%d'%(r*(size_rules+1)+j+1)] = vars['x%d'%(r*(size_rules+1)+j+1)] == vars['eps']
 				s.add(vars['x%d'%(r*(size_rules+1)+j+1)] == vars['eps'])
 				# print('x%d  eps %d'%(r*(size_rules+1)+j+1, i))
 				i += 1
