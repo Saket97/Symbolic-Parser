@@ -204,7 +204,7 @@ def print_non_zero(ptable):
 				continue
 			if ptable[nt][t] != 0:
 				print "		%s rule "%(t),grammar[ptable[nt][t]-1]
-"""grammar = [['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'],
+grammar = [['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'],
 
 ['ExpORPr','|','Exp'],['ExpORPr','eps'],['ExpANDPr','&','ExpOR'],
 
@@ -214,9 +214,9 @@ def print_non_zero(ptable):
 
 ['TermPr','+','Term','TermPr'],['TermPr','-','Term','TermPr'],
 
-['TermPr','eps'],['FactorPr','*','Factor','FactorPr'],
+['TermPr','eps'],['FactorPr','*','Factor','FactorPr'],['FactorPr','/','Factor','FactorPr'],
 
-['FactorPr','eps'],['Factor','nil'],['Factor','integer'],
+['FactorPr','eps'],['Factor','nil'],['Factor','integer'],['Factor','string'],
 
 ['Factor','(','ExpList',')'],['Factor','UnaryOp','Exp'],['Factor','if','Exp','then','Exp','IF_extra'],['IF_extra','else','Exp'],['IF_extra','eps'],
 
@@ -230,7 +230,7 @@ def print_non_zero(ptable):
 
 ['FieldExpList','id','=','Exp','FEL_extra'],['FEL_extra',',','id','=','Exp','FEL_extra'],['FEL_extra','eps'],
 
-['TypeId','id'],['TypeId','integer'],['VD_extra','eps'],['VD_extra',':','TypeId'],['VarDec','var','id','VD_extra',':=','Exp'],
+['TypeId','id'],['TypeId','integer'],['TypeId','string'],['VD_extra','eps'],['VD_extra',':','TypeId'],['VarDec','var','id','VD_extra',':=','Exp'],
 
 ['FunDec','function','id','(','FieldList',')','VD_extra','=','Exp'],
 
@@ -246,24 +246,24 @@ def print_non_zero(ptable):
 
 ['ArgList','eps'],['ArgList','Exp','AL_extra'],['AL_extra',',','Exp','AL_extra'],['AL_extra','eps'],
 
-['UnaryOp','-'],['RelationOp','relop']]
-grammar1 = [['E','T','E`'],['E`','+','T','E`'],['E`','eps'],['T','F','T`'],['T`','*','F','T`'],['T`','eps'],['F','(','E',')'],['F','id']]
-grammar2 = [['S','A','B','e'],['A','d','B'],['A','a','S'],['A','c'],['B','A','S'],['B','b']]
+['UnaryOp','-'],['RelationOp','='],['RelationOp','!='],['RelationOp','>'],['RelationOp','<'],['RelationOp','>='],['RelationOp','<=']]
+# grammar1 = [['E','T','E`'],['E`','+','T','E`'],['E`','eps'],['T','F','T`'],['T`','*','F','T`'],['T`','eps'],['F','(','E',')'],['F','id']]
+# grammar2 = [['S','A','B','e'],['A','d','B'],['A','a','S'],['A','c'],['B','A','S'],['B','b']]
 # E : T R ;
 # R : "+" T R ;
 #   : "-" T R ;
 #   : ;                               
 # T : "i";
 
-"""
-grammar = [['E','T','X'],['X','+','E'],['X','eps'],['T','(','E',')'],['T','i','Y'],['Y','*','T'],['Y','eps']]
+
+# grammar = [['E','T','X'],['X','+','E'],['X','eps'],['T','(','E',')'],['T','i','Y'],['Y','*','T'],['Y','eps']]
 rule_contri_first = {}
 rule_contri_follow = {}
 non_terminals = discvover_non_terminals(grammar)
 tokens = discover_terminals(grammar)
 # print "non_terminals:\n",non_terminals
 first_set = cal_first_set(grammar)
-# print "first set:\n",first_set
+print "first set:\n",first_set
 follow_subset = {}
 follow_superset = {}
 follow_changed = {}
@@ -272,10 +272,15 @@ for nt in non_terminals:
 	follow_superset[nt] = []
 	follow_changed[nt] = True
 follow_set = cal_follow_set(grammar)
-# print "follow set:\n",follow_set
+print "follow set:\n",follow_set
+for i in follow_set:
+	if i not in tokens:
+		continue
+	print "len: %d %s"%(len(i), i)
 # print "follow_subset:",follow_subset
 # print "follow_superser:",follow_superset
 ptable = parse_table()
+# ptable["LD_extra"]['['] = 59
 print "parse_table: ",ptable
 print "#non_terminals:",len(non_terminals)
 print "%terminals:",len(tokens)
@@ -286,3 +291,13 @@ convert_ptable(ptable)
 # print "Changes: "
 # print "LD_extra: '[': 58 change to 59..."
 # print "terminals=",tokens
+print "first_set:\n"
+for key in first_set:
+	print "%s:"%(key)
+	print first_set[key]
+
+print "follow_set:\n"
+for key in follow_set:
+	print "%s:"%key
+	print follow_set[key]
+	print ""

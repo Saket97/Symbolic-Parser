@@ -1,11 +1,13 @@
 from z3 import *
 from init import *
+import datetime
 
 def initialize_solver(solver):
 	global config
 
 	s = Solver()
-	# s.set(mbqi=True)
+	s.set(mbqi=False)
+	s.set(macro_finder = True)
 	if config['optimize']:
 		s.set(unsat_core=True)
 
@@ -94,10 +96,14 @@ def initialize_solver(solver):
 	######################################################
 
 	for r in range(num_rules):
+		print "new rule: %d"%r
 		vars.update({"x%d"%(r*(size_rules+1)+1): Int('x%d'%(r*(size_rules+1)+1))})
+		# print "x%d"%(r*(size_rules+1)+1)
 
 		for i in range(2,size_rules+2):
 			vars.update({"x%d"%(r*(size_rules+1)+i): Int('x%d'%(r*(size_rules+1)+i))})
+			# print "x%d"%(r*(size_rules+1)+i)
+	print "num_rules: ",num_rules
 
 	# What is the symbol at (second arg) location in RHS of rule no (first arg)
 	functions["symbolInRHS"] = Function('symbolInRHS', IntSort(), IntSort(), IntSort())
@@ -130,372 +136,19 @@ def initialize_solver(solver):
 		for i in range(2,size_rules+1):
 			s.add(Implies(functions["symbolInRHS"](r,i)==vars["eps"],functions["symbolInRHS"](r,i-1)==vars["eps"]))
 			s.add(Implies(functions["symbolInRHS"](r,size_rules)==functions["symbolInLHS"](r),functions["symbolInRHS"](r,size_rules-1)!=vars["eps"]))
-	if solver["comment_out"] == False:
-		functionArgs = [IntSort() for i in range(size_rules+1)]
-		functions["derivedBy"] = Function('derivedBy',functionArgs)
+	
+	print "Teemplate declared in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
+
+	
+	
+	for r in range(1,num_rules+1):
+		vars.update({"rule%d"%r: Int('rule%d'%r)})
+		s.add(vars["rule%d"%r]==r)
+	vars.update({"dol": Int('dol')})
+	s.add(vars["dol"]==symbol_counter)
+	sp_time = solver["start_time"]
+	print "Parse table in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
 
-		for r in range(num_rules):
-			tempList = []
-			for j in range(size_rules):
-				tempList.append(functions["symbolInRHS"](r+1,j+1))
-			s.add(functions["derivedBy"](tempList)==functions["symbolInLHS"](r+1))
-
-	if solver["comment_out"] == False:
-		######################################################
-
-		# FIRST SET WITNESS CONSTRAINTS
-
-		######################################################
-		print "first set constraints..."
-		for r in range(1,num_rules+1):
-			vars.update({"rule%d"%r: Int('rule%d'%r)})
-			s.add(vars["rule%d"%r]==r)
-
-		num_conds = 1
-		for r in range(1,2*size_rules+1):
-			vars.update({"cond%d"%r: Int('cond%d'%r)})
-			s.add(vars["cond%d"%r]==r)
-			num_conds+=1
-
-		# Definition constraint: firstWitness must either return -1 or return nonterm or term
-		for n in nonterms+terms:
-			for t in terms:
-				for r in (1,num_rules+1):
-					for c in range(1,2*size_rules+1):
-						s.add(And(functions["firstWitness"](vars[n],vars[t],r,c) >= -1, functions["firstWitness"](vars[n],vars[t],r,c) < vars['eps'] ) )
-
-		# Definition constraint: forall terms t, functions["firstWitness"](t,t,i_tt,j_tt) = t
-		for t in terms:
-			var = "%s%s"%(str(vars[t]),str(vars[t]))
-			vars["i_%s"%var] = Int('i_%s'%var)
-			vars["j_%s"%var] = Int('j_%s'%var)
-			s.add(functions["firstWitness"](vars[t],vars[t],vars["i_%s"%var],vars["j_%s"%var])==vars[t])
-			s.add(functions["get_i"](vars[t],vars[t])==vars["i_%s"%var])
-			s.add(functions["get_j"](vars[t],vars[t])==vars["j_%s"%var])
-
-		# Definition constraint: firstWitness must return -1 for -1 as nonterm arg
-		for t in terms:
-			for r in (1,num_rules+1):
-				for c in range(1,2*size_rules+1):
-					s.add(functions["firstWitness"](-1,vars[t],r,c) == -1 )
-
-		# Definition constraint: epsWitness must be true for eps
-		for i in range(num_rules+1):
-			s.add(functions["epsWitness"](i,vars["eps"]))
-
-		######################################################
-
-		# FIRST SET WITNESS CONSTRUCTION
-
-		######################################################
-
-		for r in range(1,num_rules+1):
-			for i in range(1,size_rules+1):
-				for t in terms:
-					tempList = []
-					for j in range(1,i):
-						tempList.append(functions["symbolInRHS"](r,j)==vars["eps"])
-					tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars[t]))
-					tempList.append(functions["symbolInRHS"](r,i)!=functions["symbolInLHS"](r))
-
-					temp = functions["firstWitness"](functions["symbolInRHS"](r,i),vars[t],functions["get_i"](functions["symbolInRHS"](r,i),vars[t]),functions["get_j"](functions["symbolInRHS"](r,i),vars[t]))
-					for j in range(num_rules):
-						temp = functions["firstWitness"](temp,vars[t],functions["get_i"](temp,vars[t]),functions["get_j"](temp,vars[t]))
-					tempList.append(temp==vars[t])
-
-					s.add(If(And(tempList), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(i)]) == functions["symbolInRHS"](r,i)), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(i)]) == -1) ))
-
-						
-			for i in range(1,size_rules+1):
-				for t in terms:
-					tempList = []
-					for j in range(1,i):
-						tempList.append(functions["first"](functions["symbolInRHS"](r,j),vars["eps"]))
-					tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars[t]))
-					tempList.append(functions["symbolInRHS"](r,i)!=functions["symbolInLHS"](r))
-
-					temp = functions["firstWitness"](functions["symbolInRHS"](r,i),vars[t],functions["get_i"](functions["symbolInRHS"](r,i),vars[t]),functions["get_j"](functions["symbolInRHS"](r,i),vars[t]))
-					for j in range(num_rules):
-						temp = functions["firstWitness"](temp,vars[t],functions["get_i"](temp,vars[t]),functions["get_j"](temp,vars[t]))
-					tempList.append(temp==vars[t])
-
-					s.add(If(And(tempList), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(size_rules+i)]) == functions["symbolInRHS"](r,i)), ( functions["firstWitness"](functions["symbolInLHS"](r),vars[t],vars["rule%d"%(r)],vars["cond%d"%(size_rules+i)]) == -1) ))
-
-		for n in nonterms:
-			OrList = []
-
-			for r in range(1,num_rules+1):
-				tempList = []
-				tempList.append(functions["symbolInLHS"](r)==vars[n])
-				for i in range(1,size_rules+1):
-					tempList.append(functions["symbolInRHS"](r,i)==vars["eps"])
-				OrList.append(And(tempList))
-
-			s.add(Or(OrList)==functions["epsWitness"](0,vars[n]))
-
-		for i in range(1,num_rules+1):
-
-			for n in nonterms:
-				OrList = []
-
-				OrList.append(functions["epsWitness"](i-1,vars[n]))
-
-				for r in range(1,num_rules+1):
-					tempList = []
-					tempList.append(functions["symbolInLHS"](r)==vars[n])
-					for j in range(1,size_rules+1):
-						tempList.append(functions["epsWitness"](i-1,functions["symbolInRHS"](r,j)))
-					OrList.append(And(tempList))
-
-				s.add(Or(OrList)==functions["epsWitness"](i,vars[n]))
-
-		######################################################
-
-		# FIRST SET CONSTRAINTS
-
-		######################################################
-
-		# Definition constraint: no nonterm in first sets
-		for nt in terms+nonterms+["eps"]:
-			for n in nonterms:
-				s.add(Not(functions["first"](vars[nt],vars[n])))
-
-		# Definition constraint: functions["first"](eps) = {eps}
-		for t in terms:
-			s.add(Not(functions["first"](vars["eps"],vars[t])))
-		s.add(functions["first"](vars["eps"],vars["eps"]))
-
-
-		# Definition constraint: functions["first"](term) = {term}
-		for nt in terms:
-			for t in terms+["eps"]:
-				if nt == t:
-					s.add(functions["first"](vars[nt],vars[t]))
-				else:
-					s.add(Not(functions["first"](vars[nt],vars[t])))
-
-
-		######################################################
-
-		# FIRST SET CONSTRUCTION
-
-		######################################################
-
-		for n in nonterms:
-			for t in terms:
-				var = "%(nonterm)s%(term)s"%{"nonterm":n, "term":t}
-				
-				vars["i_%s"%var] = Int("i_%s"%var)
-				vars["j_%s"%var] = Int("j_%s"%var)
-				s.add(functions["get_i"](vars[n],vars[t])==vars["i_%s%s"%(n,t)])
-				s.add(functions["get_j"](vars[n],vars[t])==vars["j_%s%s"%(n,t)])
-
-				tempList = []
-				for i in range(1,num_rules+1):
-					tempList.append(vars["i_%s"%var]==vars["rule%d"%(i)])
-				s.add(Or(tempList))
-
-				tempList = []
-				for i in range(1,2*size_rules+1):
-					tempList.append(vars["j_%s"%var]==vars["cond%d"%(i)])
-				s.add(Or(tempList))
-
-				
-				for i in range(1,num_rules+1):
-					s.add(Implies(And(functions["first"](vars[n],vars[t]),vars["i_%s"%var]==vars["rule%d"%(i)]),vars[n]==functions["symbolInLHS"](i)))
-
-				s.add(Implies(functions["first"](vars[n],vars[t]),( functions["firstWitness"](vars[n],vars[t],vars["i_%s"%var],vars["j_%s"%var]) != -1)))
-
-				tempList = []
-				for i in range(1,num_rules+1):
-					for j in range(1,2*size_rules+1):
-						tempList.append( (functions["firstWitness"](vars[n],vars[t],vars["rule%d"%i],vars["cond%d"%j])) == -1)
-
-				s.add(Implies(Not(functions["first"](vars[n],vars[t])),And(tempList)))
-
-			s.add(functions["first"](vars[n],vars["eps"])==functions["epsWitness"](num_rules,vars[n]))
-
-		######################################################
-
-		# FOLLOW SET WITNESS CONSTRAINTS
-
-		######################################################
-		print "follow set constraints..."
-		vars.update({"dol": Int('dol')})
-		s.add(vars["dol"]==symbol_counter)
-
-		while (num_conds <= (size_rules*(size_rules+1))/2):
-			vars.update({"cond%d"%num_conds: Int('cond%d'%num_conds)})
-			num_conds+=1
-
-		# Definition constraint: followWitness must either return -1 or return nonterm or term
-		for n in nonterms:
-			for t in terms+["dol"]:
-				for r in (1,num_rules+1):
-					for c in range(1,(size_rules*(size_rules+1))/2):
-						s.add(And(functions["followWitness"](vars[n],vars[t],r,c) >= -1, functions["followWitness"](vars[n],vars[t],r,c) < vars['eps'] ) )
-
-		# Definition constraint: forall terms and dol t, functions["followWitness"](t,t,m_tt,n_tt) = t
-		for t in terms+["dol"]:
-			var = "%s%s"%(str(vars[t]),str(vars[t]))
-			vars["m_%s"%var] = Int('m_%s'%var)
-			vars["n_%s"%var] = Int('n_%s'%var)
-			s.add(functions["followWitness"](vars[t],vars[t],vars["m_%s"%var],vars["n_%s"%var])==vars[t])
-			s.add(functions["get_m"](vars[t],vars[t])==vars["m_%s"%var])
-			s.add(functions["get_n"](vars[t],vars[t])==vars["n_%s"%var])
-
-		# Definition constraint: followWitness must return -1 for -1 as nonterm arg
-		for t in terms+["dol"]:
-			for r in (1,num_rules+1):
-				for c in range(1,(size_rules*(size_rules+1))/2):
-					s.add(functions["followWitness"](-1,vars[t],r,c) == -1 )
-
-		# Definition constraint: dol has been witnessed to be in functions["follow"](N1)
-		# NOTE: N1 is the starting nonterm
-		vars["m_N1dol"] = Int('m_N1dol')
-		vars["n_N1dol"] = Int('n_N1dol')
-		s.add(functions["get_m"](vars["N1"],vars["dol"])==vars["m_N1dol"])
-		s.add(functions["get_n"](vars["N1"],vars["dol"])==vars["n_N1dol"])
-		s.add(functions["followWitness"](vars["N1"],vars["dol"],vars["m_N1dol"],vars["n_N1dol"])==vars["dol"])
-
-		######################################################
-
-		# FOLLOW SET WITNESS CONSTRUCTION
-
-		###############+																#######################################
-
-		for r in range(1,num_rules+1):
-			condNo = 1
-			for i in range(1,size_rules):
-				for j in range(i+1,size_rules+1):
-					for t in terms:
-						tempList = []
-						for k in range(i+1,j):
-							tempList.append(functions["first"](functions["symbolInRHS"](r,k),vars["eps"]))
-						tempList.append(functions["first"](functions["symbolInRHS"](r,j),vars[t]))
-
-						s.add((functions["followWitness"](functions["symbolInRHS"](r,i),vars[t],vars["rule%d"%(r)],vars["cond%d"%condNo])==vars[t])==And(tempList))
-
-					condNo += 1
-
-			followCondMid = condNo
-
-			for i in range(1,size_rules+1):
-				for t in terms+['dol']:
-					tempList = []
-					for k in range(i+1,size_rules+1):
-						tempList.append(functions["first"](functions["symbolInRHS"](r,k),vars["eps"]))
-					tempList.append(functions["follow"](functions["symbolInLHS"](r),vars[t]))
-					tempList.append(functions["symbolInRHS"](r,i)!=functions["symbolInLHS"](r))
-
-					temp = functions["followWitness"](functions["symbolInLHS"](r),vars[t],functions["get_i"](functions["symbolInLHS"](r),vars[t]),functions["get_j"](functions["symbolInLHS"](r),vars[t]))
-					for j in range(num_rules):
-						temp = functions["followWitness"](temp,vars[t],functions["get_m"](temp,vars[t]),functions["get_n"](temp,vars[t]))
-					tempList.append(temp==vars[t])
-
-					s.add((functions["followWitness"](functions["symbolInRHS"](r,i),vars[t],vars["rule%d"%(r)],vars["cond%d"%condNo])==functions["symbolInLHS"](r))==And(tempList))
-
-				condNo += 1
-
-			followCondEnd = condNo
-
-		######################################################
-
-		# FOLLOW SET CONSTRAINTS
-
-		######################################################
-
-		# Definition constraints: no nonterm and eps in follow sets
-		for n in nonterms+["eps"]:
-			for nt in nonterms+["eps"]:
-				s.add(Not(functions["follow"](vars[n],vars[nt])))
-
-		# Definition constraint: dol is in functions["follow"](N1)
-		# NOTE: N1 is the starting nonterm
-		s.add(functions["follow"](vars["N1"],vars["dol"]))
-
-		######################################################
-
-		# FOLLOW SET CONSTRUCTION
-
-		######################################################
-
-		for n in nonterms:
-			for t in terms:
-				var = "%(nonterm)s%(term)s"%{"nonterm":n, "term":t}
-				vars["m_%s"%var] = Int("m_%s"%var)
-				vars["n_%s"%var] = Int("n_%s"%var)
-				s.add(functions["get_m"](vars[n],vars[t])==vars["m_%s"%(var)])
-				s.add(functions["get_n"](vars[n],vars[t])==vars["n_%s"%(var)])
-
-				tempList = []
-				for i in range(1,num_rules+1):
-					tempList.append(vars["m_%s"%var]==vars["rule%d"%(i)])
-				s.add(Or(tempList))
-
-				tempList = []
-				for i in range(1,followCondEnd):
-					tempList.append(vars["n_%s"%var]==vars["cond%d"%i])
-				s.add(Or(tempList))
-
-				for r in range(1,num_rules+1):
-					condNo = 1
-					for i in range(1,size_rules):
-						for j in range(j+1,size_rules+1):
-							s.add(Implies(And(functions["follow"](vars[n],vars[t]),vars["m_%s"%var]==vars["rule%d"%(r)],vars["n_%s"%var]==vars["cond%d"%(condNo)]),vars[n]==functions["symbolInRHS"](r,i)))
-							condNo += 1
-
-					for i in range(1,size_rules+1):
-						s.add(Implies(And(functions["follow"](vars[n],vars[t]),vars["m_%s"%var]==vars["rule%d"%(r)],vars["n_%s"%var]==vars["cond%d"%(condNo)]),vars[n]==functions["symbolInRHS"](r,i)))
-						condNo += 1
-
-				s.add(Implies(functions["follow"](vars[n],vars[t]),functions["followWitness"](vars[n],vars[t],vars["m_%s"%var],vars["n_%s"%var])!=-1))
-
-				tempList = []
-				for i in range(1,num_rules+1):
-					for j in range(1,followCondEnd):
-						tempList.append(functions["followWitness"](vars[n],vars[t],vars["rule%d"%i],vars["cond%d"%j])==-1)
-				s.add(Implies(Not(functions["follow"](vars[n],vars[t])),And(tempList)))
-
-			t = "dol"
-			if n != "N1":
-				var = "%(nonterm)s%(dol)s"%{"nonterm":n,"dol":t}
-				vars["m_%s"%var] = Int("m_%s"%var)
-				vars["n_%s"%var] = Int("n_%s"%var)
-				s.add(functions["get_m"](vars[n],vars[t])==vars["m_%s"%(var)])
-				s.add(functions["get_n"](vars[n],vars[t])==vars["n_%s"%(var)])
-
-
-				tempList = []
-				for r in range(1,num_rules+1):
-					tempList.append(vars["m_%s"%var]==vars["rule%d"%(r)])
-				s.add(Or(tempList))
-
-				tempList = []
-				for i in range(followCondMid,followCondEnd):
-					tempList.append(vars["n_%s"%var]==vars["cond%d"%i])
-				s.add(Or(tempList))
-
-				for r in range(1,num_rules+1):
-					condNo = followCondMid
-					for i in range(1,size_rules+1):
-						s.add(Implies(And(functions["follow"](vars[n],vars[t]),vars["m_%s"%var]==vars["rule%d"%(r)],vars["n_%s"%var]==vars["cond%d"%(condNo)]),vars[n]==functions["symbolInRHS"](r,i)))
-						condNo += 1
-
-				s.add(Implies(functions["follow"](vars[n],vars[t]),functions["followWitness"](vars[n],vars[t],vars["m_%s"%var],vars["n_%s"%var])!=-1))
-
-				tempList = []
-				for i in range(1,num_rules+1):
-					for j in range(followCondMid,followCondEnd):
-						tempList.append(functions["followWitness"](vars[n],vars[t],vars["rule%d"%i],vars["cond%d"%j])==-1)
-				s.add(Implies(Not(functions["follow"](vars[n],vars[t])),And(tempList)))
-
-	else:
-		for r in range(1,num_rules+1):
-			vars.update({"rule%d"%r: Int('rule%d'%r)})
-			s.add(vars["rule%d"%r]==r)
-		vars.update({"dol": Int('dol')})
-		s.add(vars["dol"]==symbol_counter)
 	######################################################
 
 	# PARSE TABLE CONSTRAINTS
@@ -506,49 +159,7 @@ def initialize_solver(solver):
 		for t in terms+['dol']:
 			s.add(And(functions["parseTable"](vars[n],vars[t])<=num_rules,functions["parseTable"](vars[n],vars[t])>=0))
 
-	if solver["comment_out"] == False:
-		######################################################
 
-		# PARSE TABLE CONSTRUCTION
-
-		######################################################
-		print "parse table construction..."
-		for n in nonterms:
-			for t in terms:
-				for r in range(1,num_rules+1):
-					tempAnd = []
-					for i in range(1,size_rules+1):
-						tempList = []
-						for j in range(1,i):
-							tempList.append(functions["first"](functions["symbolInRHS"](r,j),vars["eps"]))
-						tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars[t]))
-						tempAnd.append(And(tempList))
-					
-					tempList = []	
-					for i in range(1,size_rules+1):
-						tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars["eps"]))
-					tempList.append(functions["follow"](functions["symbolInLHS"](r),vars[t]))
-					tempAnd.append(And(tempList))
-
-					s.add((functions["parseTable"](vars[n],vars[t])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],Or(tempAnd)))
-
-			for r in range(1,num_rules+1):
-				tempList = []
-				for i in range(1,size_rules+1):
-					tempList.append(functions["first"](functions["symbolInRHS"](r,i),vars["eps"]))
-				tempList.append(functions["follow"](functions["symbolInLHS"](r),vars["dol"]))
-
-				s.add((functions["parseTable"](vars[n],vars["dol"])==vars["rule%d"%r])==And(functions["symbolInLHS"](r)==vars[n],And(tempList)))
-
-	######################################################
-
-	# PARSING FUNCTIONS
-
-	######################################################
-
-	#We take an 'array' of parse actions and use that to process the input, using the following functions
-
-	#The following functions are defined for parsing the (first arg) input string
 	
 	# Lookup and constraint application was successful on step (second arg) in parse action array
 	functions["step"] = Function('step', IntSort(), IntSort(), BoolSort())

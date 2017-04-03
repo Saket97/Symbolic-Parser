@@ -17,6 +17,7 @@ def main1():
 	SP = {}
 	SP["dictconst"] = {}
 	SP["comment_out"] = False
+	SP["start_time"] = sp_time
 	initialize_solver(SP)
 	print "SP initialized in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
 	num = nums()
@@ -114,7 +115,7 @@ def main():
 	# 	add_accept_string(SP,accept_string)
 	add_accept_string(SP,accept_list[int(sys.argv[1])])
 	
-	print "starting maxsat solver..."
+	# print "starting maxsat solver..."
 	# result, doubt_pos,m = naive_maxsat(SP)
 	p, unsat_soft_constrains, m = naive_maxsat(SP)
 	# print SP["constraints"].check()
@@ -123,23 +124,23 @@ def main():
 	SP["model"] = m
 	for t in SP["terms"]:
 		print "%s %s"%(t,str(m.evaluate(SP["vars"][t])))
-	print "$ %s"%(str(m.evaluate(SP["vars"]['dol'])))
+	# print "$ %s"%(str(m.evaluate(SP["vars"]['dol'])))
 	# print "ip_str(1,0) ",str(m.evaluate(SP["functions"]["ip_str"](1,0)))
 	for i in range(SP["num_soft_constraints"]):
 		if int(str(m.evaluate(SP["aux_const"][i]))) == 1:
 			print "%d "%i,
 	# print "lookAheadIndex ",m[SP["functions"]["lookAheadIndex"]]
 	# print "ip_str1 ",m[SP["functions"]["ip_str1"]]
-	print "succ ",m[SP["functions"]["succ"]]
-	print "pred ",m[SP["functions"]["pred"]]
-	print "ip_str1 ",m[SP["functions"]["ip_str1"]]
+	# print "succ ",m[SP["functions"]["succ"]]
+	# print "pred ",m[SP["functions"]["pred"]]
+	# print "ip_str1 ",m[SP["functions"]["ip_str1"]]
 	tmp = print_grammar(SP)
 	end_time = calendar.timegm(time.gmtime())
 	print "\nSolving time taken: %s"%str(datetime.timedelta(seconds=(end_time-start_time)))
-	results = open("results_file1.csv","a+")
+	results = open("results_file_rebuttal.csv","a+")
 	a,r,c = specs()
-	print "a[0] ",a[0]
-	results.write("%d,%d,%s,%d,%d\n"%(len(find_original_grammar()), len(a[0].split(' ')), str(datetime.timedelta(seconds=(end_time-start_time))), parser.parser_main(tmp),c["size_rules"]))
+	#print "a[0] ",a[0]
+	results.write("%d,%d,%s,%d,%d\n"%(len(find_original_grammar()), len(a[0].split()), str(datetime.timedelta(seconds=(end_time-start_time))), parser.parser_main(tmp),c["size_rules"]))
 	results.close()	
 
 # if sys.argv[1] == 'mode1':

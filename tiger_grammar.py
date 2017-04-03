@@ -1,4 +1,23 @@
 from __future__ import print_function
+def discover_non_tokens():
+	non_terminals = []
+	for rule in a:
+		if rule[0] not in non_terminals:
+			non_terminals.append(rule[0])
+	return non_terminals
+
+def discover_tokens():
+	non_terminals = discover_non_tokens()
+	tokens = []
+	for rule in a:
+		for elt in rule:
+			if elt in non_terminals:
+				continue
+			if elt in tokens:
+				continue
+			tokens.append(elt)
+	print ("tokens:",tokens)
+	return tokens
 def online_check_format1(original_grammar):
 	# mknod("tiger_grammar.txt")
 	# tiger = open("tiger_grammar.txt",'w+')
@@ -81,3 +100,4 @@ a = [['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'],
 
 ['UnaryOp','-'],['RelationOp','relop']]
 online_check_format1(a)
+discover_tokens()

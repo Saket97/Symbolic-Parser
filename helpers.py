@@ -2,6 +2,7 @@ from z3 import *
 from solver import *
 from init import *
 from itertools import *
+import pickle
 from msat import *
 def req_rules(solver):
 
@@ -222,6 +223,36 @@ def add_bad_grammar(S_target,S_source,iterationNo):
 
 		s.add(Not(And(AndList)))
 
+def find_errors():
+	############################################
+	pkl_file = open("tigerTableUpdated.pkl","rb")
+	ngrams = pickle.load(pkl_file)
+	pkl_file.close()
+
+	############################################
+	# string = string.split()
+	string = accept_strings[0]
+	string = string.split()
+	print "STRING :", string
+	tmp = []
+	for i in range(len(string)):
+		if i != 0:
+			t1 = (string[i-1],string[i])
+			if t1 not in ngrams:
+				tmp.append(i)
+				continue
+			f1 = ngrams[t1]
+			if f1 < 7:
+				tmp.append(i)
+		if i != len(string)-1:
+			t1 = (string[i],string[i+1])
+			if t1 not in ngrams:
+				tmp.append(i)
+				continue
+			f1 = ngrams[t1]
+			if f1 < 7:
+				tmp.append(i)
+	return tmp
 
 def add_accept_string(solver,accept_string):
 
@@ -243,15 +274,13 @@ def add_accept_string(solver,accept_string):
 	expansion_constant = config['expansion_constant']  #Determines the max. number of parse actions to take while parsing
 
 	strNum = solver["num_strings"]
-	# Take input and construct the ip_str function
-	# for j in range(len(accept_string)):
-	# 	s.add(functions["ip_str"](strNum,j) == vars[accept_string[j]])
-	# s.add(functions["ip_str"](strNum,len(accept_string))==vars["dol"])
-	# print "accept string: ",accept_string
+	
+	test_counter = find_errors()
+	print "TEST COUNTERS: ",test_counter
 	######## adding initial succ function constraint ######
 	if solver["comment_out"] == True:
 		for j in range(-1,len(accept_string)):
-			if solver["n_insertions"] != 0 or True:
+			if solver["n_insertions"] != 0 and (j in test_counter):
 				# s.add_soft(functions["succ"](strNum,j) == j+1)
 				add_soft(functions["succ"](strNum,j) == j+1, solver)
 			else:
@@ -265,7 +294,7 @@ def add_accept_string(solver,accept_string):
 	if solver["comment_out"] == True:
 		####### making ipstr1 function 
 		for j in range(-1,len(accept_string)):
-			if True:	
+			if j in test_counter:	
 				add_soft(functions["ip_str1"](strNum,functions["succ"](strNum,j)) == functions["ip_str"](strNum,j+1), solver)
 			else:
 				s.add(functions["ip_str1"](strNum,functions["succ"](strNum,j)) == functions["ip_str"](strNum,j+1))

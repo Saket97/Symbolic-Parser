@@ -72,8 +72,10 @@ def parser():
 def parser_main(string1):
 	print "############## parser called...###########"
 	global string
-	string = string1
-	# string = ['(', 'end', '<=', 'for', '~', '~', 'for', '~', '~', 'id', '.', '~', '>', 'id', '/', 'break', '|', 'integer', 'do', 'string', 'then', '(', 'end', 'dol', 'nil', 'do', 'nil',]
+	string = string1[0:len(string)-1]
+	tmp = ""
+	for elt in string:
+		tmp += elt
 	return parser()
 
 string = []
@@ -85,13 +87,13 @@ terminals = discover_tokens_from_grammar()
 terminals.append("dol")
 fuel = 20
 order = []
-# for i in range(len(order)):
-# 	print order[i]
+for i in range(len(order)):
+	print order[i]
 	
 print "#rules:",len(grammar)
 maximum = 0
-# for i in range(len(grammar)):
-# 	if len(grammar[i]) > maximum:
-# 		maximum = len(grammar[i])
-# print "size_ruels:",maximum
-# add_eps(grammar)
+for i in range(len(grammar)):
+	if len(grammar[i]) > maximum:
+		maximum = len(grammar[i])
+print "size_ruels:",maximum
+add_eps(grammar)

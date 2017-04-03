@@ -1,4 +1,5 @@
 import random
+import sys
 # from useful.input_final11 import *
 def discover(original_grammar):
 	non_tokens = []
@@ -45,8 +46,8 @@ def produce_error(accept_sttring, grammar, delete=False):
 		n3 = random.randint(0,len(input_string)-1)
 	print "############# mutation ################\n strpos:%d"%n2
 	if delete == False:
-		input_string[n2] = terminals[n1]
-		# input_string[n3] = terminals[n4]
+	# 	input_string[n2] = terminals[n1]
+		input_string[n3] = terminals[n4]
 	# a = input_string[0]
 	a = ""
 	j = 0
@@ -60,6 +61,9 @@ def produce_error(accept_sttring, grammar, delete=False):
 				a = a + "%s"%terminals[r]
 			else:
 				a = a + " %s"%terminals[r]
+			continue
+		if i == n2:
+			j += 1
 			continue
 		if len(a) == 0:
 			a = a + "%s"%input_string[j]
