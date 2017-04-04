@@ -1,13 +1,15 @@
 from z3 import *
 from init import *
 import datetime
+import calendar
+import time
 
 def initialize_solver(solver):
 	global config
-
 	s = Solver()
 	s.set(mbqi=False)
 	s.set(macro_finder = True)
+	# s.set(timeout=60000)
 	if config['optimize']:
 		s.set(unsat_core=True)
 
@@ -94,6 +96,7 @@ def initialize_solver(solver):
 	# TEMPLATE CONSTRAINTS
 
 	######################################################
+	print "Teemplate declaration starts in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
 
 	for r in range(num_rules):
 		print "new rule: %d"%r
@@ -117,27 +120,7 @@ def initialize_solver(solver):
 			s.add(functions["symbolInRHS"](r+1,i-1) == vars["x%d"%(r*(size_rules+1)+i)])
 		s.add(functions["symbolInLHS"](r+1) == vars["x%d"%(r*(size_rules+1)+1)])
 
-	#Possible values for LHS and RHS. For any particular rule LHS must be non term and RHS should be combinatin of these
-	for r in range(num_rules):
-		OrList = []
-		for n in nonterms:
-			OrList.append(functions["symbolInLHS"](r+1)==vars[n])
-		s.add(Or(OrList))
-
-		for i in range(2,size_rules+2):
-			OrList = []
-			for v in terms+nonterms+["eps"]:
-				OrList.append(functions["symbolInRHS"](r+1,i-1)==vars[v])
-			s.add(Or(OrList))
-
-
-	#Avoid trivial num_rules-+-+
-	for r in range(1,num_rules+1):
-		for i in range(2,size_rules+1):
-			s.add(Implies(functions["symbolInRHS"](r,i)==vars["eps"],functions["symbolInRHS"](r,i-1)==vars["eps"]))
-			s.add(Implies(functions["symbolInRHS"](r,size_rules)==functions["symbolInLHS"](r),functions["symbolInRHS"](r,size_rules-1)!=vars["eps"]))
-	
-	print "Teemplate declared in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
+	print "Teemplate declared in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
 
 	
 	
@@ -146,8 +129,8 @@ def initialize_solver(solver):
 		s.add(vars["rule%d"%r]==r)
 	vars.update({"dol": Int('dol')})
 	s.add(vars["dol"]==symbol_counter)
-	sp_time = solver["start_time"]
-	print "Parse table in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
+	
+	print "Parse table in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
 
 	######################################################
 
@@ -188,6 +171,12 @@ def initialize_solver(solver):
 	# The ending index in the parse action array of the expansion of the functions["symbolAt"](second arg)
 	functions["end"] = Function('end', IntSort(), IntSort(), IntSort())
 
+	# says whether each position in the array is successful or not. symbolAt, i 
+	functions["valid"] = Function('valid', IntSort(), IntSort(), BoolSort())
+
+	# one of these rules should apply. rule, lhs, elements in rhs, start and end of all elements in rhs.
+	functions["hardcode"] = Function('hardcode', IntSort(), IntSort(), IntSort(),IntSort(), IntSort(), IntSort(), IntSort(), )
+
 	solver["constraints"] = s
 	solver["vars"] = vars
 	solver["functions"] = functions
@@ -218,6 +207,7 @@ def single_step(solver,strNum,i):
 	x = Int('x')
 
 	if solver["comment_out"] == True:
+		# lookahead should be a terminal
 		s.add(And(functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)) <= solver["term_end"],functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)) >= solver["term_start"] ))
 		s.add(Not(functions["ip_str1"](strNum, functions["lookAheadIndex"](strNum,i)) == vars["eps"]))
 
@@ -233,60 +223,41 @@ def single_step(solver,strNum,i):
 	# For consuming term
 	AndList = []
 	if solver["comment_out"] == True:
-		AndList.append(functions["lookAheadIndex"](strNum,i+1) == functions["succ"](strNum,functions["lookAheadIndex"](strNum,i)))	
+		AndList.append(functions["lookAheadIndex"](strNum,i+1) == functions["succ"](strNum,functions["lookAheadIndex"](strNum,i)))
 	else:
 		AndList.append(functions["lookAheadIndex"](strNum,i+1) == functions["lookAheadIndex"](strNum,i) + 1)
-	AndList.append(functions["step"](strNum,i))
-	AndList.append(Not(functions["success"](strNum,i)))
-	AndList.append(functions["end"](strNum,i)==i)
+	AndList.append(functions["step"](strNum,i)) # this step should be successful
+	AndList.append(Not(functions["success"](strNum,i))) # parsing should not complete till now
+	AndList.append(functions["end"](strNum,i)==i) # terminal should start and end at same index
 	OrList = []
 	for t in terms:
-		OrList.append(functions["symbolAt"](strNum,i)==vars[t])
+		OrList.append(functions["symbolAt"](strNum,i)==vars[t]) # symbol should must be a terminal
+
 	if solver["comment_out"] == True:
-		s.add(Implies(And(Or(OrList),functions["step"](strNum,i-1)), If(functions["symbolAt"](strNum,i)==functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)), And(AndList), And(Not(functions["step"](strNum,i)), Not(functions["success"](strNum,i))) ) ))
+		s.add(Implies(And(Or(OrList),functions["step"](strNum,i-1)), If(functions["symbolAt"](strNum,i)==functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i)), And(AndList), And(Not(functions["step"](strNum,i)), Not(functions["success"](strNum,i))))))
 	else:
 		s.add(Implies(And(Or(OrList),functions["step"](strNum,i-1)), If(functions["symbolAt"](strNum,i)==functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i)), And(AndList), And(Not(functions["step"](strNum,i)), Not(functions["success"](strNum,i))) ) ))
 
 	# For expanding nonterm
-	for k in range(1,size_rules+2):
-		RHSList=[]
-		AndList=[]
-		for j in range(1,k):
-			if solver["comment_out"] == True:
-				RHSList.append(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), j) == vars["eps"])
-			else:
-				RHSList.append(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i))), j) == vars["eps"])
-			AndList.append(functions["startPosition"](strNum,j,i) == i)
-			
-			
-		for j in range(k, size_rules + 1):
-			if solver["comment_out"] == True:
-				RHSList.append(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), j) != vars["eps"])
-			else:	
-				RHSList.append(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i))), j) != vars["eps"])
-			if j != k :
-				AndList.append(functions["startPosition"](strNum,j,i) == functions["end"](strNum,functions["startPosition"](strNum,j-1,i)) + 1)	
-			else:
-				AndList.append(functions["startPosition"](strNum,j,i) == i+1)	
-			if solver["comment_out"] == True:
-				AndList.append(functions["symbolAt"](strNum,functions["startPosition"](strNum,j,i)) == functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), j))
-			else:
-				AndList.append(functions["symbolAt"](strNum,functions["startPosition"](strNum,j,i)) == functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i))), j))
-		
-		AndList.append(functions["lookAheadIndex"](strNum,i+1) == functions["lookAheadIndex"](strNum,i))
-		
-		if k!=size_rules+1:
-			AndList.append(functions["end"](strNum,i) == functions["end"](strNum,functions["startPosition"](strNum,size_rules,i)))
-		else:
-			AndList.append(functions["end"](strNum,i) == i)
-		
-		AndList.append(functions["step"](strNum,i))
-		AndList.append( Not(functions["success"](strNum,i)) )
+	OrList = []
+	for n in nonterms:
+		OrList.append(functions["symbolAt"](strNum,i)==vars[n]) # Symbol should be non terminal
 
-		OrList = []
-		for n in nonterms:
-			OrList.append(functions["symbolAt"](strNum,i)==vars[n])
+	RHSList=[]	
+	RHSList.append(functions["lookAheadIndex"](strNum,i+1) == functions["lookAheadIndex"](strNum,i)) # lookahead shouldn't change
+	# RHSList.append(If(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), size_rules) == vars["eps"], functions["end"](strNum,i) == i, functions["end"](strNum,i) == functions["end"](strNum,functions["startPosition"](strNum,size_rules,i)) ))	
+	RHSList.append(Implies(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), size_rules) == vars["eps"], functions["end"](strNum,i) == i))	
+	RHSList.append(Implies(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), size_rules) != vars["eps"], functions["end"](strNum,i) == functions["end"](strNum,functions["startPosition"](strNum,size_rules,i)) ))	
+	for k in range(1, size_rules + 1):
 		if solver["comment_out"] == True:
-			s.add(Implies(And(Or(OrList),functions["step"](strNum,i-1)),If(functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))) != 0, Implies(And(RHSList),And(AndList)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i)) ) )))
-		else:
-			s.add(Implies(And(Or(OrList),functions["step"](strNum,i-1)),If(functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str"](strNum,functions["lookAheadIndex"](strNum,i))) != 0, Implies(And(RHSList),And(AndList)), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i)) ) )))
+			RHSList.append(Implies(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), k) == vars["eps"], functions["startPosition"](strNum,k,i) == i))
+			if k == 1:
+				RHSList.append(Implies(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), k) != vars["eps"], And(functions["startPosition"](strNum,k,i) == i+1, functions["symbolAt"](strNum,functions["startPosition"](strNum,k,i)) == functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), k))))				
+			else:
+				RHSList.append(Implies(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), k) != vars["eps"], And( If(functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), k-1) != vars["eps"], functions["startPosition"](strNum,k,i) == functions["end"](strNum,functions["startPosition"](strNum,k-1,i)) + 1, functions["startPosition"](strNum,k,i) == i + 1 )  , functions["symbolAt"](strNum,functions["startPosition"](strNum,k,i)) == functions["symbolInRHS"](functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))), k))))		
+	
+	RHSList.append(functions["step"](strNum,i))
+	RHSList.append( Not(functions["success"](strNum,i)) )
+
+	if solver["comment_out"] == True:
+		s.add(Implies(And(Or(OrList),functions["step"](strNum,i-1)),If(functions["parseTable"](functions["symbolAt"](strNum,i),functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,i))) != 0, And(RHSList), And(Not(functions["step"](strNum,i)),Not(functions["success"](strNum,i)) ) )))
