@@ -67,7 +67,7 @@ def req_rules(solver):
 			producing_rules[i]= True
 
 	changed = True
-#considered not producing rules as those which do not have terminals on their RHS..Now rectifying this
+	#considered not producing rules as those which do not have terminals on their RHS..Now rectifying this
 	while changed:
 		changed = False
 		for j in range(num_rules):
@@ -168,61 +168,6 @@ def assert_grammar_soft(S_target,S_source,req=False):
 
 	return assumptions
 
-
-def assert_grammar_hard(S_target,S_source,req=False):
-
-	s = S_target["constraints"]
-
-	num_rules = config['num_rules']
-	num_nonterms = config['num_nonterms']
-	num_terms = config['num_terms']
-	size_rules = config['size_rules']
-
-	if req:
-		reqrules = req_rules(S_source)
-	
-		for r in range(num_rules):
-			if reqrules[r]:
-				s.add(S_target["functions"]["symbolInLHS"](r+1)==int(str(S_source["model"].evaluate(S_source["functions"]["symbolInLHS"](r+1)))))
-				for i in range(1,size_rules+1):
-					s.add(S_target["functions"]["symbolInRHS"](r+1,i)==int(str(S_source["model"].evaluate(S_source["functions"]["symbolInRHS"](r+1,i)))))
-	else:
-		for r in range(num_rules):
-			s.add(S_target["functions"]["symbolInLHS"](r+1)==int(str(S_source["model"].evaluate(S_source["functions"]["symbolInLHS"](r+1)))))
-			for i in range(1,size_rules+1):
-				s.add(S_target["functions"]["symbolInRHS"](r+1,i)==int(str(S_source["model"].evaluate(S_source["functions"]["symbolInRHS"](r+1,i)))))
-
-
-def add_bad_grammar(S_target,S_source,iterationNo):
-
-	s = S_target["constraints"]
-
-	num_rules = config['num_rules']
-	num_nonterms = config['num_nonterms']
-	num_terms = config['num_terms']
-	size_rules = config['size_rules']
-
-	for perm in list(permutations(range(1,num_nonterms))):
-		# check reachable rules
-		rules = req_rules(S_source)
-		AndList = []
-		for i in range(num_rules):
-			if rules[i]:
-				lhsSymbol = int(str(S_source["model"].evaluate(S_source["functions"]["symbolInLHS"](i+1))))
-				tempList = []
-				for j in range(size_rules):
-					symbolValue = int(str(S_source["model"].evaluate(S_source["functions"]["symbolInRHS"](i+1,j+1))))
-					if symbolValue < num_nonterms and symbolValue > 0:
-						tempList.append(perm[symbolValue-1])
-					else:
-						tempList.append(symbolValue)
-				if lhsSymbol > 0:
-					AndList.append(S_target["functions"]["derivedBy"](tempList)==perm[lhsSymbol-1])
-				else:
-					AndList.append(S_target["functions"]["derivedBy"](tempList)==lhsSymbol)
-
-		s.add(Not(And(AndList)))
-
 def find_errors():
 	############################################
 	pkl_file = open("tigerTableUpdated.pkl","rb")
@@ -275,13 +220,13 @@ def add_accept_string(solver,accept_string):
 
 	strNum = solver["num_strings"]
 	
-	test_counter = find_errors()
+	# test_counter = find_errors()
+	test_counter = [0,2,3,1,-1]
 	print "TEST COUNTERS: ",test_counter
 	######## adding initial succ function constraint ######
 	if solver["comment_out"] == True:
 		for j in range(-1,len(accept_string)):
 			if solver["n_insertions"] != 0 and (j in test_counter):
-				# s.add_soft(functions["succ"](strNum,j) == j+1)
 				add_soft(functions["succ"](strNum,j) == j+1, solver)
 			else:
 				s.add(functions["succ"](strNum,j) == j+1)
@@ -298,6 +243,8 @@ def add_accept_string(solver,accept_string):
 				add_soft(functions["ip_str1"](strNum,functions["succ"](strNum,j)) == functions["ip_str"](strNum,j+1), solver)
 			else:
 				s.add(functions["ip_str1"](strNum,functions["succ"](strNum,j)) == functions["ip_str"](strNum,j+1))
+		# s.add(functions["ipstr1"](strNum, functions[]))
+		print "asserting pred1 in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
 
 		tmp = [i for i in range(-1, len(accept_string)+2)]
 		for i in range(solver["n_insertions"]):
@@ -319,6 +266,8 @@ def add_accept_string(solver,accept_string):
 				s.add(Or(And(functions["succ"](strNum, i) <= functions["pred"](strNum,i) + 2, functions["succ"](strNum,i) > functions["pred"](strNum,i)), And(functions["succ"](strNum,i) < 10000+solver["n_insertions"], functions["succ"](strNum,i)> 10000)))
 				
 			s.add(functions["succ"](strNum,i) >= 0)
+		
+		print "asserting pred2 in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
 
 		for i in tmp:
 			OrList = []
@@ -337,120 +286,36 @@ def add_accept_string(solver,accept_string):
 				# print functions["ip_str1"](strNum, i) == vars[t]
 			s.add(Or(OrList))
 
+		print "asserting pred3 in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
 
 	# Start parsing with N1 as the first symbol
 	s.add(functions["symbolAt"](strNum,1) == vars["N1"])
-
+	rn = Int('rn')
+	x,X0,X1,X2,X3,X4,X5,X6 = Ints('x X0 X1 X2 X3 X4 X5 X6')
+	view_assign = solver["view_assign"]
+	s.add(ForAll([rn,X0,X1,X2,X3,X4,X5,X6], functions["hardcode"](rn,X0,X1,X2,X3,X4,X5,X6) == Or(And (rn == vars["rule1"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Prog1"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Prog"]] ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["dol"]] ), And (rn == vars["rule2"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Prog"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["Exp"]] ), And (rn == vars["rule3"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Exp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["ExpOR"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["ExpORPr"]] ),And (rn == vars["rule4"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["ExpOR"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["ExpAND"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["ExpANDPr"]] ), And (rn == vars["rule5"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["ExpORPr"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["|"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["Exp"]] ),And (rn == vars["rule6"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["ExpORPr"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule7"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["ExpANDPr"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["&"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["ExpOR"]] ),And (rn == vars["rule8"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["ExpANDPr"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule9"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["ExpAND"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["ArithExp"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["RelationExp"]] ),And (rn == vars["rule10"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["ArithExp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Term"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["TermPr"]] ), And (rn == vars["rule11"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["RelationExp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["RelationOp"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["ArithExp"]] ),And (rn == vars["rule12"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["RelationExp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule13"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Term"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Factor"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FactorPr"]] ),And (rn == vars["rule14"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["TermPr"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["+"]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Term"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["TermPr"]] ),And (rn == vars["rule15"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["TermPr"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["-"]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Term"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["TermPr"]] ),And (rn == vars["rule16"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["TermPr"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule17"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FactorPr"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["*"]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Factor"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FactorPr"]] ), And (rn == vars["rule18"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FactorPr"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["/"]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Factor"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FactorPr"]] ),And (rn == vars["rule19"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FactorPr"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule20"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Factor"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["nil"]] ),And (rn == vars["rule21"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Factor"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["integer"]] ),And (rn == vars["rule22"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Factor"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["string"]] ),And (rn == vars["rule23"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Factor"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["("]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["ExpList"]] ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign[")"]] ),And (rn == vars["rule24"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Factor"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["UnaryOp"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["Exp"]] ),And (rn == vars["rule25"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Factor"]], X1 == X0+1, X2 == X1+1, functions["end"](strNum, X1) == X2, functions["symbolAt"](strNum, X1) == vars[view_assign["if"]] ,functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["Exp"]] ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["then"]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Exp"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["IF_extra"]] ),And (rn == vars["rule26"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["IF_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["else"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["Exp"]] ),And (rn == vars["rule27"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["IF_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule28"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Factor"]], X1 == X0+1, X1 == X2 ,X3 == X2+1, functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["while"]] ,functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["Exp"]] ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["do"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["Exp"]] ),And (rn == vars["rule29"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Factor"]], X1 == X0+1, X2 == X1+1, functions["end"](strNum, X1) == X2, functions["symbolAt"](strNum, X1) == vars[view_assign["for"]] ,X3 == X2+1, functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["id"]] ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign[":="]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Exp"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["F1"]] ), And (rn == vars["rule30"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["F1"]], X1 == X0+1, X1 == X2 ,X3 == X2+1, functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["to"]] ,functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["Exp"]] ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["do"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["Exp"]] ),And (rn == vars["rule31"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Factor"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["break"]] ),And (rn == vars["rule32"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Factor"]], X1 == X0+1, X2 == X1+1, functions["end"](strNum, X1) == X2, functions["symbolAt"](strNum, X1) == vars[view_assign["let"]] ,functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["DecList"]] ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["in"]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["ExpList"]] ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["end"]] ),And (rn == vars["rule33"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Factor"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["LValue"]] ),And (rn == vars["rule34"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["DecList"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["DL_extra"]] ),And (rn == vars["rule35"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["DL_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Dec"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["DL_extra"]] ),And (rn == vars["rule36"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["DL_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule37"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Dec"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["TyDec"]] ),And (rn == vars["rule38"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Dec"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["VarDec"]] ), And (rn == vars["rule39"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Dec"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FunDec"]] ),And (rn == vars["rule40"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["TyDec"]], X1 == X0+1, X1 == X2 ,X3 == X2+1, functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["type"]] ,functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["TypeId"]] ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["="]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["Ty"]] ), \
+		And (rn == vars["rule41"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Ty"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["{"]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["FieldList"]] ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["}"]] ),And (rn == vars["rule42"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Ty"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["array"]] ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["of"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["TypeId"]] ),And (rn == vars["rule43"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["Ty"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["TypeId"]] ),And (rn == vars["rule44"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FieldList"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule45"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FieldList"]], X1 == X0+1, X1 == X2 ,X3 == X2+1, functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["id"]] ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign[":"]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["TypeId"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FL_extra"]] ),And (rn == vars["rule46"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FL_extra"]], X1 == X0+1, X2 == X1+1, functions["end"](strNum, X1) == X2, functions["symbolAt"](strNum, X1) == vars[view_assign[","]] ,X3 == X2+1, functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["id"]] ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign[":"]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["TypeId"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FL_extra"]] ),And (rn == vars["rule47"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FL_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ), \
+		And (rn == vars["rule48"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FieldExpList"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule49"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FieldExpList"]], X1 == X0+1, X1 == X2 ,X3 == X2+1, functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["id"]] ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["="]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Exp"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FEL_extra"]] ),And (rn == vars["rule50"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FEL_extra"]], X1 == X0+1, X2 == X1+1, functions["end"](strNum, X1) == X2, functions["symbolAt"](strNum, X1) == vars[view_assign[","]] ,X3 == X2+1, functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["id"]] ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["="]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Exp"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FEL_extra"]] ),And (rn == vars["rule51"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FEL_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule52"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["TypeId"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["id"]] ),And (rn == vars["rule53"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["TypeId"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["integer"]] ),And (rn == vars["rule54"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["TypeId"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["string"]] ),And (rn == vars["rule55"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["VD_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule56"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["VD_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign[":"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["TypeId"]] ),And (rn == vars["rule57"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["VarDec"]], X1 == X0+1, X2 == X1+1, functions["end"](strNum, X1) == X2, functions["symbolAt"](strNum, X1) == vars[view_assign["var"]] ,X3 == X2+1, functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["id"]] ,functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["VD_extra"]] ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign[":="]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["Exp"]] ),And (rn == vars["rule58"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FunDec"]], X1 == X0+1, X2 == X1+1, functions["end"](strNum, X1) == X2, functions["symbolAt"](strNum, X1) == vars[view_assign["function"]] ,X3 == X2+1, functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["id"]] ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["("]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["FieldList"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["F2"]] ),And (rn == vars["rule59"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["F2"]], X1 == X0+1, X1 == X2 ,X3 == X2+1, functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign[")"]] ,functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["VD_extra"]] ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["="]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["Exp"]] ),And (rn == vars["rule60"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["LValue"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["id"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["LD_extra"]] ),And (rn == vars["rule61"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["LD_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FunctionRecordArrayPr"]] ),And (rn == vars["rule62"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["LD_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FunctionRecordArray"]] ),And (rn == vars["rule63"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FunctionRecordArray"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["("]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["ArgList"]] ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign[")"]] ),And (rn == vars["rule64"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FunctionRecordArray"]], X1 == X0+1, X2 == X1+1, functions["end"](strNum, X1) == X2, functions["symbolAt"](strNum, X1) == vars[view_assign["{"]] ,X3 == X2+1, functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["id"]] ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["="]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Exp"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["F3"]] ),And (rn == vars["rule65"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["F3"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["FRA_extra"]] ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["}"]] ),And (rn == vars["rule66"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FRA_extra"]], X1 == X0+1, X2 == X1+1, functions["end"](strNum, X1) == X2, functions["symbolAt"](strNum, X1) == vars[view_assign[","]] ,X3 == X2+1, functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["id"]] ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["="]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Exp"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FRA_extra"]] ), \
+		And (rn == vars["rule67"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FRA_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule68"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FunctionRecordArray"]], X1 == X0+1, X1 == X2 ,X3 == X2+1, functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["["]] ,functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["Exp"]] ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["]"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FRA_extra1"]] ),And (rn == vars["rule69"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FRA_extra1"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FunctionRecordArrayPr"]] ),And (rn == vars["rule70"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FRA_extra1"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["of"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["Exp"]] ),And (rn == vars["rule71"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FRAP_extra1"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign[":="]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["Exp"]] ),And (rn == vars["rule72"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FRAP_extra1"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule73"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FunctionRecordArrayPr"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["FRAP_extra"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FRAP_extra1"]] ),And (rn == vars["rule74"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FRAP_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["."]] ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["id"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FRAP_extra"]] ),And (rn == vars["rule75"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FRAP_extra"]], X1 == X0+1, X1 == X2 ,X3 == X2+1, functions["end"](strNum, X2) == X3, functions["symbolAt"](strNum, X2) == vars[view_assign["["]] ,functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign["Exp"]] ,X5 == X4+1, functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["]"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["FRAP_extra"]] ),And (rn == vars["rule76"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["FRAP_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule77"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["ExpList"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule78"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["ExpList"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Exp"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["EL_extra"]] ),And (rn == vars["rule79"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["EL_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule80"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["EL_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign[";"]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Exp"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["EL_extra"]] ),And (rn == vars["rule81"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["ArgList"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule82"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["ArgList"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Exp"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["AL_extra"]] ),And (rn == vars["rule83"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["AL_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X4 == X3+1, functions["end"](strNum, X3) == X4, functions["symbolAt"](strNum, X3) == vars[view_assign[","]] ,functions["end"](strNum, X4) == X5, functions["symbolAt"](strNum, X4) == vars[view_assign["Exp"]] ,functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["AL_extra"]] ),And (rn == vars["rule84"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["AL_extra"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ), \
+		And (rn == vars["rule85"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["UnaryOp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["-"]] ),And (rn == vars["rule86"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["RelationOp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["="]] ),And (rn == vars["rule87"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["RelationOp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["!="]] ),And (rn == vars["rule88"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["RelationOp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign[">"]] ),And (rn == vars["rule89"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["RelationOp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["<"]] ),And (rn == vars["rule90"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["RelationOp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign[">="]] ),And (rn == vars["rule91"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["RelationOp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5+1, functions["end"](strNum, X5) == X6, functions["symbolAt"](strNum, X5) == vars[view_assign["<="]] ))))
+	
+	s.add(ForAll(x, functions["valid"](x) == Implies(x < functions["end"](strNum,0), And(functions["lookAheadIndex"](strNum,x) <= solver["term_end"], functions["lookAheadIndex"](strNum,x) >= solver["term_start"],Or(And(functions["symbolAt"](strNum, x) <= solver["term_end"], functions["symbolAt"](strNum, x) >= solver["term_start"], functions["symbolAt"](strNum, x) == functions["ip_str1"](strNum, functions["lookAheadIndex"](strNum,x)), functions["succ"](strNum,functions["lookAheadIndex"](strNum,x)) == functions["lookAheadIndex"]((strNum,x+1), functions["succ"](strNum,x))), And(functions["symbolAt"](strNum, x) <= solver["non_term_end"], functions["symbolAt"](strNum, x) >= solver["non_term_start"], functions["lookAheadIndex"](strNum,x+1) == functions["lookAheadIndex"](strNum,x), Or(Exists([rn, X1,X2,X3,X4,X5,X6], And(functions["parseTable"](functions["symbolAt"](strNum,x)) == rn, Not(rn ==0),x <= X1, X1 <= X2, X2 <= X3, X3 <= X4, X4 <= X5, X5 <= X6, X6 <= functions["end"](strNum,0), functions["hardcode"](rn, x, X1, X2, X3, X4, X5, X6))))))))))
+	
 	# Starting lookAheadIndex
 	s.add(functions["lookAheadIndex"](strNum,1) == functions["succ"](strNum, -1))
 
 	# Starting step
-	s.add(functions["step"](strNum,0))
+	# s.add(functions["step"](strNum,0))
 
 	# Do required number of steps
+
+	# s.add(ForAll(i, functions["valid"](functions["symbolAt"](strNum, i), functions["startPosition"](strNum, functions["symbolAt"](strNum,i),i), functions["end"])))
+	# X1 = symbolAt, X2=start, X3=end, LAI=LOOKAHEADIndex 
+	s.add(functions["end"](strNum, 0) <= expansion_constant*len(accept_string))
 	for i in range(expansion_constant*len(accept_string)):
-		single_step(solver,strNum,i+1)
-	s.add(functions["success"](strNum,expansion_constant*len(accept_string)))
+		print "asserting parser start in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
+		# single_step(solver,strNum,i+1)
+		s.add(functions["valid"](strNum,i))
+		print "asserting parser end in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
 
-
-def add_reject_strings(solver):
-
-	s = solver["constraints"]
-	vars = solver["vars"]
-	functions = solver["functions"]
-
-	assert("type" not in solver)
-	solver["type"] = "reject"
-	assert("num_strings" not in solver)
-	solver["num_strings"] = len(reject_list)
-
-	expansion_constant = config['expansion_constant']  #Determines the max. number of parse actions to take while parsing
-
-	# Take input and construct the ip_str function
-	for strNum in range(len(reject_list)):
-		for j in range(len(reject_list[strNum])):
-			s.add(functions["ip_str"](strNum,j) == vars[reject_list[strNum][j]])
-		s.add(functions["ip_str"](strNum,len(reject_list[strNum]))==vars["dol"])
-
-	# Start parsing with N1 as the first symbol
-	for strNum in range(len(reject_list)):
-		s.add(functions["symbolAt"](strNum,1) == vars["N1"])
-
-	# Starting lookAheadIndex
-	for strNum in range(len(reject_list)):
-		s.add(functions["lookAheadIndex"](strNum,1) == 0)
-
-	# Starting step
-	for strNum in range(len(reject_list)):
-		s.add(functions["step"](strNum,0))
-
-	SuccessList = []
-
-	# Do required number of steps
-	for strNum in range(len(reject_list)):
-		for i in range(expansion_constant*len(reject_list[strNum])):
-			single_step(solver,strNum,i+1)
-		SuccessList.append(functions["success"](strNum,expansion_constant*len(reject_list[strNum])))
-
-	s.add(Or(SuccessList))
-
-######################################################
-
-# OPTIMIZATION PROCEDURE
-
-######################################################
-
-def add_threshold(solver,unsat_core,threshold):
-	s = solver["constraints"]
-
-	clist = []
-	for c in unsat_core:
-		clist.append(If(c, 0, 1))
-	s.add(Sum(clist) <= (IntVal(len(unsat_core) * threshold)))
-
-
-def get_solution_optimize(SP):
-
-	i=0
-	print "Adding string " + str(i+1)
-	accept_string=accept_list[0]
-	add_accept_string(SP,accept_string)
-
-	check_result = SP["constraints"].check()
-	if check_result == unsat:
-		return check_result
-
-	SP["model"] = SP["constraints"].model()
-	print_grammar(SP)
-
-	i+=1
-	while i < len(accept_list):
-		print "Adding string " + str(i+1)
-		accept_string=accept_list[i]
-		add_accept_string(SP,accept_string)
-		i+=1
-		SP["constraints"].push()
-
-		assumptions = assert_grammar_soft(S_source=SP,S_target=SP,req=True)
-
-		check_result = SP["constraints"].check(assumptions)
-		num_unsat=0
-		while check_result == unsat:
-			num_unsat+=1
-			print "Unsat core #%d"%num_unsat
-			unsatCore = SP["constraints"].unsat_core()
-
-			if len(unsatCore) == 0:
-				print "Failed to find unsat core"
-				return unsat
-
-			assumptions = [x for x in assumptions if x not in unsatCore]
-			for x in unsatCore:
-				s.add(x==False)
-			check_result = SP["constraints"].check(assumptions)
-
-		SP["model"] = SP["constraints"].model()
-		print_grammar(SP)
-		SP["constraints"].pop()
-
-	return check_result
+	# s.add(functions["success"](strNum,expansion_constant*len(accept_string)))

@@ -2,8 +2,11 @@ from input_specs_tiger import *
 from init import *
 from z3 import *
 import datetime
-
+import calendar
+import time
 def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules):
+	print "asserting grammar in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
+
 	s = solver['constraints']
 	vars = solver['vars']
 	i = 1
@@ -17,19 +20,18 @@ def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules
 			
 			if original_grammar[r][j] == 'eps':
 				s.add(vars['x%d'%(r*(size_rules+1)+j+1)] == vars['eps'])
-				# print('x%d  eps %d'%(r*(size_rules+1)+j+1, i))
 				i += 1
 			else:
-				# s.assert_and_track(vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[original_grammar[r][j]]], 'input x%d'%(r*(size_rules+1)+j+1))
 				constdict['input x%d'%(r*(size_rules+1)+j+1)] = vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[original_grammar[r][j]]]
 				s.add(vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[original_grammar[r][j]]])
-				# print('x%d %s %d'%((r*(size_rules+1)+j+1),view_assign[original_grammar[r][j]], i))
 				i += 1
-	sp_time = solver["start_time"]
-	print "asserting grammar in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
+	
+	print "asserting grammar in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
 
 
 def add_parse_table_constraints(solver,parse_table,view_assign):
+	print "asserting ptable in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
+
 	print "adding parse table..."
 	s = solver["constraints"]
 	vars = solver['vars']
@@ -47,6 +49,8 @@ def add_parse_table_constraints(solver,parse_table,view_assign):
 			else:
 				s.add(functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[k]]) == 0)
 				constdict['%s %s parse table input'%(non_terminal,k)] = functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[k]]) == 0
+	print "asserting ptable in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
+
 
 def add_first_set_constraints(solver, first_set, follow_set, view_assign):
 	s = solver["constraints"]
@@ -94,12 +98,11 @@ def repair(solver, original_grammar, num_rules, size_rules):
 		i += 1
 	view_assign['eps'] = 'eps'
 	print "view_assign",view_assign
+	solver["view_assign"] = view_assign
 	parse_table = get_parse_table()
-	# first_set = get_first_set()
-	# follow_set = get_follow_set()
+	print "PARSE TABLE:", parse_table
 	view_assign['dol'] = 'dol'
 	view_assign['$'] = 'dol'
-	# print('view_assign-',view_assign)
 	add_constraints(solver,view_assign,original_grammar,num_rules, size_rules)
 	print view_assign
 	add_parse_table_constraints(solver,parse_table,view_assign)
