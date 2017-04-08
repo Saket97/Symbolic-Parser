@@ -25,6 +25,7 @@ def main():
 	
 	num = nums()
 	original_grammar = find_original_grammar()
+	print "original_grammar_synth: ", original_grammar
 	repair(SP, original_grammar, num['num_rules'], num['size_rules'])
 
 	

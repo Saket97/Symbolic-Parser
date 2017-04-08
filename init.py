@@ -1,14 +1,6 @@
 from input_specs_tiger import *
 import sys
-def discover_tokens(strings):
-	tokens = []
-	for s in strings:
-		l = s.split()
-		for t in l:
-			if t not in tokens:
-				tokens.append(t)
 
-	return tokens
 def discover(original_grammar):
 	non_tokens = []
 	for string in original_grammar:
@@ -33,6 +25,7 @@ def discover_tokens_from_grammar():
 					tokens.append(string[i])
 	print ('tokens',tokens)
 	return tokens
+
 def list_from_strings(in_strings):
 	in_terms = [in_strings[i].split() for i in range(len(in_strings))]
 	return [["t%s"%(tokens.index(i)+1) for i in in_terms[j]] for j in range(len(in_terms))]

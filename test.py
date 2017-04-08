@@ -13,16 +13,19 @@ def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules
 	size_rules = len(original_grammar[0])-1
 	constdict = solver["dictconst"]
 	for r in range(num_rules):
+		# print "Asserting rule: ",r
 		s.add(vars['x%d'%(r*(size_rules+1)+1)] == vars[view_assign[original_grammar[r][0]]])
 		i += 1
 		
 		for j in range(1,size_rules+1):
-			
+			# print "j:",j
 			if original_grammar[r][j] == 'eps':
+				# print 'x%d = eps'%(r*(size_rules+1)+j+1)
 				s.add(vars['x%d'%(r*(size_rules+1)+j+1)] == vars['eps'])
 				i += 1
 			else:
-				constdict['input x%d'%(r*(size_rules+1)+j+1)] = vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[original_grammar[r][j]]]
+				# constdict['input x%d'%(r*(size_rules+1)+j+1)] = vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[original_grammar[r][j]]]
+				# print 'x%d = %s'%(r*(size_rules+1)+j+1,original_grammar[r][j])
 				s.add(vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[original_grammar[r][j]]])
 				i += 1
 	
@@ -100,7 +103,7 @@ def repair(solver, original_grammar, num_rules, size_rules):
 	print "view_assign",view_assign
 	solver["view_assign"] = view_assign
 	parse_table = get_parse_table()
-	print "PARSE TABLE:", parse_table
+	# print "PARSE TABLE:", parse_table
 	view_assign['dol'] = 'dol'
 	view_assign['$'] = 'dol'
 	add_constraints(solver,view_assign,original_grammar,num_rules, size_rules)

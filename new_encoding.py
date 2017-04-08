@@ -11,6 +11,8 @@ def discover_tokens():
 	tmp = []
 	for rule in original_grammar:
 		for t in rule:
+			if t == "eps":
+				continue
 			if t not in non_terms:
 				if t not in tmp:
 					tmp.append(t)
@@ -18,7 +20,7 @@ def discover_tokens():
 
 def write_input():
 	hardcode = []
-	input_file = open("hardcode.txt", "w+")
+	input_file = open("hardcode.py", "w+")
 	for i in range(len(original_grammar)):
 		string = ',And (rn == vars["rule%d"],'%(i+1)
 		input_file.write(',And (rn == vars["rule%d"],'%(i+1))
@@ -26,8 +28,16 @@ def write_input():
 		input_file.write( 'functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, ')
 		for j in range(len(original_grammar[i])):
 			if j == 0:
+				flag = True
+				for k in range(len(original_grammar[i])):
+					if original_grammar[i][k] != "eps":
+						flag = False
 				string += 'functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]], X1 == X0+1, '%(0,original_grammar[i][j])
-				input_file.write( 'functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]], X1 == X0+1, '%(0,original_grammar[i][j]))
+				if flag == False:
+					input_file.write( 'functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]], X1 == X0+1, '%(0,original_grammar[i][j]))
+				else:
+					input_file.write( 'functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]], X1 == X0, '%(0,original_grammar[i][j]))
+
 				continue
 			if original_grammar[i][j] == "eps":
 				string += "X%d == X%d "%(j,j+1)
@@ -37,14 +47,14 @@ def write_input():
 					input_file.write( ',')
 			else:
 				if original_grammar[i][j] in term:
-					string += 'X%d == X%d+1, functions["end"](strNum, X%d) == X%d, functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]] '%(j+1,j,j,j+1,j,original_grammar[i][j])
-					input_file.write( 'X%d == X%d+1, functions["end"](strNum, X%d) == X%d, functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]] '%(j+1,j,j,j+1,j,original_grammar[i][j]))
+					string += 'X%d == X%d+1, functions["end"](strNum, X%d) == X%d, functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]] '%(j+1,j,j,j,j,original_grammar[i][j])
+					input_file.write( 'X%d == X%d+1, functions["end"](strNum, X%d) == X%d, functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]] '%(j+1,j,j,j,j,original_grammar[i][j]))
 					if j != 5:
 						string += ','
 						input_file.write( ',')
 				else:
 					string += 'functions["end"](strNum, X%d) == X%d, functions["symbolAt"](strNum, X%d) == vars[view_assign[%s]] '%(j, j+1, j, original_grammar[i][j])
-					input_file.write('functions["end"](strNum, X%d) == X%d, functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]] '%(j, j+1, j, original_grammar[i][j]))
+					input_file.write('functions["end"](strNum, X%d) == X%d-1, functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]] '%(j, j+1, j, original_grammar[i][j]))
 					if j != 5:
 						string += ','
 						input_file.write( ',')
@@ -56,6 +66,7 @@ def write_input():
 original_grammar = find_original_grammar(eps=True)
 non_terms = discover_non_tokens()
 term = discover_tokens()
+print "terminals: ",term
 hardcode = write_input()
 h = []
 for constraint in hardcode:
