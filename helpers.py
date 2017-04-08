@@ -110,6 +110,8 @@ def print_grammar(solver):
 				elif symbolValue < num_nonterms + num_terms:
 					print "%s\t"%(tokens[symbolValue-num_nonterms]),
 				elif symbolValue == num_nonterms + num_terms:
+					print "dol\t",
+				elif symbolValue == num_nonterms + num_terms + 1:
 					print "eps\t",
 			print ""
 
@@ -300,8 +302,11 @@ def add_accept_string(solver,accept_string):
 		And (rn == vars["rule84"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["AL_extra"]], X1 == X0, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X5 == X6 ),And (rn == vars["rule85"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["UnaryOp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5, functions["end"](strNum, X5) == X5, functions["symbolAt"](strNum, X5) == vars[view_assign["-"]] ),And (rn == vars["rule86"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["RelationOp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5, functions["end"](strNum, X5) == X5, functions["symbolAt"](strNum, X5) == vars[view_assign["="]] ),And (rn == vars["rule87"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["RelationOp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5, functions["end"](strNum, X5) == X5, functions["symbolAt"](strNum, X5) == vars[view_assign["!="]] ),And (rn == vars["rule88"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["RelationOp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5, functions["end"](strNum, X5) == X5, functions["symbolAt"](strNum, X5) == vars[view_assign[">"]] ),And (rn == vars["rule89"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["RelationOp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5, functions["end"](strNum, X5) == X5, functions["symbolAt"](strNum, X5) == vars[view_assign["<"]] ),And (rn == vars["rule90"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["RelationOp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5, functions["end"](strNum, X5) == X5, functions["symbolAt"](strNum, X5) == vars[view_assign[">="]] ),And (rn == vars["rule91"],functions["end"](strNum,X0) == X6, functions["end"](strNum,X5) == X6, functions["symbolAt"](strNum, X0) == vars[view_assign["RelationOp"]], X1 == X0+1, X1 == X2 ,X2 == X3 ,X3 == X4 ,X4 == X5 ,X6 == X5, functions["end"](strNum, X5) == X5, functions["symbolAt"](strNum, X5) == vars[view_assign["<="]] ))))
 	
 	
-	s.add(ForAll(x, functions["valid"](x) == Implies(x < functions["end"](strNum,0), And(functions["lookAheadIndex"](strNum,x) <= solver["term_end"], functions["lookAheadIndex"](strNum,x) >= solver["term_start"],Or(And(functions["symbolAt"](strNum, x) <= solver["term_end"], functions["symbolAt"](strNum, x) >= solver["term_start"], functions["symbolAt"](strNum, x) == functions["ip_str1"](strNum, functions["lookAheadIndex"](strNum,x)), functions["succ"](strNum,functions["lookAheadIndex"](strNum,x)) == functions["lookAheadIndex"](strNum,x+1)), And(functions["symbolAt"](strNum, x) <= solver["non_term_end"], functions["symbolAt"](strNum, x) >= solver["non_term_start"], functions["lookAheadIndex"](strNum,x+1) == functions["lookAheadIndex"](strNum,x), Or(Exists([rn, X1,X2,X3,X4,X5,X6], And(functions["parseTable"](functions["symbolAt"](strNum,x), functions["ip_str1"](strNum,functions["lookAheadIndex"](strNum,x))) == rn, Not(rn ==0),x <= X1, X1 <= X2, X2 <= X3, X3 <= X4, X4 <= X5, X5 <= X6, X6 <= functions["end"](strNum,0), functions["hardcode"](rn, x, X1, X2, X3, X4, X5, X6))))))))))
+	s.add(ForAll(x, functions["valid"](x) == Implies(x < functions["end"](strNum,0), And(functions["lookAheadIndex"](strNum,x) <= solver["term_end"], functions["lookAheadIndex"](strNum,x) >= solver["term_start"],Or(And(functions["symbolAt"](strNum, x) <= solver["term_end"], functions["symbolAt"](strNum, x) >= solver["term_start"], functions["symbolAt"](strNum, x) == functions["ip_str1"](strNum, functions["lookAheadIndex"](strNum,x)), functions["succ"](strNum,functions["lookAheadIndex"](strNum,x)) == functions["lookAheadIndex"]((strNum,x+1), functions["succ"](strNum,x))), And(functions["symbolAt"](strNum, x) <= solver["non_term_end"], functions["symbolAt"](strNum, x) >= solver["non_term_start"], functions["lookAheadIndex"](strNum,x+1) == functions["lookAheadIndex"](strNum,x), Or(Exists([rn, X1,X2,X3,X4,X5,X6], And(functions["parseTable"](functions["symbolAt"](strNum,x)) == rn, Not(rn ==0),x <= X1, X1 <= X2, X2 <= X3, X3 <= X4, X4 <= X5, X5 <= X6, X6 <= functions["end"](strNum,0), functions["hardcode"](rn, x, X1, X2, X3, X4, X5, X6))))))))))
 	
+
+	# Starting lookAheadIndex
+
 	s.add(functions["lookAheadIndex"](strNum,1) == functions["succ"](strNum, -1))
 
 	# Starting step
@@ -317,5 +322,9 @@ def add_accept_string(solver,accept_string):
 		# single_step(solver,strNum,i+1)
 		s.add(functions["valid"](i))
 		# print "asserting parser end in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
+
+		s.add(functions["valid"](strNum,i))
+		print "asserting parser end in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
+
 
 	# s.add(functions["success"](strNum,expansion_constant*len(accept_string)))
