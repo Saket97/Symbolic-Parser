@@ -54,6 +54,7 @@ accept_strings,reject_strings,config = specs()
 if  True or sys.argv[1] == 'mode2':
 	non_tokens = discover(find_original_grammar())
 	tokens = discover_tokens_from_grammar()
+	tokens.remove('dol')
 else:
 	tokens = discover_tokens(accept_strings)
 	

@@ -204,7 +204,7 @@ def print_non_zero(ptable):
 				continue
 			if ptable[nt][t] != 0:
 				print "		%s rule "%(t),grammar[ptable[nt][t]-1]
-grammar = [['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'],
+grammar = [['Prog1','Prog','dol'],['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'],
 
 ['ExpORPr','|','Exp'],['ExpORPr','eps'],['ExpANDPr','&','ExpOR'],
 
@@ -220,7 +220,7 @@ grammar = [['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'
 
 ['Factor','(','ExpList',')'],['Factor','UnaryOp','Exp'],['Factor','if','Exp','then','Exp','IF_extra'],['IF_extra','else','Exp'],['IF_extra','eps'],
 
-['Factor','while','Exp','do','Exp'],['Factor','for','id',':=','Exp','to','Exp','do','Exp'],['Factor','break'],['Factor','let','DecList','in','ExpList','end'],
+['Factor','while','Exp','do','Exp'],['Factor','for','id',':=','Exp','F1'],['F1' ,'to','Exp','do','Exp'],['Factor','break'],['Factor','let','DecList','in','ExpList','end'],
 
 ['Factor','LValue'],['DecList','DL_extra'],['DL_extra','Dec','DL_extra'],['DL_extra','eps'],
 
@@ -232,11 +232,11 @@ grammar = [['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'
 
 ['TypeId','id'],['TypeId','integer'],['TypeId','string'],['VD_extra','eps'],['VD_extra',':','TypeId'],['VarDec','var','id','VD_extra',':=','Exp'],
 
-['FunDec','function','id','(','FieldList',')','VD_extra','=','Exp'],
+['FunDec','function','id','(','FieldList','F2'],['F2' ,')','VD_extra','=','Exp'],
 
 ['LValue','id','LD_extra'],['LD_extra','FunctionRecordArrayPr'],['LD_extra','FunctionRecordArray'],['FunctionRecordArray','(','ArgList',')'],
 
-['FunctionRecordArray','{','id','=','Exp','FRA_extra','}'],['FRA_extra',',','id','=','Exp','FRA_extra'],['FRA_extra','eps'],
+['FunctionRecordArray','{','id','=','Exp','F3'],['F3','FRA_extra','}'],['FRA_extra',',','id','=','Exp','FRA_extra'],['FRA_extra','eps'],
 
 ['FunctionRecordArray','[','Exp',']','FRA_extra1'],['FRA_extra1','FunctionRecordArrayPr'],['FRA_extra1','of','Exp'],
 

@@ -72,7 +72,9 @@ def parser():
 def parser_main(string1):
 	print "############## parser called...###########"
 	global string
+	print "parser called with string: ",string1
 	string = string1
+        # string = ['i','+','i']
 	# string = ['(', 'end', '<=', 'for', '~', '~', 'for', '~', '~', 'id', '.', '~', '>', 'id', '/', 'break', '|', 'integer', 'do', 'string', 'then', '(', 'end', 'dol', 'nil', 'do', 'nil',]
 	return parser()
 
@@ -95,3 +97,4 @@ maximum = 0
 # 		maximum = len(grammar[i])
 # print "size_ruels:",maximum
 # add_eps(grammar)
+# parser_main([])
