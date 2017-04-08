@@ -29,7 +29,7 @@ def write_input():
 		for j in range(len(original_grammar[i])):
 			if j == 0:
 				flag = True
-				for k in range(len(original_grammar[i])):
+				for k in range(1,len(original_grammar[i])):
 					if original_grammar[i][k] != "eps":
 						flag = False
 				string += 'functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]], X1 == X0+1, '%(0,original_grammar[i][j])
@@ -48,13 +48,21 @@ def write_input():
 			else:
 				if original_grammar[i][j] in term:
 					string += 'X%d == X%d+1, functions["end"](strNum, X%d) == X%d, functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]] '%(j+1,j,j,j,j,original_grammar[i][j])
-					input_file.write( 'X%d == X%d+1, functions["end"](strNum, X%d) == X%d, functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]] '%(j+1,j,j,j,j,original_grammar[i][j]))
+					if j != 5:
+						input_file.write( 'X%d == X%d+1, functions["end"](strNum, X%d) == X%d, functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]] '%(j+1,j,j,j,j,original_grammar[i][j]))
+					else:
+						input_file.write( 'X%d == X%d, functions["end"](strNum, X%d) == X%d, functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]] '%(j+1,j,j,j,j,original_grammar[i][j]))
+
 					if j != 5:
 						string += ','
 						input_file.write( ',')
 				else:
 					string += 'functions["end"](strNum, X%d) == X%d, functions["symbolAt"](strNum, X%d) == vars[view_assign[%s]] '%(j, j+1, j, original_grammar[i][j])
-					input_file.write('functions["end"](strNum, X%d) == X%d-1, functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]] '%(j, j+1, j, original_grammar[i][j]))
+					if j != 5:
+						input_file.write('functions["end"](strNum, X%d)+1 == X%d, functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]] '%(j, j+1, j, original_grammar[i][j]))
+					else:
+						input_file.write('functions["end"](strNum, X%d) == X%d, functions["symbolAt"](strNum, X%d) == vars[view_assign["%s"]] '%(j, j+1, j, original_grammar[i][j]))
+
 					if j != 5:
 						string += ','
 						input_file.write( ',')

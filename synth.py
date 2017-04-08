@@ -51,10 +51,7 @@ def main():
 	print "lookAheadIndex ",m[SP["functions"]["lookAheadIndex"]]
 	print "symbolAt ",m[SP["functions"]["symbolAt"]]
 	print "end ",m[SP["functions"]["end"]]
-	print "startPosition ", m[SP["functions"]["startPosition"]]
-	print "symbolInRHS ",m[SP["functions"]["symbolInRHS"]]
-	print "step ",m[SP["functions"]["step"]]
-	print "success ",m[SP["functions"]["success"]]
+	print "succ ",m[SP["functions"]["end"]]
 
 
 	# print "ip_str1 ",m[SP["functions"]["ip_str1"]]
@@ -64,11 +61,12 @@ def main():
 	tmp = print_grammar(SP)
 	end_time = calendar.timegm(time.gmtime())
 	print "\nSolving time taken: %s"%str(datetime.timedelta(seconds=(end_time-start_time)))
-	results = open("results_file_rebuttal.csv","a+")
+	# results = open("results_file_rebuttal.csv","a+")
 	a,r,c = specs()
+	parser.parser_main(tmp)
 	#print "a[0] ",a[0]
-	results.write("%d,%d,%s,%d,%d\n"%(len(find_original_grammar()), len(a[0].split()), str(datetime.timedelta(seconds=(end_time-start_time))), parser.parser_main(tmp),c["size_rules"]))
-	results.close()	
+	# results.write("%d,%d,%s,%d,%d\n"%(len(find_original_grammar()), len(a[0].split()), str(datetime.timedelta(seconds=(end_time-start_time))), parser.parser_main(tmp),c["size_rules"]))
+	# results.close()	
 
 # if sys.argv[1] == 'mode1':
 # 	main1()
