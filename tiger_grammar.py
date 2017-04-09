@@ -44,26 +44,16 @@ def online_check_format1(original_grammar):
 				tmp1.append('->')
 		# tmp1.append(".")
 		tmp.append(tmp1)
-	for  i in range(len(tmp)):
-                print (i+1, end=" ")
+	for i in range(len(tmp)):
+		print (i+1, end="")
 		for j in range(len(tmp[i])):
 			if j != len(tmp[i])-1:
-				# tiger.write("%s  "%(tmp[i][j]))
 				print ("%s"%(tmp[i][j]), end=" ")
 			else:
-				# tiger.write("%s\n"%(tmp[i][j]))
 				print ("%s;"%(tmp[i][j]))
 		# print ("saket")
 
-def count_size():
-	s = [0,0,0,0,0,0,0,0,0,0]
-	i = 0
-	for rule in a:
-		s[len(rule)-1] += 1
-		if len(rule) > 6:
-			print (i,rule)
-		i += 1
-	print ("Size of rules = ",s)
+
 a = [['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'],
 
 ['ExpORPr','|','Exp'],['ExpORPr','eps'],['ExpANDPr','&','ExpOR'],
@@ -108,7 +98,7 @@ a = [['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'],
 
 ['UnaryOp','-'],['RelationOp','relop']]
 
-b = [['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'],
+b = [['Prog1','Prog','dol'],['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'],
 
 ['ExpORPr','|','Exp'],['ExpORPr','eps'],['ExpANDPr','&','ExpOR'],
 
@@ -152,5 +142,5 @@ b = [['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['ExpOR','ExpAND','ExpANDPr'],
 
 ['UnaryOp','-'],['RelationOp','='],['RelationOp','!='],['RelationOp','>'],['RelationOp','<'],['RelationOp','>='],['RelationOp','<=']]
 online_check_format1(b)
-discover_tokens()
-count_size()
+# discover_tokens()
+# count_size()

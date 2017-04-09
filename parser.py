@@ -7,6 +7,9 @@ def get_lookahead():
 
 def expand(lookahead, parser, ontop):
 	rule = ptable[ontop][lookahead]
+	global rules
+	rules.append(rule)
+	print "rule: ",rule
 	if rule == 0:
 		return -1
 	global order
@@ -51,6 +54,8 @@ def parser():
 	
 	while len(parse) != 0:
 		ontop = parse.pop()
+		global order
+		order1.append(ontop)
 		lookahead = get_lookahead()
 		if ontop in terminals:
 			if ontop != lookahead:
@@ -76,9 +81,13 @@ def parser_main(string1):
 	string = string1
         # string = ['i','+','i']
 	# string = ['(', 'end', '<=', 'for', '~', '~', 'for', '~', '~', 'id', '.', '~', '>', 'id', '/', 'break', '|', 'integer', 'do', 'string', 'then', '(', 'end', 'dol', 'nil', 'do', 'nil',]
+	string = ['let', 'type', 'id', '=', 'array', 'of', 'id', 'var', 'id', ':', 'id', ':=', 'id', '[', 'integer', ']', 'of', 'integer', 'in', 'id', 'end']
+	string = ['integer', '>', 'string']
+	string.append('dol')
 	return parser()
 
 string = []
+order = []
 grammar = find_original_grammar(eps = False)
 ptable = get_parse_table(convert = False)
 print "type(ptable)=",type(ptable)
@@ -86,15 +95,20 @@ parse = []
 terminals = discover_tokens_from_grammar()
 terminals.append("dol")
 fuel = 20
-order = []
+order1 = []
+rules = []
 # for i in range(len(order)):
 # 	print order[i]
 	
 print "#rules:",len(grammar)
 maximum = 0
+parser_main([])
 # for i in range(len(grammar)):
 # 	if len(grammar[i]) > maximum:
 # 		maximum = len(grammar[i])
 # print "size_ruels:",maximum
 # add_eps(grammar)
 # parser_main([])
+print "Order: ",order1
+rules.sort()
+print "rules: ",rules

@@ -3,14 +3,15 @@ def specs():
 
 	#Space separated (tokized) strings
 	# accept_strings = [let type id = array of id var id : id := id [ integer ] of integer in id end]
-	accept_strings = ["let type id of array of id var id : id := id [ integer ] of integer in id end"]
+	accept_strings = ["let type id = array of id var id : id := id [ integer ] of integer in id end"]
+	# accept_strings = ["integer > string"]
 	reject_strings = ["let"]
 
 	config = {
 		'num_rules': 91, #Number of rules
 		'size_rules' : 5, #Number of symbols in RHS
 		'num_nonterms' : 44, #Number of nonterms
-		'expansion_constant' : 5, #Determines the max. number of parse actions to take while parsing
+		'expansion_constant' : 10, #Determines the max. number of parse actions to take while parsing
 		'optimize' : False, # enable optimized mode
 		'neg_egs' : False, # consider negative examples 
 		'threshold' : 0.2  # number of unsat cores to break

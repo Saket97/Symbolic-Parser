@@ -47,11 +47,12 @@ def main():
 	for i in range(SP["num_soft_constraints"]):
 		if int(str(m.evaluate(SP["aux_const"][i]))) == 1:
 			print "%d "%i,
+	print "ip_str ",m[SP["functions"]["ip_str"]]
 	print "ip_str1 ",m[SP["functions"]["ip_str1"]]		
 	print "lookAheadIndex ",m[SP["functions"]["lookAheadIndex"]]
 	print "symbolAt ",m[SP["functions"]["symbolAt"]]
 	print "end ",m[SP["functions"]["end"]]
-	print "succ ",m[SP["functions"]["end"]]
+	print "succ ",m[SP["functions"]["succ"]]
 
 
 	# print "ip_str1 ",m[SP["functions"]["ip_str1"]]

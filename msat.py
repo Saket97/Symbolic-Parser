@@ -44,7 +44,7 @@ def naive_maxsat(solver):
         solver["aux_const"] = []
     aux = solver["aux"]
     aux_const = solver["aux_const"]
-    print "aux_const[0]: ",aux_const[0]
+    # print "aux_const[0]: ",aux_const[0]
     r = 0
     solver["num_soft_constraints"] = len(aux)
     # print "num_soft_cconstraints: ",len(aux)
