@@ -1,5 +1,5 @@
-from input_specs_tiger import *
-
+# from input_specs_tiger import *
+from useful.input_final20 import *
 def discover_non_tokens():
 	tmp = []
 	for rule in original_grammar:

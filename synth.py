@@ -9,6 +9,11 @@ import time
 import datetime
 import parser
 from msat import *
+def dumpSMT(f):
+	v = (Ast * 0)()
+	a = f.assertions()
+	f = And(*a)
+	return Z3_benchmark_to_smtlib_string(f.ctx_ref(), "","", "","",0,v,f.as_ast()) 
 
 def main():
 	sp_time = calendar.timegm(time.gmtime())
@@ -35,6 +40,9 @@ def main():
 	
 	# print "starting maxsat solver..."
 	# result, doubt_pos,m = naive_maxsat(SP)
+	f3 = open("SMTconstraints.smt","w+")
+	f3.write(dumpSMT(SP["constraints"]))
+	f3.close()
 	p, unsat_soft_constrains, m = naive_maxsat(SP)
 	# print SP["constraints"].check()
 	SP["accept_list"] = accept_list

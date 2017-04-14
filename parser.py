@@ -51,7 +51,7 @@ def discover_tokens_from_grammar():
 def parser():
 	global parse
 	parse.append(grammar[0][0])
-	
+	order1 = []
 	while len(parse) != 0:
 		ontop = parse.pop()
 		global order
@@ -68,21 +68,21 @@ def parser():
 			parse = expand(lookahead, parse, ontop)
 			if parse == -1:
 				print "parse error...\nontop: %s but lookahead: %s"%(ontop,lookahead)
-				return 0
+				return order1
 	if lookahead == "dol" and len(parse) == 0:
 		print "parsed successfully..."
-		return 1;
+		return order1;
 
 
 def parser_main(string1):
 	print "############## parser called...###########"
 	global string
 	print "parser called with string: ",string1
-	string = string1
+	string = string1.split()
         # string = ['i','+','i']
 	# string = ['(', 'end', '<=', 'for', '~', '~', 'for', '~', '~', 'id', '.', '~', '>', 'id', '/', 'break', '|', 'integer', 'do', 'string', 'then', '(', 'end', 'dol', 'nil', 'do', 'nil',]
-	string = ['let', 'type', 'id', '=', 'array', 'of', 'id', 'var', 'id', ':', 'id', ':=', 'id', '[', 'integer', ']', 'of', 'integer', 'in', 'id', 'end']
-	string = ['integer', '>', 'string']
+	# string = ['let', 'type', 'id', '=', 'array', 'of', 'id', 'var', 'id', ':', 'id', ':=', 'id', '[', 'integer', ']', 'of', 'integer', 'in', 'id', 'end']
+	# string = ['integer', '>', 'string']
 	string.append('dol')
 	return parser()
 
@@ -102,13 +102,13 @@ rules = []
 	
 print "#rules:",len(grammar)
 maximum = 0
-parser_main([])
-# for i in range(len(grammar)):
-# 	if len(grammar[i]) > maximum:
-# 		maximum = len(grammar[i])
-# print "size_ruels:",maximum
-# add_eps(grammar)
 # parser_main([])
-print "Order: ",order1
-rules.sort()
-print "rules: ",rules
+# # for i in range(len(grammar)):
+# # 	if len(grammar[i]) > maximum:
+# # 		maximum = len(grammar[i])
+# # print "size_ruels:",maximum
+# # add_eps(grammar)
+# # parser_main([])
+# print "Order: ",order1
+# rules.sort()
+# print "rules: ",rules

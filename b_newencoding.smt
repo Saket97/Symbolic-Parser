@@ -7,6 +7,8 @@
 ;(set-option :auto-config false)
 ;(set-option :mbqi true)
 
+(declare-const prefixLimit Int)
+
 (declare-fun ip (Int) Int)
 (declare-fun loc (Int) Int)
 
@@ -24,7 +26,6 @@
 (declare-fun HardCode (Int Int Int Int Int Int) Bool)
 
 
-
 (declare-fun debug1 (Int) Int)
 ;(declare-fun debug2 (Int) Int)
 ;(declare-fun debug3 (Int) Int)
@@ -33,10 +34,13 @@
 
 (assert (forall ((i Int)) (!
 				(= (checkSymbol i)  
-				(implies (< i (end 0))
+;				(implies (< i (end 0))
+				(implies (< i prefixLimit)
 				(or 
-						(and (IsTerminal (ParsingArray i)) (= (loc (ip i)) (ParsingArray i)) (= (+ (ip i) 1) (ip (+ i  1))))
-						(and (IsNonTerminal (ParsingArray i)) (= (ip i) (ip (+ i 1))) (or 
+;						(and (IsTerminal (ParsingArray i)) (= (loc (ip i)) (ParsingArray i)) (= (+ (ip i) 1) (ip (+ i  1))))
+;						(and (IsNonTerminal (ParsingArray i)) (= (ip i) (ip (+ i 1))) (or 
+						(and (IsTerminal (ParsingArray i)))
+						(and (IsNonTerminal (ParsingArray i)) (or 
 																		(exists ((rn Int) (X1 Int) (X2 Int) (X3 Int) (X4 Int)) 
 																							(and (<= i X1) (<= X1 X2) (<= X2 X3) (<= X3 X4) (<= X4 (end 0))
 																							(HardCode rn i X1 X2 X3 X4)
@@ -45,7 +49,7 @@
 ;																							(= (debug3 i) X2)
 ;																							(= (debug4 i) X3)
 ;																							(= (debug5 i) X4)
-						))))))))))
+						))))))):pattern (checkSymbol i))))
 
 (assert (forall ((rn Int) (X0 Int) (X1 Int) (X2 Int) (X3 Int) (X4 Int)) (! (= (HardCode rn X0 X1 X2 X3 X4)
 																																	(and  (or false 
@@ -53,7 +57,7 @@
 						(and (= rn 1) (= (ParsingArray X0) 5) (= (ParsingArray X1) 1) (= (ParsingArray X2) 5) (= (ParsingArray X3) 2) (= X1 (+ X0 1)) (= X2 (+ X1 1)) (= X4 (+ X3 1)) (= (end X1) X2) (= (end X2) X3) (= (end X3) X4) (= (end X0) (end X3) X4))
 						(and (= rn 2) (= (ParsingArray X0) 5) (= (ParsingArray X2) 5) (= (ParsingArray X3) 5) (= X1 (+ X0 1)) (= X1 X2) (= (end X2) X3) (= (end X3) X4) (= (end X0) X4)) 
 						(and (= rn 3) (= (ParsingArray X0) 5) (= X1 (+ X0 1)) (= X1 X2 X3 X4 (end X0)))
-						))))))
+						))):pattern (HardCode rn X0 X1 X2 X3 X4))))
 
 ;(assert (and (HardCode 0 0 1 1 2 3) (= (end 0) 3) (= (end 1) 2) (= (end 2) 3))) 
 ;(assert (HardCode 1 0 1 2 3 4) (= (end 0) 4) (= (end 1) 2) (= (end 2) 3) (= (end 3) 4))
@@ -102,14 +106,38 @@
 ;(assert (= (ParsingArray 3) 5))
 ;(assert (= (ParsingArray 4) 1))
 ;(assert (= (ParsingArray 5) 202))
-(assert (> (end 0) 40))
-(assert (< (end 0) 50))
+(assert (> (end 0) 0))
+(assert (< (end 0) 25))
 ;(assert (= (ParsingArray 0) 5))
 
 ;(assert (IsTerminal (ParsingArray 2)))
 
 ;(assert (and (= (loc 0) 1) (= (loc 1) 1) (= (loc 2) 2)(= (loc 3) 2) (= (loc 4) 1) (= (loc 5) 1) (= (loc 6) 2) (= (loc 7) 2) (= (loc 8) 202)))
 
+
+(declare-const z1 Int)
+(declare-const z2 Int)
+(declare-const z3 Int)
+(declare-const z4 Int)
+(declare-const z5 Int)
+(declare-const z6 Int)
+(declare-const z7 Int)
+(declare-const z8 Int)
+(declare-const z9 Int)
+(declare-const z10 Int)
+(declare-const z11 Int)
+(declare-const z12 Int)
+(declare-const z13 Int)
+(declare-const z14 Int)
+(declare-const z15 Int)
+;(assert (< 0 z1 z2 z3 z4 z5 z6 z7 z8 z9 z10 z11 z12 (end 0)))
+(assert (< 0 z1 z2 z3 z4 z5 z6 z7 z8 prefixLimit z9 (end 0)))
+;(assert (and (= (ParsingArray z1) 1) (= (ParsingArray z2) 2) (= (ParsingArray z3) 1) (= (ParsingArray z4) 1) (= (ParsingArray z5) 1) (= (ParsingArray z6) 2) (= (ParsingArray z7) 2) (= (ParsingArray z8) 2) (= (ParsingArray z9) 202)))
+(assert (and (= (ParsingArray z1) 1) (= (ParsingArray z2) 2) (= (ParsingArray z3) 1) (= (ParsingArray z4) 1) (= (ParsingArray z5) 1) (= (ParsingArray z6) 2) (= (ParsingArray z7) 2) (= (ParsingArray z8) 2) (= (ParsingArray z9) 202)))
+
+(assert (forall ((i Int)) (implies (distinct i z1 z2 z3 z4 z5 z6 z7 z8 z9) (IsNonTerminal (ParsingArray i)))))
+
+(assert (and (= z1 3) )); (= z2 5) (= z3 7) (= z4 9) (= z5 11) (= z6 13) (= z7 14) (= z8 15)))
 
 (assert (and 
 (checkSymbol 0) 
@@ -138,30 +166,30 @@
 (checkSymbol 23) 
 (checkSymbol 24) 
 (checkSymbol 25) 
-(checkSymbol 26) 
-(checkSymbol 27)
-(checkSymbol 28)
-(checkSymbol 29)
-(checkSymbol 30) 
-(checkSymbol 31) 
-(checkSymbol 32) 
-(checkSymbol 33) 
-(checkSymbol 34) 
-(checkSymbol 35) 
-(checkSymbol 36) 
-(checkSymbol 37)
-(checkSymbol 38)
-(checkSymbol 39)
-(checkSymbol 40) 
-(checkSymbol 41) 
-(checkSymbol 42) 
-(checkSymbol 43) 
-(checkSymbol 44) 
-(checkSymbol 45) 
-(checkSymbol 46) 
-(checkSymbol 47)
-(checkSymbol 48)
-(checkSymbol 49)
+;(checkSymbol 26) 
+;(checkSymbol 27)
+;(checkSymbol 28)
+;;(checkSymbol 29)
+;(checkSymbol 30) 
+;(checkSymbol 31) 
+;(checkSymbol 32) 
+;(checkSymbol 33) 
+;(checkSymbol 34) 
+;(checkSymbol 35) 
+;(checkSymbol 36) 
+;(checkSymbol 37)
+;(checkSymbol 38)
+;(checkSymbol 39)
+;(checkSymbol 40) 
+;(checkSymbol 41) 
+;(checkSymbol 42) 
+;(checkSymbol 43) 
+;(checkSymbol 44) 
+;(checkSymbol 45) 
+;(checkSymbol 46) 
+;(checkSymbol 47)
+;(checkSymbol 48)
+;(checkSymbol 49)
 ))
 
 (push)

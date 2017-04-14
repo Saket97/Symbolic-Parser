@@ -59,13 +59,15 @@ def naive_maxsat(solver):
         assert_at_most_k(solver, aux_const,k)
         solver["constraints"].push()
         is_sat = solver["constraints"].check()
+        print solver["constraints"].statistics()
         print "check_Sat: ",is_sat
         # return
-        if is_sat == sat:
+        if is_sat == sat or unknown:
             m = solver["constraints"].model()
             return solver["num_soft_constraints"],[],m
         else:
             k += 1
+            solver["constraints"].pop()
             solver["constraints"].pop()
             if k >= 5:
                 print "Unsat..."

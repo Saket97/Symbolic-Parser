@@ -255,7 +255,7 @@ grammar = [['Prog1','Prog','dol'],['Prog','Exp'],['Exp','ExpOR','ExpORPr'],['Exp
 #   : ;                               
 # T : "i";
 
-
+grammar = [['S1','S','dol'],['S','a','A','B','b'],['A','a','A','c'],['A','eps'],['B','b','B'],['B','c']]
 # grammar = [['E','T','X'],['X','+','E'],['X','eps'],['T','(','E',')'],['T','i','Y'],['Y','*','T'],['Y','eps']]
 rule_contri_first = {}
 rule_contri_follow = {}
