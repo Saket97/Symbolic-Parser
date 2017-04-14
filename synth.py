@@ -72,7 +72,7 @@ def main():
 	print "\nSolving time taken: %s"%str(datetime.timedelta(seconds=(end_time-start_time)))
 	# results = open("results_file_rebuttal.csv","a+")
 	a,r,c = specs()
-	parser.parser_main(tmp)
+	parser.parser_main(tmp, len(tmp))
 	#print "a[0] ",a[0]
 	# results.write("%d,%d,%s,%d,%d\n"%(len(find_original_grammar()), len(a[0].split()), str(datetime.timedelta(seconds=(end_time-start_time))), parser.parser_main(tmp),c["size_rules"]))
 	# results.close()	

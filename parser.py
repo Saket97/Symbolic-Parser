@@ -48,11 +48,14 @@ def discover_tokens_from_grammar():
 	print ('tokens',tokens)
 	return tokens
 
-def parser():
+def parser(index):
 	global parse
+	index_counter = 0
 	parse.append(grammar[0][0])
 	order1 = []
 	while len(parse) != 0:
+		if index_counter == index+2:
+			return order1
 		ontop = parse.pop()
 		global order
 		order1.append(ontop)
@@ -63,6 +66,7 @@ def parser():
 				return 0
 			print "consuming token %s"%string[0]
 			string.pop(0)
+			index_counter += 1
 			lookahead = get_lookahead()
 		else:
 			parse = expand(lookahead, parse, ontop)
@@ -74,7 +78,7 @@ def parser():
 		return order1;
 
 
-def parser_main(string1):
+def parser_main(string1, index):
 	print "############## parser called...###########"
 	global string
 	print "parser called with string: ",string1
@@ -84,7 +88,7 @@ def parser_main(string1):
 	# string = ['let', 'type', 'id', '=', 'array', 'of', 'id', 'var', 'id', ':', 'id', ':=', 'id', '[', 'integer', ']', 'of', 'integer', 'in', 'id', 'end']
 	# string = ['integer', '>', 'string']
 	string.append('dol')
-	return parser()
+	return parser(index)
 
 string = []
 order = []
