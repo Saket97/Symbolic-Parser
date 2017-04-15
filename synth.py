@@ -30,7 +30,7 @@ def main():
 	
 	num = nums()
 	original_grammar = find_original_grammar()
-	print "original_grammar_synth: ", original_grammar
+	# print "original_grammar_synth: ", original_grammar
 	repair(SP, original_grammar, num['num_rules'], num['size_rules'])
 
 	
@@ -50,23 +50,15 @@ def main():
 	SP["model"] = m
 	for t in SP["terms"]:
 		print "%s %s"%(t,str(m.evaluate(SP["vars"][t])))
-	# print "$ %s"%(str(m.evaluate(SP["vars"]['dol'])))
-	# print "ip_str(1,0) ",str(m.evaluate(SP["functions"]["ip_str"](1,0)))
+
 	for i in range(SP["num_soft_constraints"]):
 		if int(str(m.evaluate(SP["aux_const"][i]))) == 1:
 			print "%d "%i,
-	print "ip_str ",m[SP["functions"]["ip_str"]]
-	print "ip_str1 ",m[SP["functions"]["ip_str1"]]		
+	
 	print "lookAheadIndex ",m[SP["functions"]["lookAheadIndex"]]
 	print "symbolAt ",m[SP["functions"]["symbolAt"]]
 	print "end ",m[SP["functions"]["end"]]
-	print "succ ",m[SP["functions"]["succ"]]
-
-
-	# print "ip_str1 ",m[SP["functions"]["ip_str1"]]
-	# print "succ ",m[SP["functions"]["succ"]]
-	# print "pred ",m[SP["functions"]["pred"]]
-	# print "ip_str1 ",m[SP["functions"]["ip_str1"]]
+	
 	tmp = print_grammar(SP)
 	end_time = calendar.timegm(time.gmtime())
 	print "\nSolving time taken: %s"%str(datetime.timedelta(seconds=(end_time-start_time)))
@@ -77,8 +69,4 @@ def main():
 	# results.write("%d,%d,%s,%d,%d\n"%(len(find_original_grammar()), len(a[0].split()), str(datetime.timedelta(seconds=(end_time-start_time))), parser.parser_main(tmp),c["size_rules"]))
 	# results.close()	
 
-# if sys.argv[1] == 'mode1':
-# 	main1()
-# else:
-# 	main()
 main()

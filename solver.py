@@ -40,7 +40,9 @@ def initialize_solver(solver):
 	nonterms = ['N%d'%i for i in range(1,num_nonterms+1)]
 	vars.update({"%s"%nt : Int('%s'%nt) for nt in nonterms}) #N1 is mapped to an integer variable N1 of z3
 
+	# num_terms does not include $
 	terms = ['t%d'%i for i in range(1,num_terms+1)]
+	# terms.append("dol")
 	vars.update({"%s"%t : Int('%s'%t) for t in terms})  #t1 is mapped to an integer variable t1 of z3
 
 	vars.update({"eps": Int('eps')})
@@ -109,9 +111,7 @@ def initialize_solver(solver):
 	print "Teemplate declaration starts in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
 
 	for r in range(num_rules):
-		print "new rule: %d"%r
 		vars.update({"x%d"%(r*(size_rules+1)+1): Int('x%d'%(r*(size_rules+1)+1))})
-		# print "x%d"%(r*(size_rules+1)+1)
 
 		for i in range(2,size_rules+2):
 			vars.update({"x%d"%(r*(size_rules+1)+i): Int('x%d'%(r*(size_rules+1)+i))})
@@ -153,29 +153,11 @@ def initialize_solver(solver):
 
 
 	
-	# Lookup and constraint application was successful on step (second arg) in parse action array
-	functions["step"] = Function('step', IntSort(), IntSort(), BoolSort())
-
-	# True if parsing was completed on or before step (second arg)
-	functions["success"] = Function('success', IntSort(), IntSort(), BoolSort())
-
 	# The symbol being expanded at location (second arg) in the parse action array - can be term or nonterm
 	functions["symbolAt"] = Function('symbolAt', IntSort(), IntSort(), IntSort())
 
-	# The symbol at location (arg) in the input string
-	functions["ip_str"] = Function('ip_str', IntSort(), IntSort(), IntSort())
-
-	functions["ip_str1"] = Function('ip_str1', IntSort(), IntSort(), IntSort())
-
-	functions["succ"] = Function('succ', IntSort(), IntSort(), IntSort())
-
-	functions["pred"] = Function('pred', IntSort(), IntSort(), IntSort())
-
 	# Index in the input string for the lookAhead symbol for the expansion at location (second arg) in the parse action array
 	functions["lookAheadIndex"] = Function('lookAheadIndex', IntSort(), IntSort(), IntSort())
-
-	# Where does the (second arg) symbol in RHS of the rule getting expanded at (third arg) step in parse action array, start expanding
-	functions["startPosition"] = Function('startPosition', IntSort(), IntSort(), IntSort(), IntSort())
 
 	# The ending index in the parse action array of the expansion of the functions["symbolAt"](second arg)
 	functions["end"] = Function('end', IntSort(), IntSort(), IntSort())

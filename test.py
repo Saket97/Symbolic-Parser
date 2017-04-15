@@ -60,8 +60,8 @@ def add_first_set_constraints(solver, first_set, follow_set, view_assign):
 	vars = solver["vars"]
 	functions = solver["functions"]
 	constdict = solver["dictconst"]
-	print "first set:",first_set
-	print "follow set:",follow_set
+	# print "first set:",first_set
+	# print "follow set:",follow_set
 
 	for i in range(len(first_set)):
 		non_terminal = str(first_set[i]['non_term'])
@@ -89,7 +89,7 @@ def add_first_set_constraints(solver, first_set, follow_set, view_assign):
 
 def repair(solver, original_grammar, num_rules, size_rules):
 	view_assign = {}
-	
+	view_assign_t = {}
 	i = 1
 	for ch in non_tokens:
 		view_assign[ch] = 'N%d'%(i)
@@ -98,16 +98,18 @@ def repair(solver, original_grammar, num_rules, size_rules):
 	i = 1
 	for ch in tokens:
 		view_assign[ch] = 't%d'%(i)
+		view_assign_t['t%d'%i] = ch
 		i += 1
 	view_assign['eps'] = 'eps'
 	print "view_assign",view_assign
 	solver["view_assign"] = view_assign
+	solver["view_assign_t"] = view_assign_t
 	parse_table = get_parse_table()
 	# print "PARSE TABLE:", parse_table
 	view_assign['dol'] = 'dol'
 	view_assign['$'] = 'dol'
 	add_constraints(solver,view_assign,original_grammar,num_rules, size_rules)
-	print view_assign
+	# print view_assign
 	add_parse_table_constraints(solver,parse_table,view_assign)
 	# add_first_set_constraints(solver, first_set, follow_set, view_assign)
 
