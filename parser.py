@@ -49,7 +49,8 @@ def discover_tokens_from_grammar():
 	return tokens
 
 def parser(index):
-	global parse
+	# global parse
+	parse = []
 	index_counter = 0
 	parse.append(grammar[0][0])
 	order1 = []
@@ -100,11 +101,10 @@ order = []
 grammar = find_original_grammar(eps = False)
 ptable = get_parse_table(convert = False)
 #print "type(ptable)=",type(ptable)
-parse = []
 terminals = discover_tokens_from_grammar()
 terminals.append("dol")
 fuel = 20
-order1 = []
+
 rules = []
 
 maximum = 0

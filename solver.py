@@ -66,7 +66,7 @@ def initialize_solver(solver):
 	s.add(vars['eps']==symbol_counter)
 	symbol_counter+=1
 	
-
+	
 	######################################################
 
 	# BASIC FUNCTIONS
