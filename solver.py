@@ -9,7 +9,7 @@ def initialize_solver(solver):
 	s = Solver()
 	s.set(mbqi=False)
 	s.set(macro_finder = True)
-	s.set(timeout=120000)
+	s.set(timeout=180000)
 	s.set("qi.profile",True)
 	s.set("qi.profile_freq",1000)
 	if config['optimize']:

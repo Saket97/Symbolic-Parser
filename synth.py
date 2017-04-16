@@ -59,7 +59,7 @@ def main():
 	print "symbolAt ",m[SP["functions"]["symbolAt"]]
 	print "end ",m[SP["functions"]["end"]]
 	
-	tmp = print_grammar(SP)
+	# tmp = print_grammar(SP)
 	end_time = calendar.timegm(time.gmtime())
 	print "\nSolving time taken: %s"%str(datetime.timedelta(seconds=(end_time-start_time)))
 	# results = open("results_file_rebuttal.csv","a+")

@@ -10,7 +10,7 @@ def get_num_disabled_soft_constraints(m,num_soft_constraints,aux_const):
     return num_disabled
 
 def add_soft(constraint, solver):
-    print "constraint: ",constraint
+    # print "constraint: ",constraint
     if "aux" not in solver:
         solver["aux"] = []
         solver["aux_const"] = []
@@ -25,6 +25,7 @@ def add_soft(constraint, solver):
     # s.add(Xor(constraint, aux[len(aux)-1]))
     s.add(Implies((Not(aux[len(aux)-1])), constraint))
     s.add(If(aux[len(aux)-1], aux_const[len(aux_const)-1] == 1, aux_const[len(aux_const)-1] == 0))  
+    print "constraint:",constraint
 
 def assert_at_most_k(solver, aux_const, k):
     solver["constraints"].add(Sum([aux_const[i] for i in range(len(aux_const))]) <= k)
