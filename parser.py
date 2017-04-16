@@ -1,9 +1,10 @@
 from input_specs_tiger import *
-def get_lookahead():
+def get_lookahead(index_counter):
 	if len(string) == 0:
 		return 'dol'
 	else:
-		return string[0]
+		index_counter += 1
+		return string[0], index_counter
 
 def expand(lookahead, parser, ontop):
 	rule = ptable[ontop][lookahead]
@@ -57,12 +58,12 @@ def parser(index):
 	ind = 0
 	while len(parse) != 0:
 		# print "index:%d index_counter:%d"%(index, index_counter)
-		if index_counter == index+2:
-			return order1,ind
 		ontop = parse.pop()
 		global order
 		order1.append(ontop)
-		lookahead = get_lookahead()
+		lookahead, index_counter = get_lookahead(index_counter)
+		if index_counter == index+1:
+			return order1,ind
 		if ontop in terminals:
 			if ontop != lookahead:
 				#print "parsing error...\nontop: %s but lookahead: %s"%(ontop,lookahead)
@@ -71,8 +72,8 @@ def parser(index):
 			string.pop(0)
 			if index_counter == index:
 				ind = len(order1)-1
-			index_counter += 1
-			lookahead = get_lookahead()
+			# index_counter += 1
+			lookahead = get_lookahead(index_counter)
 		else:
 			parse = expand(lookahead, parse, ontop)
 			if parse == -1:

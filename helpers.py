@@ -253,10 +253,7 @@ def add_accept_string(solver,accept_string):
 	for j in range(len(accept_string)):
 		s.add(functions["lookAheadIndex"](strNum, vars["z%d"%j]+1) == vars["z%d"%(j+1)])
 	
-	# adding the stric inequality
-	for i in range(1,len(accept_string)):
-		s.add(And(vars["z%d"%i] < vars["z%d"%(i+1)], vars["z%d"%i] > vars["z%d"%(i-1)]))
-
+	
 	for i in range(len(accept_string)+1):
 		OrList = []
 		for t in terms+["dol"]:
@@ -267,14 +264,16 @@ def add_accept_string(solver,accept_string):
 	# 	s.add(functions["symbolAt"](strNum,vars["z%d"%i]) == vars[accept_string[i]])
 	s.add(functions["symbolAt"](strNum,vars["z%d"%(len(accept_string))]) == vars["dol"])
 	s.add(functions["end"](strNum, 0) <= expansion_constant*len(accept_string))
+	s.add(functions["symbolAt"](strNum,0) == vars["N1"])
+
+	for i  in range(expansion_constant*len(accept_string)):
+		s.add(functions["valid"](i))
 
 	####################################################################################################
 
-	s.add(ForAll(x, functions["valid"](x) == Implies(And(0 <= x, x <= functions["end"](strNum,0)), And( functions["lookAheadIndex"](strNum,x) > 0, Or([functions["lookAheadIndex"](strNum,x)==vars["z%d"%i] for i in range(len(accept_string)+1)]) ,Or(And(functions["symbolAt"](strNum, x) <= solver["term_end"], functions["symbolAt"](strNum, x) >= solver["term_start"], functions["lookAheadIndex"](strNum, x) == x), And(functions["symbolAt"](strNum, x) <= solver["non_term_end"], functions["symbolAt"](strNum, x) >= solver["non_term_start"], functions["lookAheadIndex"](strNum,x+1) == functions["lookAheadIndex"](strNum,x), Exists([rn, X1,X2,X3,X4,X5,X6], And(functions["parseTable"](functions["symbolAt"](strNum,x), functions["symbolAt"](strNum, functions["lookAheadIndex"](strNum,x))) == rn,Not(rn ==0),x <= X1, X1 <= X2, X2 <= X3, X3 <= X4, X4 <= X5, X5 <= X6, X6 <= functions["end"](strNum,0), functions["hardcode"](rn, x, X1, X2, X3, X4, X5, X6))))))), patterns=[functions["valid"](x)]))
 	s.add(functions["lookAheadIndex"](strNum,0) == vars["z0"])
 	COUNT = 0
 	for j in test_counter:
-		# astr,l,m = specs()
 		print "ITERATION:",COUNT
 		COUNT += 1
 		astr = [view_assign_t[accept_string[i]] for i in range(len(accept_string))]
@@ -283,18 +282,29 @@ def add_accept_string(solver,accept_string):
 		print "parse_array_prefix:",sympredef
 
 		s.push()
+		# adding the stric inequality
+		for i in range(1,len(accept_string)):
+			if i == j+1:
+				s.add(And(vars["z%d"%i] < vars["prefix_limit"], vars["z%d"%i] > vars["z%d"%(i-1)]))
+			else:
+				if i == j+2:
+					s.add(And(vars["z%d"%i] < vars["z%d"%(i+1)], vars["z%d"%i] > vars["prefix_limit"]))
+				else:
+					s.add(And(vars["z%d"%i] < vars["z%d"%(i+1)], vars["z%d"%i] > vars["z%d"%(i-1)]))
+
+		# modifying the valid  function
+		s.add(ForAll(x, functions["valid"](x) == Implies(And(0 <= x, x <= vars["prefix_limit"]), And( functions["lookAheadIndex"](strNum,x) > 0, Or([functions["lookAheadIndex"](strNum,x)==vars["z%d"%i] for i in range(len(accept_string)+1)]) ,Or(And(functions["symbolAt"](strNum, x) <= solver["term_end"], functions["symbolAt"](strNum, x) >= solver["term_start"], functions["lookAheadIndex"](strNum, x) == x), And(functions["symbolAt"](strNum, x) <= solver["non_term_end"], functions["symbolAt"](strNum, x) >= solver["non_term_start"], functions["lookAheadIndex"](strNum,x+1) == functions["lookAheadIndex"](strNum,x), Exists([rn, X1,X2,X3,X4,X5,X6], And(functions["parseTable"](functions["symbolAt"](strNum,x), functions["symbolAt"](strNum, functions["lookAheadIndex"](strNum,x))) == rn,Not(rn ==0),x <= X1, X1 <= X2, X2 <= X3, X3 <= X4, X4 <= X5, X5 <= X6, X6 <= functions["end"](strNum,0), functions["hardcode"](rn, x, X1, X2, X3, X4, X5, X6))))))), patterns=[functions["valid"](x)]))
+
 		print "len(accept_string):",len(accept_string)
 		print "parse array lenght;",len(sympredef)
+		
+		# hardcode the parse array before suspicious terminal becomes lookahead
 		for i in range(len(sympredef)):
-			if i != tmp:
-				s.add(functions["symbolAt"](strNum,i) == vars[view_assign[sympredef[i]]])
-				print "Asserting: functions['symbolAt'](strNum,%d) == vars[%s]"%(i,view_assign[sympredef[i]])
-			else:
-				add_soft(functions["symbolAt"](strNum,i) == vars[view_assign[sympredef[i]]],solver)
+			s.add(functions["symbolAt"](strNum,i) == vars[view_assign[sympredef[i]]])
 
-		s.add(functions["symbolAt"](strNum,0) == vars["N1"])
+		# add_soft(functions["symbolAt"](strNum,i) == vars[view_assign[sympredef[i]]],solver)
 
-		for i in range(j+3):
+		for i in range(j+2):
 			if i > len(accept_string):
 				break
 			if i == j:
@@ -303,20 +313,21 @@ def add_accept_string(solver,accept_string):
 			if i != len(accept_string):
 				s.add(functions["symbolAt"](strNum,vars["z%d"%i]) == vars[accept_string[i]])
 			else:
-				s.add(functions["symbolAt"](strNum,vars["z%d"%i]) == vars["dol"])
+				if i == j+1 and j+1 in test_counter:
+					add_soft(functions["symbolAt"](strNum,vars["z%d"%i]) == vars[accept_string[i]],solver)
+				else:
+					s.add(functions["symbolAt"](strNum,vars["z%d"%i]) == vars["dol"])
 		
-		for i in range(len(sympredef)+2):
-			s.add(functions["valid"](i))
-		s.add(functions["valid"](vars["z%d"%(j+1)]))
-		s.add(functions["valid"](vars["z%d"%(j+2)]))
 			
 		p, unsat_soft_constrains, m = naive_maxsat(solver)
 
 		m_vars = solver["vars"]
 		m_funs = solver["functions"]
 		tmp=int(str(m.evaluate(m_funs["symbolAt"](1, m_vars["z%d"%j]))))
+		
 		print 'array:',int(str(m.evaluate(m_vars[view_assign["array"]])))
 		print "tmp:",tmp
+		
 		accept_string[j] = tokens[tmp-solver["non_term_end"]-1]
 		correct_string = []
 		for i in range(len(accept_string)+1):
@@ -325,6 +336,7 @@ def add_accept_string(solver,accept_string):
 				break
 			correct_string.append(tokens[tmp-solver["non_term_end"]-1])
 		print "correct string after iteration: ",correct_string
+		
 		accept_string[j] = view_assign[accept_string[j]]
 		s.pop()
 		# print "parse Action Array:"
@@ -344,8 +356,6 @@ def add_accept_string(solver,accept_string):
 	for i in range(len(sympredef)):
 		s.add(functions["symbolAt"](strNum,i) == vars[view_assign[sympredef[i]]])
 		print "Asserting: functions['symbolAt'](strNum,%d) == vars[%s]"%(i,view_assign[sympredef[i]])
-		
-	s.add(functions["symbolAt"](strNum,0) == vars["N1"])
 
 	for i in range(len(accept_string)+1):
 		if i != len(accept_string):
