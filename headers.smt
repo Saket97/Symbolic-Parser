@@ -1,0 +1,8 @@
+(set-option :auto-config false)
+(set-option :smt.mbqi false)
+(set-option :smt.qi.profile true)
+;(set-option :smt.qi.eager_threshold 100)
+(set-option :produce-models true)
+(set-option :smt.case_split 3)
+;(set-option :auto-config false)
+;(set-option :mbqi true)
