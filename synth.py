@@ -43,28 +43,28 @@ def main():
 	f3 = open("SMTconstraints.smt","w+")
 	f3.write(dumpSMT(SP["constraints"]))
 	f3.close()
-	p, unsat_soft_constrains, m = naive_maxsat(SP)
+	# p, unsat_soft_constrains, m = naive_maxsat(SP)
 	# print SP["constraints"].check()
-	SP["accept_list"] = accept_list
-	# print "atmost %d positions in the string are correct"%result
-	SP["model"] = m
-	for t in SP["terms"]:
-		print "%s %s"%(t,str(m.evaluate(SP["vars"][t])))
+	# SP["accept_list"] = accept_list
+	# # print "atmost %d positions in the string are correct"%result
+	# SP["model"] = m
+	# for t in SP["terms"]:
+	# 	print "%s %s"%(t,str(m.evaluate(SP["vars"][t])))
 
-	for i in range(SP["num_soft_constraints"]):
-		if int(str(m.evaluate(SP["aux_const"][i]))) == 1:
-			print "%d "%i,
+	# for i in range(SP["num_soft_constraints"]):
+	# 	if int(str(m.evaluate(SP["aux_const"][i]))) == 1:
+	# 		print "%d "%i,
 	
-	print "lookAheadIndex ",m[SP["functions"]["lookAheadIndex"]]
-	print "symbolAt ",m[SP["functions"]["symbolAt"]]
-	print "end ",m[SP["functions"]["end"]]
+	# print "lookAheadIndex ",m[SP["functions"]["lookAheadIndex"]]
+	# print "symbolAt ",m[SP["functions"]["symbolAt"]]
+	# print "end ",m[SP["functions"]["end"]]
 	
 	# tmp = print_grammar(SP)
 	end_time = calendar.timegm(time.gmtime())
 	print "\nSolving time taken: %s"%str(datetime.timedelta(seconds=(end_time-start_time)))
 	# results = open("results_file_rebuttal.csv","a+")
-	a,r,c = specs()
-	parser.parser_main(tmp, len(tmp))
+	# a,r,c = specs()
+	# parser.parser_main(tmp, len(tmp))
 	#print "a[0] ",a[0]
 	# results.write("%d,%d,%s,%d,%d\n"%(len(find_original_grammar()), len(a[0].split()), str(datetime.timedelta(seconds=(end_time-start_time))), parser.parser_main(tmp),c["size_rules"]))
 	# results.close()	

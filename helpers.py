@@ -6,6 +6,12 @@ from input_specs_tiger import specs
 from parser import parser_main
 import pickle
 from msat import *
+import subprocess as sbp
+def dumpSMT(f):
+	v = (Ast * 0)()
+	a = f.assertions()
+	f = And(*a)
+	return Z3_benchmark_to_smtlib_string(f.ctx_ref(), "","", "","",0,v,f.as_ast()) 
 def req_rules(solver):
 
 	m = solver["model"]
@@ -190,18 +196,32 @@ def find_errors():
 			if t1 not in ngrams:
 				tmp.append(i)
 				continue
-			f1 = ngrams[t1]
-			if f1 < 7:
-				tmp.append(i)
+			# f1 = ngrams[t1]
+			# if f1 < 7:
+			# 	tmp.append(i)
 		if i != len(string)-1:
 			t1 = (string[i],string[i+1])
 			if t1 not in ngrams:
 				tmp.append(i)
 				continue
-			f1 = ngrams[t1]
-			if f1 < 7:
-				tmp.append(i)
+			# f1 = ngrams[t1]
+			# if f1 < 7:
+			# 	tmp.append(i)
 	return tmp
+
+def parse_output(ka):
+	output_file = open("model.txt")
+	lines = output_file.readlines()
+	if lines[1] == "unsat\n":
+		return -1
+	cp = []
+	for i in range(ka+1):
+		tmp = lines[2+i].split(")")
+		cp.append(int(tmp[1]))
+	for i in range(ka+1):
+		cp.append(int(lines[2+ka+i+1].split()[1].split(")")[0]))
+	# cp.append(int(lines[5].split()[1].split(")")[0]))
+	return cp
 
 def add_accept_string(solver,accept_string):
 
@@ -229,7 +249,7 @@ def add_accept_string(solver,accept_string):
 	test_counter = find_errors()
 	# test_counter = [0,2,3,1,-1]
 	print "TEST COUNTERS: ",test_counter
-	test_counter = [7]
+	test_counter = [4,5,6,7,8]
 
 	###################################################################################################
 	rn = Int('rn')
@@ -292,16 +312,17 @@ def add_accept_string(solver,accept_string):
 				continue
 			s.add(functions["lookAheadIndex"](strNum, vars["z%d"%k]+1) == vars["z%d"%(k+1)])
 
+		ka=3
 		# adding the stric inequality
 		for i in range(1,len(accept_string)):
 			if i == j:
 				s.add(And(vars["z%d"%i] <= vars["z%d"%(i+1)], vars["z%d"%i] > vars["z%d"%(i-1)]))
 				continue
 
-			if i == j+1:
+			if i == j+ka:
 				s.add(And(vars["z%d"%i] < vars["prefix_limit"], vars["z%d"%i] >= vars["z%d"%(i-1)]))
 			else:
-				if i == j+2:
+				if i == j+ka+1:
 					s.add(And(vars["z%d"%i] < vars["z%d"%(i+1)], vars["z%d"%i] > vars["prefix_limit"]))
 				else:
 					s.add(And(vars["z%d"%i] < vars["z%d"%(i+1)], vars["z%d"%i] > vars["z%d"%(i-1)]))
@@ -315,78 +336,62 @@ def add_accept_string(solver,accept_string):
 
 		# add_soft(functions["symbolAt"](strNum,i) == vars[view_assign[sympredef[i]]],solver)
 
-		for i in range(j+2):
+		for i in range(j+ka+1):
 			if i > len(accept_string):
 				break
 			if i == j:
 				add_soft(functions["symbolAt"](strNum,vars["z%d"%i]) == vars[accept_string[i]],solver)
 				continue
-			if i != len(accept_string):
-				s.add(functions["symbolAt"](strNum,vars["z%d"%i]) == vars[accept_string[i]])
+			if i > j and i+end_index in test_counter:
+				test_counter.remove(i+end_index)
+				add_soft(functions["symbolAt"](strNum,vars["z%d"%i]) == vars[accept_string[i]],solver)
 			else:
-				if i == j+1 and j+1 in test_counter:
-					add_soft(functions["symbolAt"](strNum,vars["z%d"%i]) == vars[accept_string[i]],solver)
+				if i != len(accept_string):
+					s.add(functions["symbolAt"](strNum,vars["z%d"%i]) == vars[accept_string[i]])
 				else:
 					s.add(functions["symbolAt"](strNum,vars["z%d"%i]) == vars["dol"])
-		
-			
-		p, unsat_soft_constrains, m = naive_maxsat(solver)
 
-		m_vars = solver["vars"]
-		m_funs = solver["functions"]
-		tmp=int(str(m.evaluate(m_funs["symbolAt"](1, m_vars["z%d"%j]))))
-		
-		print 'array:',int(str(m.evaluate(m_vars[view_assign["array"]])))
-		m_zj = int(str(m.evaluate(m_vars["z%d"%j])))
-		m_zj1 = int(str(m.evaluate(m_vars["z%d"%(j+1)])))
-		print "tmp:",tmp
-		
+		input_file = open("smt_dumped%d"%j,"w+")
+		input_file.write(dumpSMT(s))
+		input_file.close()
+
+		# p, unsat_soft_constrains, m = naive_maxsat(solver)
+		sbp.call('sed "$ d" smt_dumped%d > smt_dumped_final.smt'%j, shell=True)
+		output_file = open("tail.smt","w+")
+		output_file.write("(push)\n(check-sat)\n")
+		string = "(get-value ((symbolAt 1 z%d)"%(j)
+		for i in range(ka):
+			string += "(symbolAt 1 z%d)"%(j+i+1)
+		string += "))\n"
+		output_file.write (string)
+		string = "(get-value (z%d"%j
+		for i in range(ka):
+			string += " z%d"%(j+i+1)
+		string += "))\n"
+		output_file.write(string)
+		output_file.close()
+
+		sbp.call("cat headers.smt smt_dumped_final.smt tail.smt > final_smt.smt", shell=True)
+		sbp.call("z3-master/build/z3 -smt2 final_smt.smt > model.txt", shell=True)
+		cp = parse_output(ka)
+		if cp == -1:
+			print "unsat :-("
+			return -1
 		correct_string = []
-		# end_index = len(accept_string)
-		for i in range(j+1):
-			print "i:",i
-			if i == j and m_zj1 == m_zj:
-				end_index += 1
+		for i in range(len(accept_string)):
+			if i >= j and i < j+ka:
+				if cp[ka+i-j+1] == cp[ka+i-j+2]:
+					continue 
+				tmp = cp[i-j]
+				t = tokens[tmp-solver["non_term_end"]-1]
+				correct_string.append(view_assign[t])
 				continue
-			tmp = int(str(m.evaluate(m_funs["symbolAt"](1, m_vars["z%d"%i]))))
-			correct_string.append(view_assign[tokens[tmp-solver["non_term_end"]-1]])
-		for i in range(j+1, len(accept_string)):
 			correct_string.append(accept_string[i])
 		
 		accept_string = correct_string
+		p = []
+		for i in range(len(accept_string)):
+			p.append(view_assign_t[accept_string[i]])
+		print "accept_string:",p
 		s.pop()
-		# print "parse Action Array:"
-		i = 0
-		# parray = []
-		dol_pos = -1
-		for  i in range(len(accept_string)*expansion_constant):
-			tmp = int(str(m.evaluate(m_funs["symbolAt"](1, i))))
-			if tmp == solver["term_end"]:
-				dol_pos = i
-				break
-		print "dollar at %d in parse action array."%i
 	
-	# print "FINAL ITERATION"
-
-	# astr = [view_assign_t[accept_string[i]] for i in range(len(accept_string))]
-	# sympredef,tmp = parser_main(astr,expansion_constant*len(accept_string))
-	# for i in range(len(sympredef)):
-	# 	s.add(functions["symbolAt"](strNum,i) == vars[view_assign[sympredef[i]]])
-	# 	print "Asserting: functions['symbolAt'](strNum,%d) == vars[%s]"%(i,view_assign[sympredef[i]])
-
-	# for i in range(len(accept_string)+1):
-	# 	if i != len(accept_string):
-	# 		s.add(functions["symbolAt"](strNum,vars["z%d"%i]) == vars[accept_string[i]])
-	# 	else:
-	# 		s.add(functions["symbolAt"](strNum,vars["z%d"%i]) == vars["dol"])
-	
-	# s.add(ForAll(x, functions["valid"](x) == Implies(And(0 <= x, x <= functions["end"](strNum,0)), And( functions["lookAheadIndex"](strNum,x) > 0, Or([functions["lookAheadIndex"](strNum,x)==vars["z%d"%i] for i in range(len(accept_string)+1)]) ,Or(And(functions["symbolAt"](strNum, x) <= solver["term_end"], functions["symbolAt"](strNum, x) >= solver["term_start"], functions["lookAheadIndex"](strNum, x) == x), And(functions["symbolAt"](strNum, x) <= solver["non_term_end"], functions["symbolAt"](strNum, x) >= solver["non_term_start"], functions["lookAheadIndex"](strNum,x+1) == functions["lookAheadIndex"](strNum,x), Exists([rn, X1,X2,X3,X4,X5,X6], And(functions["parseTable"](functions["symbolAt"](strNum,x), functions["symbolAt"](strNum, functions["lookAheadIndex"](strNum,x))) == rn,Not(rn ==0),x <= X1, X1 <= X2, X2 <= X3, X3 <= X4, X4 <= X5, X5 <= X6, X6 <= functions["end"](strNum,0), functions["hardcode"](rn, x, X1, X2, X3, X4, X5, X6))))))), patterns=[functions["valid"](x)]))
-
-
-	# p, unsat_soft_constrains, m = naive_maxsat(solver)
-
-	# m_vars = solver["vars"]
-	# m_funs = solver["functions"]
-	# tmp=int(str(m.evaluate(m_funs["symbolAt"](1, m_vars["z%d"%j]))))
-	# accept_string[j] = tokens[tmp-solver["non_term_end"]]
-	print "accept_string:",accept_string

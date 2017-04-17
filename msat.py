@@ -65,7 +65,10 @@ def naive_maxsat(solver):
         # return
         if is_sat == sat or unknown:
             m = solver["constraints"].model()
+            solver["constraints"].pop()
+            solver["constraints"].pop()
             return solver["num_soft_constraints"],[],m
+
         else:
             k += 1
             solver["constraints"].pop()

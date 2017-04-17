@@ -77,12 +77,14 @@ def parser(index):
 		else:
 			parse = expand(lookahead, parse, ontop)
 			if parse == -1:
-				#print "parse error...\nontop: %s but lookahead: %s"%(ontop,lookahead)
+				print "parse error...\nontop: %s but lookahead: %s"%(ontop,lookahead)
 				return order1,ind
 	if lookahead == "dol" and len(parse) == 0:
 		print "parsed successfully..."
 		return order1,ind;
-
+	if len(parse) == 0 and len(string) == 0:
+		print "parsed successfully..."
+		return order1, ind
 
 def parser_main(string1, index):
 	#print "############## parser called...###########"
@@ -92,7 +94,8 @@ def parser_main(string1, index):
 		string = string1.split()
 	else:
 		string = string1
-        
+	# string = ['let', 'type', 'id', '=', 'array', 'of', 'id', 'in', 'id', ':', 'id', ':=', 'id', '[', 'integer', ']', 'of', 'integer', 'in', 'id', 'end']
+	string=['let', 'type', 'id', '=', 'array', 'of', 'id', 'var', 'id', ':', 'id', ':=', 'id', '[', 'integer', ']', 'of', 'integer', 'in', 'id', 'end']
 	string.append('dol')
 	return parser(index)
 
@@ -109,7 +112,7 @@ fuel = 20
 rules = []
 
 maximum = 0
-parser_main(string, len(string))
+# parser_main(string, 100)
 # # for i in range(len(grammar)):
 # # 	if len(grammar[i]) > maximum:
 # # 		maximum = len(grammar[i])

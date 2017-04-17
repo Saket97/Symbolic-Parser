@@ -3,13 +3,15 @@ import pickle
 import sys
 import numpy as np
 def flip():
-	x = np.random.multinomial(1,[0.33,0.33,0.34])
+	x = np.random.multinomial(1,[0.5, 0.5])
 	if x[0] == 1:
 		return 0
-	if x[1] == 1:
-		return 1
-	if x[2] == 1:
+	else:
 		return 2
+	# if x[1] == 1:
+	# 	return 1
+	# if x[2] == 1:
+	# 	return 2
 def er_gen(data):
 	delete = False
 	global err_examples
@@ -52,7 +54,7 @@ err_examples = []
 # er_index = []
 terminals = ['|', 'eps', '&', '+', '-', '*', '/', 'nil', 'integer', 'string', '(', ')', 'if', 'then', 'else', 'while', 'do', 'for', 'id', ':=', 'to', 'break', 'let', 'in', 'end', 'type', '=', '{', '}', 'array', 'of', ':', ',', 'var', 'function', '[', ']', '.', ';', '!=', '>', '<', '>=', '<=']
 for i in range(1,50):
-	for j in range(2):
+	for j in range(5):
 		er_index = []
 		n_error_done=0
 		data = []
