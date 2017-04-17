@@ -1,4 +1,4 @@
-from input_specs_tiger import *
+from finalTestFilesOOPSLA.input_specs_tiger0 import *
 from init import *
 from z3 import *
 import datetime

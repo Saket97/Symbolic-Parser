@@ -7,7 +7,7 @@ import sys
 import calendar
 import time
 import datetime
-import parser
+import parser_verify
 from msat import *
 def dumpSMT(f):
 	v = (Ast * 0)()
@@ -36,13 +36,10 @@ def main():
 	
 	start_time = calendar.timegm(time.gmtime())
 	
-	add_accept_string(SP,accept_list[int(sys.argv[1])])
+	ret_string = add_accept_string(SP,accept_list[int(sys.argv[1])])
 	
 	# print "starting maxsat solver..."
 	# result, doubt_pos,m = naive_maxsat(SP)
-	f3 = open("SMTconstraints.smt","w+")
-	f3.write(dumpSMT(SP["constraints"]))
-	f3.close()
 	# p, unsat_soft_constrains, m = naive_maxsat(SP)
 	# print SP["constraints"].check()
 	# SP["accept_list"] = accept_list
@@ -61,12 +58,16 @@ def main():
 	
 	# tmp = print_grammar(SP)
 	end_time = calendar.timegm(time.gmtime())
+	pr_time = str(datetime.timedelta(seconds=(end_time-start_time)))
 	print "\nSolving time taken: %s"%str(datetime.timedelta(seconds=(end_time-start_time)))
 	# results = open("results_file_rebuttal.csv","a+")
-	# a,r,c = specs()
+	a,r,c = specs()
 	# parser.parser_main(tmp, len(tmp))
 	#print "a[0] ",a[0]
 	# results.write("%d,%d,%s,%d,%d\n"%(len(find_original_grammar()), len(a[0].split()), str(datetime.timedelta(seconds=(end_time-start_time))), parser.parser_main(tmp),c["size_rules"]))
-	# results.close()	
+	# results.close()
+	print "CORRECT STRING=",ret_string
+	results = open("results_file_rebuttal.csv","a+")
+	results.write("%d %d %d"%(sys.argv[2], len(a[0].split()), pr_time, parser_main(ret_string)))
 
 main()

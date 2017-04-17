@@ -1,4 +1,4 @@
-from input_specs_tiger import *
+from finalTestFilesOOPSLA.input_specs_tiger0 import *
 def get_lookahead(index_counter):
 	if len(string) == 0:
 		return 'dol'
@@ -57,6 +57,7 @@ def parser(index):
 	order1 = []
 	ind = 0
 	while len(parse) != 0:
+		# print "len(parse):",len(parse)
 		# print "index:%d index_counter:%d"%(index, index_counter)
 		ontop = parse.pop()
 		global order
@@ -66,7 +67,7 @@ def parser(index):
 			return order1,ind
 		if ontop in terminals:
 			if ontop != lookahead:
-				#print "parsing error...\nontop: %s but lookahead: %s"%(ontop,lookahead)
+				print "parsing error...\nontop: %s but lookahead: %s"%(ontop,lookahead)
 				return 0,-1
 			#print "consuming token %s"%string[0]
 			string.pop(0)
@@ -85,6 +86,8 @@ def parser(index):
 	if len(parse) == 0 and len(string) == 0:
 		print "parsed successfully..."
 		return order1, ind
+	print "len(string):",len(string)
+	print "len(parse):",len(parse)
 
 def parser_main(string1, index):
 	#print "############## parser called...###########"
@@ -119,6 +122,6 @@ maximum = 0
 # # #print "size_ruels:",maximum
 # # add_eps(grammar)
 # # parser_main([])
-# #print "Order: ",order1
+# print "Order: ",order
 # rules.sort()
 # #print "rules: ",rules

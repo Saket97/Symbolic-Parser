@@ -3,7 +3,7 @@ def specs():
 
 	#Space separated (tokized) strings
 	# accept_strings = [let type id = array of id var id : id := id [ integer ] of integer in id end]
-	accept_strings = ['string']
+	accept_strings = [ ' string ' ]
 	reject_strings = ["let"]
 
 	config = {

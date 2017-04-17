@@ -5,14 +5,14 @@ pkl_file = open("ErrorTestExamples.pkl", "rb")
 examples = pickle.load(pkl_file)
 pkl_file.close()
 string = ""
-for i in range(START, END+1):
+for i in range(len(examples)):
 	string = ""
 	for j in range(len(examples[i])):
 		string += examples[i][j]
 		if j != len(examples[i])-1:
 			string += " "
 	input_file = open("input_specs_tiger.py")
-	output_file = open("input_specs_tiger%d.py"%i, "w")
+	output_file = open("finalTestFilesOOPSLA/input_specs_tiger%d.py"%i, "w")
 	j = 0
 	for line in input_file:
 		if j == 5:

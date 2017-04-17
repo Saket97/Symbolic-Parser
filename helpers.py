@@ -394,4 +394,7 @@ def add_accept_string(solver,accept_string):
 			p.append(view_assign_t[accept_string[i]])
 		print "accept_string:",p
 		s.pop()
-	
+	ret = []
+	for i in range(len(accept_string)):
+		ret.append(view_assign_t[accept_string[i]])
+	return ret
