@@ -1,4 +1,4 @@
-from finalTestFilesOOPSLA.input_specs_tiger0 import *
+from finalTestFilesOOPSLA.input_specs_tiger6 import *
 from init import *
 from z3 import *
 import datetime
@@ -16,7 +16,7 @@ def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules
 		# print "Asserting rule: ",r
 		s.add(vars['x%d'%(r*(size_rules+1)+1)] == vars[view_assign[original_grammar[r][0]]])
 		i += 1
-		
+
 		for j in range(1,size_rules+1):
 			# print "j:",j
 			if original_grammar[r][j] == 'eps':
@@ -28,7 +28,7 @@ def add_constraints(solver, view_assign, original_grammar, num_rules, size_rules
 				# print 'x%d = %s'%(r*(size_rules+1)+j+1,original_grammar[r][j])
 				s.add(vars['x%d'%(r*(size_rules+1)+j+1)] == vars[view_assign[original_grammar[r][j]]])
 				i += 1
-	
+
 	print "asserting grammar in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime()))))
 
 
@@ -46,7 +46,7 @@ def add_parse_table_constraints(solver,parse_table,view_assign):
 		for k,t in parse_table[i].items():
 			if k == 'non_term':
 				continue
-			if t:	
+			if t:
 				s.add(functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[k]]) == vars['rule%d'%(t)])
 				constdict['%s %s parse table input'%(non_terminal,k)] = functions['parseTable'](vars[view_assign[non_terminal]],vars[view_assign[k]]) == vars['rule%d'%(t)]
 			else:
@@ -90,8 +90,11 @@ def add_first_set_constraints(solver, first_set, follow_set, view_assign):
 def repair(solver, original_grammar, num_rules, size_rules):
 	view_assign = {}
 	view_assign_t = {}
+	view_assign_nt = {}
+
 	i = 1
 	for ch in non_tokens:
+		view_assign_nt["N%d"%i] = ch
 		view_assign[ch] = 'N%d'%(i)
 		i += 1
 
@@ -104,6 +107,7 @@ def repair(solver, original_grammar, num_rules, size_rules):
 	print "view_assign",view_assign
 	solver["view_assign"] = view_assign
 	solver["view_assign_t"] = view_assign_t
+	solver["view_assign_nt"] = view_assign_nt
 	parse_table = get_parse_table()
 	# print "PARSE TABLE:", parse_table
 	view_assign['dol'] = 'dol'

@@ -1,4 +1,4 @@
-from finalTestFilesOOPSLA.input_specs_tiger0 import *
+from finalTestFilesOOPSLA.input_specs_tiger6 import *
 import sys
 
 def discover(original_grammar):
@@ -50,10 +50,10 @@ if  True or sys.argv[1] == 'mode2':
 	tokens.remove('dol')
 else:
 	tokens = discover_tokens(accept_strings)
-	
+
 # tokens = discover_tokens(accept_strings)
 config.update({'num_terms':len(tokens)})
 assert(config['size_rules']>=2)
-
+tokens.append("dol")
 accept_list = list_from_strings(accept_strings)
 reject_list = list_from_strings(reject_strings)

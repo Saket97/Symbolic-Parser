@@ -11,6 +11,7 @@ def get_num_disabled_soft_constraints(m,num_soft_constraints,aux_const):
 
 def add_soft(constraint, solver):
     # print "constraint: ",constraint
+    print("####### soft constraint function called ####################")
     if "aux" not in solver:
         solver["aux"] = []
         solver["aux_const"] = []
@@ -24,7 +25,7 @@ def add_soft(constraint, solver):
     s = solver["constraints"]
     # s.add(Xor(constraint, aux[len(aux)-1]))
     s.add(Implies((Not(aux[len(aux)-1])), constraint))
-    s.add(If(aux[len(aux)-1], aux_const[len(aux_const)-1] == 1, aux_const[len(aux_const)-1] == 0))  
+    s.add(If(aux[len(aux)-1], aux_const[len(aux_const)-1] == 1, aux_const[len(aux_const)-1] == 0))
     print "constraint:",constraint
 
 def assert_at_most_k(solver, aux_const, k):
@@ -56,7 +57,7 @@ def naive_maxsat(solver):
     m = None
     while True:
         solver["constraints"].push()
-        print "checking atmost %d constraints can be relaxed"%k      
+        print "checking atmost %d constraints can be relaxed"%k
         assert_at_most_k(solver, aux_const,k)
         solver["constraints"].push()
         is_sat = solver["constraints"].check()
@@ -86,7 +87,7 @@ def naive_maxsat(solver):
             assert_at_most_k(solver, aux_const, k+1)
             print "Last final check: ",solver["constraints"].check()
             return solver["num_soft_constraints"] - k - 1, unsatisfied_soft_constraints,m
-        
+
         m = solver["constraints"].model()
         num_disabled = get_num_disabled_soft_constraints( m, solver["num_soft_constraints"], aux_const)
         k = num_disabled

@@ -7,13 +7,13 @@ import sys
 import calendar
 import time
 import datetime
-import parser_verify
+from parser_verify import parser_main1
 from msat import *
 def dumpSMT(f):
 	v = (Ast * 0)()
 	a = f.assertions()
 	f = And(*a)
-	return Z3_benchmark_to_smtlib_string(f.ctx_ref(), "","", "","",0,v,f.as_ast()) 
+	return Z3_benchmark_to_smtlib_string(f.ctx_ref(), "","", "","",0,v,f.as_ast())
 
 def main():
 	sp_time = calendar.timegm(time.gmtime())
@@ -27,36 +27,17 @@ def main():
 	initialize_solver(SP)
 	# SP["constraints"].set(unsat_core=True)
 	print "SP initialized in %s"%str(datetime.timedelta(seconds=(calendar.timegm(time.gmtime())-sp_time)))
-	
+
 	num = nums()
 	original_grammar = find_original_grammar()
 	# print "original_grammar_synth: ", original_grammar
 	repair(SP, original_grammar, num['num_rules'], num['size_rules'])
 
-	
-	start_time = calendar.timegm(time.gmtime())
-	
-	ret_string = add_accept_string(SP,accept_list[int(sys.argv[1])])
-	
-	# print "starting maxsat solver..."
-	# result, doubt_pos,m = naive_maxsat(SP)
-	# p, unsat_soft_constrains, m = naive_maxsat(SP)
-	# print SP["constraints"].check()
-	# SP["accept_list"] = accept_list
-	# # print "atmost %d positions in the string are correct"%result
-	# SP["model"] = m
-	# for t in SP["terms"]:
-	# 	print "%s %s"%(t,str(m.evaluate(SP["vars"][t])))
 
-	# for i in range(SP["num_soft_constraints"]):
-	# 	if int(str(m.evaluate(SP["aux_const"][i]))) == 1:
-	# 		print "%d "%i,
-	
-	# print "lookAheadIndex ",m[SP["functions"]["lookAheadIndex"]]
-	# print "symbolAt ",m[SP["functions"]["symbolAt"]]
-	# print "end ",m[SP["functions"]["end"]]
-	
-	# tmp = print_grammar(SP)
+	start_time = calendar.timegm(time.gmtime())
+        SP["A_string"],b,c = specs()
+	ret_string = add_accept_string(SP,accept_list[int(sys.argv[1])])
+
 	end_time = calendar.timegm(time.gmtime())
 	pr_time = str(datetime.timedelta(seconds=(end_time-start_time)))
 	print "\nSolving time taken: %s"%str(datetime.timedelta(seconds=(end_time-start_time)))
@@ -68,6 +49,6 @@ def main():
 	# results.close()
 	print "CORRECT STRING=",ret_string
 	results = open("results_file_rebuttal.csv","a+")
-	results.write("%d %d %d"%(sys.argv[2], len(a[0].split()), pr_time, parser_main(ret_string)))
 
+	results.write("%d %d %s %d %s %d %d %d\n"%(int(sys.argv[2]), len(a[0].split()), pr_time, ret_string, SP["vtime"], SP["scorrect"], SP["compiler_returned_error_location"], SP["actual_error_location"]))
 main()

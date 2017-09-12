@@ -77,7 +77,7 @@ public class tigerLexer implements TigerParserConstants{
     System.out.println(token.toString());
     System.out.println(token.kind);
     // writer.printf("%s %d %d %d\n",token.toString(),token.beginLine,token.beginColumn,token.endColumn);
-    writer.printf("%s\n",token.toString());
+    // writer.printf("%s\n",token.toString());
     switch (token.kind)
     {
       case 10:

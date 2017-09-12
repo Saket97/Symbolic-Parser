@@ -2,8 +2,8 @@
 def specs():
 
 	#Space separated (tokized) strings
-	# accept_strings = [let type id = array of id var id : id := id [ integer ] of integer in id end]
-	accept_strings = [ ' let type id = id type id = id type id = id type <= = id in string function ' ]
+#accept_strings= let type id = id type id = id type id = id type id = id in string end 
+	accept_strings = [' let function id ( id : id , id : id ) : id = ( id ( id + integer ) ; integer ) var id := integer function id ( id : id integer ) : id = ( id ( id , string ) ; string ) in id ( integer , string ) end ']
 	reject_strings = ["let"]
 
 	config = {
@@ -115,3 +115,5 @@ def nums():
 # reject_strings = [")", ") ("]
 # accept_strings = ["let type of = array of id var id : id := id [ integer ] of integer in id end"]
 # get_parse_table()
+def find_test_counter():
+	return [34]

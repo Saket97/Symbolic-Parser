@@ -19,7 +19,7 @@ def expand(lookahead, parser, ontop):
 		if grammar[rule-1][i] == "eps":
 			continue
 		parser.append(grammar[rule-1][i])
-	print parser
+	#print parser
 	return parser
 
 def discover(original_grammar):
@@ -90,16 +90,23 @@ def parser():
 	print "len(string):",len(string)
 	print "len(parse):",len(parse)
 
-def parser_main(string1):
+def parser_main1(string1):
 	#print "############## parser called...###########"
 	global string
-	print "parser called with string: ",string1
-	if type(string1)=="string":
+	#string1 = ' let function id ( id : id ) : id = if id = integer then integer else id * id ( id - integer ) * id ( integer ) end '
+	#print "parser called with string: ",string1
+	#string1 = string1.split()
+	if type(string1)==str:
 		string = string1.split()
 	else:
 		string = string1
 	# string = ['let', 'type', 'id', '=', 'array', 'of', 'id', 'in', 'id', ':', 'id', ':=', 'id', '[', 'integer', ']', 'of', 'integer', 'in', 'id', 'end']
-	string=['let', 'type', 'id', '=', 'array', 'of', 'id', 'var', 'id', ':', 'id', ':=', 'id', '[', 'integer', ']', 'of', 'integer', 'in', 'id', 'end']
+	# string=['let', 'type', 'id', '=', 'array', 'of', 'id', 'var', 'id', ':', 'id', ':=', 'id', '[', 'integer', ']', 'of', 'integer', 'in', 'id', 'end']
+	# string = [ "let type id = array of id var id : id := id [ integer ] of integer in id end" ]
+	# string = string[0].split()
+	#string = ' let var id := integer in id [ integer ] end '
+	#string = string.split()
+	print "string:,",string
 	string.append('dol')
 	return parser()
 
@@ -116,7 +123,7 @@ fuel = 20
 rules = []
 
 maximum = 0
-# parser_main(string, 100)
+# parser_main1(string)
 # # for i in range(len(grammar)):
 # # 	if len(grammar[i]) > maximum:
 # # 		maximum = len(grammar[i])
@@ -126,3 +133,4 @@ maximum = 0
 # print "Order: ",order
 # rules.sort()
 # #print "rules: ",rules
+#parser_main1([])

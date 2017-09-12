@@ -1,9 +1,11 @@
 import subprocess
 import pickle
 #tmp = [11,12,17,18,20,21,22]
-START = 0
-End = 9
-for j in range(1):	
+#tmp = [169,183, 210, 211, 212, 213, 214]
+#tmp = [100]
+START = 6
+END = 6
+for j in range(1):
 	for i in range(START, END+1):
 		init = open("init.py", "r+")
 		test = open("test.py", "r+")
@@ -14,10 +16,10 @@ for j in range(1):
 		init.close()
 		test.close()
 		parser.close()
-		row = [] #len(string), fileno, no of rules 
+		row = [] #len(string), fileno, no of rules
 		for k in range(1):
 			try:
-				row.append(subprocess.call("python synth.py %d %d"%(j,i), shell=True, timeout=180))
+				row.append(subprocess.call("python synth.py %d %d"%(j,i), shell=True))
 			except Exception as e:
 				print ("Exception:",e)
 				results = open("results_file_rebuttal.csv","a+")

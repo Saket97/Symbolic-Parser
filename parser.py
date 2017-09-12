@@ -1,10 +1,10 @@
-from finalTestFilesOOPSLA.input_specs_tiger0 import *
-def get_lookahead(index_counter):
+from finalTestFilesOOPSLA.input_specs_tiger6 import *
+def get_lookahead():
 	if len(string) == 0:
 		return 'dol'
 	else:
-		index_counter += 1
-		return string[0], index_counter
+		# index_counter += 1
+		return string[0]
 
 def expand(lookahead, parser, ontop):
 	rule = ptable[ontop][lookahead]
@@ -19,7 +19,7 @@ def expand(lookahead, parser, ontop):
 		if grammar[rule-1][i] == "eps":
 			continue
 		parser.append(grammar[rule-1][i])
-	# #print parser
+	#print parser
 	return parser
 
 def discover(original_grammar):
@@ -49,6 +49,8 @@ def discover_tokens_from_grammar():
 	#print ('tokens',tokens)
 	return tokens
 
+['let', 'type', 'id', '=', '{', 'id', ':', 'id', ',', 'id', ':', 'id', '}', 'var', 'id', ':', 'id', ':=', 'id', '{', 'id', '=', 'string', ',', 'id', '=', 'integer', '}', 'in', 'id', '.', 'id', ':=', 'string', ';', 'id', 'end']
+['let', 'type', 'id', '=', '{', 'id', ':', 'id', ',', 'id', ':', 'id', '}', 'var', 'id', ':', 'id', ':=', 'id', '{', 'id', '=', 'string', ',', 'id', '=', 'integer', '}', 'in', 'id', '.', 'id', ':=', 'string', ';', 'id', 'end']
 def parser(index):
 	# global parse
 	parse = []
@@ -56,30 +58,32 @@ def parser(index):
 	parse.append(grammar[0][0])
 	order1 = []
 	ind = 0
+	if index == 0:
+		return parse,0
 	while len(parse) != 0:
 		# print "len(parse):",len(parse)
 		# print "index:%d index_counter:%d"%(index, index_counter)
 		ontop = parse.pop()
 		global order
 		order1.append(ontop)
-		lookahead, index_counter = get_lookahead(index_counter)
-		if index_counter == index+1:
-			return order1,ind
+		lookahead = get_lookahead()
+
 		if ontop in terminals:
 			if ontop != lookahead:
 				print "parsing error...\nontop: %s but lookahead: %s"%(ontop,lookahead)
 				return 0,-1
 			#print "consuming token %s"%string[0]
 			string.pop(0)
+
+			index_counter += 1
 			if index_counter == index:
-				ind = len(order1)-1
-			# index_counter += 1
-			lookahead = get_lookahead(index_counter)
+				return order1,ind
+			lookahead = get_lookahead()
 		else:
 			parse = expand(lookahead, parse, ontop)
 			if parse == -1:
 				print "parse error...\nontop: %s but lookahead: %s"%(ontop,lookahead)
-				return order1,ind
+				return 0,-1
 	if lookahead == "dol" and len(parse) == 0:
 		print "parsed successfully..."
 		return order1,ind;
@@ -93,16 +97,18 @@ def parser_main(string1, index):
 	#print "############## parser called...###########"
 	global string
 	print "parser called with string: ",string1
+	print "index:",index
 	if type(string1)=="string":
 		string = string1.split()
 	else:
 		string = string1
 	# string = ['let', 'type', 'id', '=', 'array', 'of', 'id', 'in', 'id', ':', 'id', ':=', 'id', '[', 'integer', ']', 'of', 'integer', 'in', 'id', 'end']
-	string=['let', 'type', 'id', '=', 'array', 'of', 'id', 'var', 'id', ':', 'id', ':=', 'id', '[', 'integer', ']', 'of', 'integer', 'in', 'id', 'end']
+	#string=['let', 'type', 'id', '=', 'array', 'of', 'id', 'var', 'id', ':', 'id', ':=', 'id', '[', 'integer', ']', 'of', 'integer', 'in', 'id', 'end']
 	string.append('dol')
 	return parser(index)
 
-# string = ['let', 'type', 'id', '=', 'array', 'of', 'id', 'var', 'id', ':', 'id', ':=', 'id', '[', 'integer', ']', 'of', 'integer', 'in', 'id', 'end']
+#r', 'id', ':', 'id', ':=', 'id', '{', 'id', '=', 'string', ',', 'id', '=', 'integer', '}', 'in', 'id', '.', 'id', ':=', 'string', ';', 'id', 'end']
+string = ['let', 'type', 'id', '=', 'array', 'of', 'id', 'var', 'id', ':', 'id', ':=', 'id', '[', 'integer', ']', 'of', 'integer', 'in', 'id', 'end']
 string  = []
 order = []
 grammar = find_original_grammar(eps = False)
@@ -125,3 +131,4 @@ maximum = 0
 # print "Order: ",order
 # rules.sort()
 # #print "rules: ",rules
+#parser_main(string, 100)
